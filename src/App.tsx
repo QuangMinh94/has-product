@@ -1,26 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { ConfigProvider, Breadcrumb, Layout, Menu, theme, Image } from "antd";
+import SideMenu from "../src/components/SideMenu";
 
-function App() {
+import CustomHeader from "./components/CustomHeader";
+
+import MainRoutes from "./routes";
+import HomePage from "./pages/HomePage";
+import { Outlet } from "react-router-dom";
+
+const { Header, Content, Footer, Sider } = Layout;
+
+const App: React.FC = () => {
+  
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <ConfigProvider
+        theme={{
+          components: {
+            Menu: {
+              colorPrimary: "#0E7490", 
+                          
+            },
+          },
+          token:{
+            colorPrimary: "#0E7490",
+          }
+        }}
+      >
+        <MainRoutes />
+       
+      </ConfigProvider>
+    </>
   );
-}
+};
 
 export default App;
