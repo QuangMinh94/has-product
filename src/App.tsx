@@ -11,8 +11,6 @@ import { Outlet } from "react-router-dom";
 const { Header, Content, Footer, Sider } = Layout;
 
 const App: React.FC = () => {
-  
-
   return (
     <>
       <ConfigProvider
@@ -20,12 +18,14 @@ const App: React.FC = () => {
           components: {
             Menu: {
               colorPrimary: "#0E7490", 
-                          
             },
           },
           token:{
             colorPrimary: "#0E7490",
-          }
+            fontFamily:'Roboto',
+            
+          },
+          
         }}
       >
         <MainRoutes />

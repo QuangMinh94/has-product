@@ -2,10 +2,10 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function (app) {
   app.use(
-    createProxyMiddleware('/api/tasks', {
+    createProxyMiddleware('/api/task', {
       target: 'http://10.4.18.143:3000/api/task',
       changeOrigin: true,
-      pathRewrite: { '^/api/tasks': '' }
+      pathRewrite: { '^/api/task': '' }
     })
   );
   app.use(

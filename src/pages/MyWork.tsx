@@ -1,13 +1,14 @@
 import React from "react";
-import { Breadcrumb, Layout, Menu, theme, Image } from "antd";
+import {Layout} from "antd";
 import CustomTab from "../components/CustomTab";
 import '../assets/css/index.css'
 
 import CustomHeader from '../components/CustomHeader';
 import { CustomRoutes } from "../customRoutes";
 
-const { Header, Content, Footer, Sider } = Layout;
-const MyWork: React.FC = () =>{
+const {Content} = Layout;
+const MyWork:React.FC = () =>{
+  
     return(
         <>
         <CustomHeader pageName={CustomRoutes.MyWork.name}/>
@@ -19,6 +20,7 @@ const MyWork: React.FC = () =>{
               //background: colorBgContainer,
             }}
           >
+            <h3>{CustomRoutes.MyWork.name}</h3>
             <CustomTab/>
           </div>
         </Content>   

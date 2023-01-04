@@ -28,9 +28,9 @@ const HomePage: React.FC = () => {
     {/* Inner Container */}
     <Layout className="site-layout">
       <Outlet/>
-        <Footer style={{ textAlign: "center" }}>
+        {/* <Footer style={{ textAlign: "center" }}>
           Ant Design ©2018 Created by Ant UED
-        </Footer>
+        </Footer> */}
       </Layout>
     
     {/* <MainRoutes/> */}
