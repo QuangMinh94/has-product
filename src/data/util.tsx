@@ -8,10 +8,11 @@ interface Tasks {
   text: string;
 }
 
+
 const FindIcon: React.FC<Tasks> = ({ type, text }) => {
   let color = "";
   if (type === "Priority") {
-    const filtered = priority.filter((obj) => {
+    priority.filter((obj) => {
       if (obj.name.toUpperCase() === text.toUpperCase()) {
         color = obj.color;
       }
@@ -22,7 +23,7 @@ const FindIcon: React.FC<Tasks> = ({ type, text }) => {
       </>
     );
   } else {
-    const filtered = statusData.filter((obj) => {
+    statusData.filter((obj) => {
       if (obj.name.toUpperCase() === text.toUpperCase()) {
         color = obj.color;
       }
@@ -34,5 +35,5 @@ const FindIcon: React.FC<Tasks> = ({ type, text }) => {
     );
   }
 };
- 
+
 export default FindIcon;

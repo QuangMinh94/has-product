@@ -1,42 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { Tabs } from "antd";
+import { Space, Tabs } from "antd";
 import TaskList from "./table/TaskList";
-import { GetTasks } from "../data/tasks";
+import { Task } from "../data/entity/task";
+import TaskListOverDue from "./table/TaskListOverdue";
+import { Tasks } from "../data/database/Tasks";
 
-let myData = "";
+interface TaskInput{
+  assigneeTask : Tasks[],
+  otherTask: Tasks[],
+  assigneeTaskNum : number,
+  otherTaskNum :number
+}
 
 const OnChange = (key: string) => {
- 
   console.log(key);
 };
 
-const App: React.FC = () => {
-  const [data, setData] = useState("");
-  useEffect(()=> {
-    GetTasks("/api/task/getoverduetask/", 3, "assignee").then((r) => {
-      setData(JSON.stringify(r));
-      myData = data;
-    }).catch((err)=> console.log(err));
-  },[])
+const App: React.FC<TaskInput> = ({assigneeTask,otherTask,assigneeTaskNum,otherTaskNum}) => {
+  
 
   return(
-    data !== "" ?
     <Tabs
     defaultActiveKey="1"
     onChange={OnChange}
     items={[
       {
-        label: `My task`,
+        label: <Space align="center">My task <p style={{padding: '0px 4px 0px 4px',border:'1px solid',borderRadius:'10px',fontSize:'11px' }}>{assigneeTaskNum}</p></Space>,
         key: "1",
-        children: <TaskList inputData={data}/>,
+        children: <TaskList inputData={assigneeTask} showMore={true} increment={3}/>,
       },
       {
-        label: `Report to me`,
+        label: <Space align="center">Report to me <p style={{padding: '0px 4px 0px 4px',border:'1px solid',borderRadius:'10px',fontSize:'11px'}}>{otherTaskNum}</p></Space>,
         key: "2",
-        children: `Content of Tab Pane 2`,
+        children: <TaskListOverDue inputData={otherTask} showMore={false} increment={3}/>,
       },
     ]}
-  />: <h1>Wait</h1>
+  />
 )};
 
 export default App;

@@ -15,7 +15,7 @@ const priority: MenuProps["items"] = [
           </Space>
         </>
       ),
-    key: "1",
+    key: "1"
   },
   {
     type:"divider"

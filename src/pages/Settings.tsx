@@ -1,10 +1,9 @@
 import React from 'react';
 import { Breadcrumb, Layout, Menu, theme, Image } from "antd";
-import { Outlet } from 'react-router-dom';
-import CustomHeader from '../components/CustomHeader';
-import { CustomRoutes } from '../customRoutes';
+import UserListComp from '../components/UserListComp';
+import SubTask from '../components/SubTasks';
+import PriorityDropdown from '../components/PriorityDropdown';
 
-const { Header, Content, Footer, Sider } = Layout;
 
 const SettingPage: React.FC = () => {
   const {
@@ -12,18 +11,7 @@ const SettingPage: React.FC = () => {
   } = theme.useToken();
   return (
     <>
-      <CustomHeader pageName={CustomRoutes.Setting.path} />
-        <Content style={{ margin: "0 16px" }}>
-          <div
-            style={{
-              padding: 24,
-              minHeight: 360,
-              background: colorBgContainer,
-            }}
-          >
-            This is setting page
-          </div>
-        </Content>
+      <PriorityDropdown type="Priority" text='Low'/>
     </>
   );
 };

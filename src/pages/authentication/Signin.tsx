@@ -7,8 +7,10 @@ import { useNavigate } from "react-router-dom";
 import HPTIcon from "../../assets/img/hptIconKnowingIT.png";
 import SignInImage from "../../assets/img/signin-side-image.png";
 import { CustomRoutes } from "../../customRoutes";
+import { GetUserId } from "../../data/UsersId";
 
 export default () => {
+  sessionStorage.clear();
   const [form] = Form.useForm();
 
   let navigate = useNavigate();
@@ -40,20 +42,24 @@ export default () => {
       })
       .then((resText) => {
         if (resText.includes("Error")) {
-          console.log("Error " + resText);
+          alert("Failed to login");
           //setShowDefault(true)
         } else {
-          console.log("Success", resText); //+ data.username)
+          console.log("Success", resText);
           //get userId
-          let userId = "3";
-          sessionStorage.setItem("user_id", userId);
-          navigate(CustomRoutes.HomePage.path)
+          GetUserId("/api/users/getuserid", { username }.username).then((r) => {
+            if(r !== ""){
+            sessionStorage.setItem("user_id", r as string);
+            navigate(CustomRoutes.HomePage.path);
+            }
+            else{
+              alert("Wrong")
+            }
+          });
         }
       })
       .catch((error) => {
-        console.log("ERR BODY", error.body);
-        //setErrorInfo(error.statusText);
-        //setShowDefault(true)
+        alert(error.body);
       });
   };
 
@@ -78,7 +84,7 @@ export default () => {
                 float: "right",
                 height: "90%",
                 marginRight: "1%",
-                marginTop:"5vh"
+                marginTop: "5vh",
               }}
             >
               <div>
@@ -89,13 +95,22 @@ export default () => {
                   }}
                 >
                   <div className="text-center text-md-center mb-4 mt-md-0">
-                    <img style={{
-                        marginTop:"5vh",
-                        marginBottom:"5vh"
-                    }} src={HPTIcon} alt="HPTIcon" />
-                    <h3 style={{
-                        marginBottom:"5vh"
-                    }} className="mb-0 mt-5">Đăng nhập</h3>
+                    <img
+                      style={{
+                        marginTop: "5vh",
+                        marginBottom: "5vh",
+                      }}
+                      src={HPTIcon}
+                      alt="HPTIcon"
+                    />
+                    <h3
+                      style={{
+                        marginBottom: "5vh",
+                      }}
+                      className="mb-0 mt-5"
+                    >
+                      Đăng nhập
+                    </h3>
                   </div>
                   <Form form={form} layout="vertical">
                     <Form.Item
@@ -119,7 +134,7 @@ export default () => {
                           required: true,
                           message: "Please input your password!",
                         },
-                        { type: "string", min: 6 },
+                        { type: "string"},
                       ]}
                     >
                       <Input.Password

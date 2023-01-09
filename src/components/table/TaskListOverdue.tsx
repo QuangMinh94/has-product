@@ -3,15 +3,17 @@ import { Table, Layout, Button } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import DropdownProps from '../Dropdown'
 import '../../assets/css/index.css'
-import { Tasks } from '../../data/database/Tasks'
 import ParagraphExample from '../ParagraphExample'
+import { Tasks } from '../../data/database/Tasks'
 import DateFormatter from '../../util/DateFormatter'
+import IconGroup from '../IconGroup'
 
 interface DataType {
   key: string
   status: React.ReactNode
   task: React.ReactNode
   path: string
+  assignee: React.ReactNode
   priority: React.ReactNode
   startDate: React.ReactNode
   dueDate: React.ReactNode
@@ -33,7 +35,7 @@ const columns: ColumnsType<DataType> = [
   {
     title: 'Task',
     dataIndex: 'task',
-    width: '35vw',
+    width: '30vw',
   },
   {
     title: 'Path',
@@ -41,10 +43,15 @@ const columns: ColumnsType<DataType> = [
     width: '14vw',
   },
   {
+    title: 'Assignee',
+    dataIndex: 'assignee',
+    width: '12vw',
+  },
+  {
     title: 'Priority',
     dataIndex: 'priority',
     align: 'center',
-    width: '13vw',
+    width: '10vw',
   },
   {
     title: 'Start date',
@@ -61,40 +68,25 @@ const columns: ColumnsType<DataType> = [
 let countIndex = 0
 let inputLength = 0
 let inputObj: Tasks[] = []
+//let isLoaded = false
 
-const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
+const TaskListOverDue: React.FC<InputData> = ({
+  inputData,
+  showMore,
+  increment,
+}) => {
   const [isShowMore, setShowMore] = useState(true)
   let data: DataType[] = []
   let noButton = false
   console.log('Input ' + inputData)
   //do some math
   const ShowMore = (startPositon: number, endPosition: number) => {
-    /* if (startPositon < endPosition) {
-      console.log("Starting " + startPositon + endPosition);
-      for (let index = startPositon; index < endPosition; index++) {
-        data.push({
-          key: inputObj[index].id,
-          status: <DropdownProps type="Status" text={inputObj[index].status} />,
-          task: inputObj[index].task_name,
-          path: inputObj[index].folder_path,
-          priority: (
-            <DropdownProps type="Priority" text={inputObj[index].priority} />
-          ),
-          startDate: new Date(inputObj[index].start_date).toLocaleDateString(
-            "en-GB"
-          ),
-          dueDate: new Date(inputObj[index].due_date).toLocaleDateString(
-            "en-GB"
-          ),
-        });
-        countIndex++;
-      }
-      //setData(data)
-    } */
     setShowMore(false)
   }
 
   if (inputData.length !== 0) {
+    //const options =
+    //isLoaded = true
     //data = [];
     inputObj = inputData
     inputLength = inputObj.length
@@ -109,6 +101,7 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
         status: <DropdownProps type="Status" text={inputObj[index].Status} />,
         task: <ParagraphExample name={inputObj[index].TaskName} />,
         path: inputObj[index].GroupPath,
+        assignee: <IconGroup inputList={inputObj[index].Assignee} />,
         priority: (
           <DropdownProps type="Priority" text={inputObj[index].Priority} />
         ),
@@ -134,8 +127,6 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
   if (showMore === true) {
     if (isShowMore === false) {
       noButton = false
-    } else if (data.length < 3) {
-      noButton = false
     } else {
       noButton = true
     }
@@ -146,15 +137,18 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
         <Table
           pagination={false}
           columns={columns}
-          dataSource={isShowMore === true ? data.splice(0, 3) : data}
+          dataSource={data}
           scroll={{ y: 500 }}
           size="middle"
         />
         {noButton === true && (
           <center>
             <br />
-            <Button onClick={() => ShowMore(countIndex, inputLength)}>
-              Show more
+            <Button
+              type="primary"
+              onClick={() => ShowMore(countIndex, inputLength)}
+            >
+              Show more {data.length}
             </Button>
           </center>
         )}
@@ -163,4 +157,4 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
   )
 }
 
-export default TaskList
+export default TaskListOverDue

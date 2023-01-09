@@ -7,6 +7,7 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 import {faBell} from "@fortawesome/free-solid-svg-icons";
 import { Col, Row, Space, Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -18,39 +19,12 @@ const items: MenuProps["items"] = [
   {
     key: "1",
     label: (
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://www.antgroup.com"
+      <Link to='/signin'
       >
-        1st menu item
-      </a>
+       Log out
+      </Link>
     ),
-  },
-  {
-    key: "2",
-    label: (
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://www.aliyun.com"
-      >
-        2nd menu item
-      </a>
-    ),
-  },
-  {
-    key: "3",
-    label: (
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://www.luohanacademy.com"
-      >
-        3rd menu item
-      </a>
-    ),
-  },
+  }
 ];
 
 const CustomHeader: React.FC<IHeader> = ({pageName}) => {

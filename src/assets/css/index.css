@@ -2,6 +2,15 @@ h4{
     margin:0%
 }
 
+p{
+    margin:0%;
+}
+
+.overdue{
+    margin:0%;
+    color: red !important
+}
+
 .inner-content{
     margin: "0 16px"
 }
@@ -11,4 +20,21 @@ h4{
     margin-top: -0.1px;
     padding-top: 0.1px;
     background-color: #0E7490 !important
+}
+
+.ant-table-wrapper .ant-table-thead >tr>th{
+    background-color: #F1F5F9 !important
+}
+
+/* .ant-menu-vertical > .ant-menu-submenu {
+    background-color: #0E7490 !important
+} */
+
+.ant-menu-vertical {
+    background-color: #0E7490 !important;
+    /* height: 100%; */
+}
+
+.ant-list .ant-list-item{
+    padding: 0%;
 }
