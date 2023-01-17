@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
-import { Col, Row, Form, Card, Button, Modal, Input } from 'antd'
+import { Col, Row, Form, Card, Button, Modal, Input, Spin } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 //import BgImage from "../../assets/img/illustrations/signin.svg";
@@ -15,11 +15,13 @@ export default () => {
   const [form] = Form.useForm()
 
   let navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
 
   const username = Form.useWatch('username', form)
   const password = Form.useWatch('password', form)
 
   const routeChange = (serviceUrl: string) => {
+    setLoading(true)
     //e.preventDefault()
     //do some fetch here
     //console.log(name)
@@ -38,7 +40,7 @@ export default () => {
 
     fetch(serviceUrl, requestOptions)
       .then((res) => {
-        console.log('RES TEXT', res)
+        //console.log('RES TEXT', res)
         return res.text()
       })
       .then((resText) => {
@@ -49,8 +51,10 @@ export default () => {
           console.log('Success', resText)
           //get userId
           GetUserId('/api/users/getuserid', { username }.username).then((r) => {
+            console.log('Response ' + JSON.stringify(r))
             if (r) {
               if (r.code !== undefined) {
+                setLoading(false)
                 alert('Service failed with code ' + r.code)
               } else {
                 setCookie('user_id', r._id as string, { expires: 1 })
@@ -152,13 +156,17 @@ export default () => {
                         }
                       />
                     </Form.Item>
-                    <Button
-                      type="primary"
-                      block
-                      onClick={() => routeChange('api/users/authen')}
-                    >
-                      Đăng nhập
-                    </Button>
+                    {loading === false ? (
+                      <Button
+                        type="primary"
+                        block
+                        onClick={() => routeChange('api/users/authen')}
+                      >
+                        Đăng nhập
+                      </Button>
+                    ) : (
+                      <Spin size="large" />
+                    )}
                   </Form>
                 </div>
               </div>

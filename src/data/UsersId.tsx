@@ -9,13 +9,14 @@ const GetUserId = async (serviceUrl: string, username: string) => {
       username: username,
     })
     .then((res) => {
-      if (res.data !== '') {
-        output = JSON.parse(JSON.stringify(res.data))
-      }
+      output = JSON.parse(JSON.stringify(res.data))
       return output
     })
-    .catch(function (error) {
-      console.log(error)
+    .catch((error) => {
+      //console.log('We have an error ' + JSON.stringify(error.response.data))
+      output.message = error.response.data.message
+      output.code = error.response.data.code
+      //console.log(JSON.stringify(Promise.reject(error)))
     })
 
   return output
