@@ -1,24 +1,24 @@
-import { faUserPlus } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Dropdown, MenuProps, Select, Space, Tag } from 'antd'
+import { Dropdown, MenuProps, Select, Space, Tag, Tooltip } from 'antd'
 import React, { useEffect, useState } from 'react'
-import GetAllUsers from '../data/allUsers'
 import { Users } from '../data/database/Users'
-import FindIcon from '../data/util'
 import IconGroup from './IconGroup'
 import UserIcon from './UserIcon'
 
-let assignees: Users[] = []
+interface UserData {
+  userData: Users[]
+  maxCount: number
+  icon: React.ReactNode
+  tooltipText?: string
+}
 
-const UserListComp = () => {
-  const [data, setData] = useState<Users[]>([])
-  const [assignee, setAssignee] = useState<Users[]>([])
-
-  useEffect(() => {
-    GetAllUsers('/api/users/getalluser').then((r) => {
-      setData(r)
-    })
-  }, [])
+const UserListComp: React.FC<UserData> = ({
+  userData,
+  maxCount,
+  icon,
+  tooltipText,
+}) => {
+  const [data, setData] = useState<Users[]>(userData)
+  const [assignee, setAssignee] = useState<Users[]>(userData)
 
   let items: MenuProps['items'] = []
 
@@ -47,6 +47,7 @@ const UserListComp = () => {
             username={data[index].Name}
             userColor={data[index].Color}
             tooltipName={data[index].UserName}
+            userInfo={data[index]}
           />
           <h4>{data[index].Name}</h4>
         </Space>
@@ -67,11 +68,14 @@ const UserListComp = () => {
   } else {
     return (
       <>
-        <Space align="baseline">
-          <IconGroup inputList={assignee} />
-          <Dropdown menu={{ items }} trigger={['click']}>
-            <FontAwesomeIcon icon={faUserPlus} />
-          </Dropdown>
+        <Space className="ant-group-item-icons" size={0} align="baseline">
+          <IconGroup inputList={assignee} maxCount={maxCount} />
+          <Tooltip title={tooltipText}>
+            <Dropdown menu={{ items }} trigger={['click']} disabled>
+              {/*  <FontAwesomeIcon icon={faUserPlus} /> */}
+              {icon}
+            </Dropdown>
+          </Tooltip>
         </Space>
       </>
     )

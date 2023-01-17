@@ -1,14 +1,7 @@
-import React, { useState } from "react";
-import { ConfigProvider, Breadcrumb, Layout, Menu, theme, Image } from "antd";
-import SideMenu from "../src/components/SideMenu";
+import React from 'react'
+import { ConfigProvider } from 'antd'
 
-import CustomHeader from "./components/CustomHeader";
-
-import MainRoutes from "./routes";
-import HomePage from "./pages/HomePage";
-import { Outlet } from "react-router-dom";
-
-const { Header, Content, Footer, Sider } = Layout;
+import MainRoutes from './routes'
 
 const App: React.FC = () => {
   return (
@@ -17,22 +10,22 @@ const App: React.FC = () => {
         theme={{
           components: {
             Menu: {
-              colorPrimary: "#0E7490", 
+              colorPrimary: '#0E7490',
+            },
+            Layout: {
+              colorPrimary: '#0E7490',
             },
           },
-          token:{
-            colorPrimary: "#0E7490",
-            fontFamily:'Roboto',
-            
+          token: {
+            colorPrimary: '#0E7490',
+            fontFamily: 'Roboto',
           },
-          
         }}
       >
         <MainRoutes />
-       
       </ConfigProvider>
     </>
-  );
-};
+  )
+}
 
-export default App;
+export default App

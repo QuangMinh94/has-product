@@ -6,7 +6,7 @@ export interface InputTasks {
   Description?: string
   Priority?: string
   CreateDate: Date
-  StartDate: Date
+  StartDate?: Date
   DueDate: Date
   Assignee?: Users[]
   Watcher?: Users[]

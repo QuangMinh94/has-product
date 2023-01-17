@@ -1,12 +1,12 @@
-import React from "react";
-import { AntDesignOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, Divider, Tag, Tooltip } from "antd";
-import { Users } from "../data/database/Users";
-import UserIcon from "./UserIcon";
+import React from 'react'
+import { AntDesignOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Divider, Tag, Tooltip } from 'antd'
+import { Users } from '../data/database/Users'
+import UserIcon from './UserIcon'
 
 interface InputList {
-  inputList: Users[];
-  maxCount?: number;
+  inputList: Users[]
+  maxCount?: number
 }
 
 const IconGroup: React.FC<InputList> = ({ inputList, maxCount }) => {
@@ -14,7 +14,7 @@ const IconGroup: React.FC<InputList> = ({ inputList, maxCount }) => {
     <>
       <Avatar.Group
         maxCount={maxCount ? maxCount : 2}
-        maxStyle={{ color: "#f56a00", backgroundColor: "#fde3cf" }}
+        maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}
       >
         {inputList.map((d) => {
           return (
@@ -22,9 +22,10 @@ const IconGroup: React.FC<InputList> = ({ inputList, maxCount }) => {
               username={d.Name}
               userColor={d.Color}
               tooltipName={d.UserName}
-              key ={d._id}
+              userInfo={d}
+              key={d._id}
             />
-          );
+          )
         })}
         {/* <Avatar src="https://joeschmoe.io/api/v1/random" />
       <Avatar style={{ backgroundColor: '#f56a00' }}>K</Avatar>
@@ -34,7 +35,7 @@ const IconGroup: React.FC<InputList> = ({ inputList, maxCount }) => {
       <Avatar style={{ backgroundColor: '#1890ff' }} icon={<AntDesignOutlined />} /> */}
       </Avatar.Group>
     </>
-  );
-};
+  )
+}
 
-export default IconGroup;
+export default IconGroup

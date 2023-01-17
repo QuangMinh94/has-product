@@ -7,15 +7,19 @@ import ParagraphExample from '../ParagraphExample'
 import { Tasks } from '../../data/database/Tasks'
 import DateFormatter from '../../util/DateFormatter'
 import IconGroup from '../IconGroup'
+import TaskDetails from '../../pages/TaskDetails'
+import { CustomRoutes } from '../../customRoutes'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 interface DataType {
   key: string
   status: React.ReactNode
   task: React.ReactNode
-  path: string
+  path?: string
   assignee: React.ReactNode
   priority: React.ReactNode
-  startDate: React.ReactNode
+  startDate?: React.ReactNode
   dueDate: React.ReactNode
 }
 
@@ -37,11 +41,11 @@ const columns: ColumnsType<DataType> = [
     dataIndex: 'task',
     width: '30vw',
   },
-  {
+  /*  {
     title: 'Path',
     dataIndex: 'path',
     width: '14vw',
-  },
+  }, */
   {
     title: 'Assignee',
     dataIndex: 'assignee',
@@ -53,11 +57,11 @@ const columns: ColumnsType<DataType> = [
     align: 'center',
     width: '10vw',
   },
-  {
+  /* {
     title: 'Start date',
     dataIndex: 'startDate',
     width: '10vw',
-  },
+  }, */
   {
     title: 'Due date',
     dataIndex: 'dueDate',
@@ -75,13 +79,28 @@ const TaskListOverDue: React.FC<InputData> = ({
   showMore,
   increment,
 }) => {
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [modalData, setModalData] = useState<Tasks>()
   const [isShowMore, setShowMore] = useState(true)
   let data: DataType[] = []
   let noButton = false
-  console.log('Input ' + inputData)
   //do some math
   const ShowMore = (startPositon: number, endPosition: number) => {
     setShowMore(false)
+  }
+
+  const OnNavigate = (taskData: Tasks) => {
+    //setOpen(true)
+    //setModalData(taskData)
+    // return <TaskDetails openModal={open} taskData={modalData} />
+    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
+      state: {
+        search: '/' + taskData._id, // query string
+        // location state
+        taskData: taskData,
+      },
+    })
   }
 
   if (inputData.length !== 0) {
@@ -98,14 +117,29 @@ const TaskListOverDue: React.FC<InputData> = ({
     for (let index = 0; index < inputLength; index++) {
       data.push({
         key: inputObj[index]._id ? index.toString() : index.toString(),
-        status: <DropdownProps type="Status" text={inputObj[index].Status} />,
-        task: <ParagraphExample name={inputObj[index].TaskName} />,
-        path: inputObj[index].GroupPath,
+        status: (
+          <DropdownProps
+            type="Status"
+            text={inputObj[index].Status}
+            button={false}
+          />
+        ),
+        task: (
+          <div onClick={() => OnNavigate(inputObj[index])}>
+            <ParagraphExample name={inputObj[index].TaskName} />
+          </div>
+        ),
+        /* name={inputObj[index].TaskName} */
+        //path: inputObj[index].GroupPath,
         assignee: <IconGroup inputList={inputObj[index].Assignee} />,
         priority: (
-          <DropdownProps type="Priority" text={inputObj[index].Priority} />
+          <DropdownProps
+            type="Priority"
+            text={inputObj[index].Priority}
+            button={false}
+          />
         ),
-        startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
+        //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
         dueDate: (
           <>
             {new Date(inputObj[index].DueDate) < new Date() ? (

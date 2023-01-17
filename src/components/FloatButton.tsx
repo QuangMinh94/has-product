@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   Button,
+  Dropdown,
   FloatButton,
   Form,
   Input,
@@ -17,19 +18,21 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faPlus, faTags } from '@fortawesome/free-solid-svg-icons'
 import '../assets/css/index.css'
 import { InboxOutlined } from '@ant-design/icons'
-import Description from '../components/description'
 import DropdownProps from './Dropdown'
 import type { RangePickerProps } from 'antd/es/date-picker'
 import type { SelectProps } from 'antd'
 import { Users } from '../data/database/Users'
-import { InsertTask } from '../data/tasks'
-import { InputTasks } from '../data/database/InputTasks'
-import GetAllUsers from '../data/allUsers'
+import { GetUserByType } from '../data/allUsers'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
-import { faCircle } from '@fortawesome/free-regular-svg-icons'
 import TextArea from 'antd/es/input/TextArea'
+import { faCalendar } from '@fortawesome/free-regular-svg-icons'
+import UserIcon from './UserIcon'
+import { InsertTask } from '../data/tasks'
+import { InputTasks } from '../data/database/InputTasks'
+import DateFormatter from '../util/DateFormatter'
+import OverDueDate from '../util/OverDueDate'
 
 interface ItemProps {
   label: string
@@ -38,8 +41,6 @@ interface ItemProps {
 
 let startDate = ''
 let dueDate = ''
-
-let options: ItemProps[] = []
 
 /* for (let i = 10; i < 36; i++) {
   const value = i.toString(36) + i
@@ -73,9 +74,11 @@ const props: UploadProps = {
 
 const { RangePicker } = DatePicker
 
-const onChange = (date: Dayjs) => {
+const onChangeDate = (date: null | (Dayjs | null), dateStrings: string) => {
   if (date) {
-    console.log('Date: ', date)
+    console.log('Date: ', date.toString())
+    dueDate = date.toString()
+    // dateStrings + '/' + new Date().getFullYear()
   } else {
     console.log('Clear')
   }
@@ -107,16 +110,21 @@ const rangePresets: {
 const items: MenuProps['items'] = [
   {
     label: (
-      <RangePicker
-        presets={rangePresets}
-        showTime
-        format="YYYY/MM/DD HH:mm:ss"
-        onChange={onRangeChange}
+      <DatePicker
+        placeholder="Due date"
+        showTime={{
+          format: 'HH:mm',
+          defaultValue: dayjs('23:59', 'HH:mm'),
+        }}
+        format="DD/MM HH:mm"
+        onChange={onChangeDate}
       />
     ),
     key: '0',
   },
 ]
+
+let userItems: MenuProps['items'] = []
 
 const range = (start: number, end: number) => {
   const result = []
@@ -146,6 +154,10 @@ const disabledRangeTime: RangePickerProps['disabledTime'] = (_, type) => {
   }
 }
 
+let assigneeOptions: ItemProps[] = []
+
+let reporterOptions: ItemProps[] = []
+
 const CustomFloatButton: React.FC = () => {
   const _id = sessionStorage.getItem('user_id')
   const [loading, setLoading] = useState(false)
@@ -153,31 +165,80 @@ const CustomFloatButton: React.FC = () => {
 
   const [value, setValue] = useState<string[]>([])
 
+  const [openMenu, setOpenMenu] = useState(false)
+
+  const [openWatcher, setWatcher] = useState(false)
+
+  const [rep, setRep] = useState('')
+
+  const handleMenuClick: MenuProps['onClick'] = (e) => {
+    if (e.key === '3') {
+      setOpenMenu(false)
+    }
+  }
+
+  const handleOpenChange = (flag: boolean) => {
+    setOpenMenu(flag)
+  }
+
+  const handleOpenWatcher = (flag: boolean) => {
+    setWatcher(flag)
+  }
+
   useEffect(() => {
-    GetAllUsers('api/users/getalluser').then((r) => {
+    assigneeOptions = []
+    reporterOptions = []
+    //console.log('Assignee ' + assigneeOptions.length)
+    //if (assigneeOptions.length === 0) {
+    GetUserByType(
+      'api/users/getReporterOrAssignee',
+      'assignee',
+      sessionStorage.getItem('user_id')?.toString(),
+    ).then((r) => {
       if (r.length > 0) {
         r.forEach((value) => {
-          const su = options.filter((obj) => obj.value === value._id)
+          const su = assigneeOptions.filter((obj) => obj.value === value._id)
           if (su.length === 0) {
-            options.push({
+            assigneeOptions.push({
               label: value.Name as string,
               value: value._id as string,
             })
           }
         })
       }
-      console.log(r.length)
     })
-  }, [])
+    //}
+
+    //if (reporterOptions.length === 0) {
+    GetUserByType(
+      'api/users/getReporterOrAssignee',
+      'reporter',
+      sessionStorage.getItem('user_id')?.toString(),
+    ).then((r) => {
+      if (r.length > 0) {
+        r.forEach((value) => {
+          const su = reporterOptions.filter((obj) => obj.value === value._id)
+          if (su.length === 0) {
+            reporterOptions.push({
+              label: value.Name as string,
+              value: value._id as string,
+            })
+          }
+        })
+      }
+    })
+    //}
+  }, [assigneeOptions])
+
   const selectProps: SelectProps = {
     mode: 'multiple',
     style: { width: '100%' },
     value,
-    options,
+    options: assigneeOptions,
     onChange: (newValue: string[]) => {
       setValue(newValue)
     },
-    placeholder: 'Select Assignee...',
+    placeholder: 'Assign to',
     maxTagCount: 'responsive',
   }
 
@@ -185,7 +246,10 @@ const CustomFloatButton: React.FC = () => {
   let taskName = Form.useWatch('taskname', form)
   let group = Form.useWatch('group', form)
   let description = Form.useWatch('description', form)
-  //let someDate = Form.useWatch('someDate', form)
+
+  const onChangeReporter = (value: string) => {
+    setRep(value)
+  }
 
   const showModal = () => {
     setOpen(true)
@@ -208,31 +272,37 @@ const CustomFloatButton: React.FC = () => {
   }
 
   const onFinish = (values: any) => {
-    console.log('Success:', values)
-    console.log('My taskname :' + taskName)
     //call service here
 
     const users: Users[] = []
     const reporter: Users = {
-      _id: sessionStorage.getItem('user_id') as string,
+      _id: rep ? rep : (sessionStorage.getItem('user_id') as string),
     }
     const assigneesString = (selectProps.value + '') as string
-    console.log('Assignee ' + assigneesString)
+    //console.log('Assignee ' + assigneesString)
     const assignees = assigneesString.split(',')
     assignees.forEach((value) => {
-      users.push({
-        _id: value,
-      })
+      if (value !== '') {
+        users.push({
+          _id: value,
+        })
+      }
     })
+
+    if (users.length === 0) {
+      users.push({
+        _id: sessionStorage.getItem('user_id') as string,
+      })
+    }
 
     const myTask: InputTasks = {
       TaskName: taskName,
       Description: description,
       Priority: sessionStorage.getItem('priority')?.toString()
         ? sessionStorage.getItem('priority')?.toString()
-        : 'Undefined',
+        : 'Medium',
       CreateDate: new Date(),
-      StartDate: new Date(startDate),
+      //StartDate: new Date(startDate),
       DueDate: new Date(dueDate),
       Status: sessionStorage.getItem('status')?.toString()
         ? sessionStorage.getItem('status')?.toString()
@@ -270,7 +340,7 @@ const CustomFloatButton: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
         footer={[]}
-        width="50vw"
+        width="43vw"
       >
         <br />
         <br />
@@ -295,7 +365,7 @@ const CustomFloatButton: React.FC = () => {
           </Form.Item>
 
           <Space align="baseline">
-            <Form.Item
+            {/* <Form.Item
               //label="Password"
               name="group"
               rules={[{ required: true, message: 'Please select group' }]}
@@ -320,12 +390,31 @@ const CustomFloatButton: React.FC = () => {
                   },
                 ]}
               />
-            </Form.Item>
-            <p>Assign to</p>
+            </Form.Item> */}
             <Form.Item name="assignee">
               {/* <UserListComp /> */}
               <Space direction="vertical" style={{ width: '25vw' }}>
                 <Select {...selectProps} />
+              </Space>
+            </Form.Item>
+            <Form.Item name="reporter">
+              {/* <UserListComp /> */}
+              <Space direction="vertical" style={{ width: '15vw' }}>
+                <Select
+                  showSearch
+                  placeholder="Report to"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').includes(input)
+                  }
+                  filterSort={(optionA, optionB) =>
+                    (optionA?.label ?? '')
+                      .toLowerCase()
+                      .localeCompare((optionB?.label ?? '').toLowerCase())
+                  }
+                  options={reporterOptions}
+                  onChange={(e) => onChangeReporter(e)}
+                />
               </Space>
             </Form.Item>
           </Space>
@@ -338,11 +427,11 @@ const CustomFloatButton: React.FC = () => {
           </Form.Item>
           <Form.Item name="attachment">
             <Dragger {...props}>
-              <p className="ant-upload-drag-icon">
+              {/* <p className="ant-upload-drag-icon">
                 <InboxOutlined />
-              </p>
+              </p> */}
               <p className="ant-upload-text">
-                Click or drag file to this area to upload
+                Drag & drop or <a href="#">browse</a>
               </p>
               {/* <p className="ant-upload-hint">
                 Support for a single or bulk upload. Strictly prohibit from
@@ -367,33 +456,41 @@ const CustomFloatButton: React.FC = () => {
                 name="priority"
                 //rules={[{ required: true, message: "Select Folder" }]}
               >
-                <DropdownProps type={'Priority'} text={'Undefined'} />
+                <DropdownProps type={'Priority'} text={'Medium'} />
               </Form.Item>
             </Tooltip>
 
             <Form.Item
               //label="Password"
-              name="watcher"
-              //rules={[{ required: true, message: "Select Folder" }]}
-            >
-              <span className="fa-layers fa-fw">
-                <FontAwesomeIcon icon={faEye} size="1x" />
-              </span>
-            </Form.Item>
-
-            <Form.Item
-              //label="Password"
               name="someDate"
-              rules={[{ required: true, message: 'Select Date' }]}
+              //rules={[{ required: true, message: 'Select Date' }]}
             >
-              <RangePicker
+              <Space direction="horizontal">
+                <Dropdown
+                  menu={{
+                    items,
+                    onClick: handleMenuClick,
+                  }}
+                  onOpenChange={handleOpenChange}
+                  open={openMenu}
+                  trigger={['click']}
+                >
+                  <Button shape="circle">
+                    <FontAwesomeIcon icon={faCalendar} />
+                  </Button>
+                </Dropdown>
+                {/* <RangePicker
                 //presets={rangePresets}
                 disabledDate={disabledDate}
                 //disabledTime={disabledRangeTime}
                 showTime
                 format="YYYY/MM/DD HH:mm:ss"
                 onChange={onRangeChange}
-              />
+              /> */}
+                {dueDate !== '' && (
+                  <OverDueDate inputDate={new Date(dueDate)} />
+                )}
+              </Space>
             </Form.Item>
 
             <Form.Item
@@ -401,13 +498,15 @@ const CustomFloatButton: React.FC = () => {
               name="tags"
               //rules={[{ required: true, message: "Select Folder" }]}
             >
-              <FontAwesomeIcon icon={faTags} />
+              <Button shape="circle">
+                <FontAwesomeIcon icon={faTags} />
+              </Button>
             </Form.Item>
           </Space>
           <Form.Item>
             <center>
               <Button type="primary" htmlType="submit">
-                Submit
+                Create Task
               </Button>
             </center>
           </Form.Item>

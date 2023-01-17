@@ -1,41 +1,54 @@
-import React from "react";
-import { Layout } from "antd";
-import Breadcrumbs from "./Breadcrumbs";
-import type { MenuProps } from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-regular-svg-icons";
-import {faBell} from "@fortawesome/free-solid-svg-icons";
-import { Col, Row, Space, Dropdown } from "antd";
-import { DownOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import React from 'react'
+import { Layout } from 'antd'
+import Breadcrumbs from './Breadcrumbs'
+import type { MenuProps } from 'antd'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser } from '@fortawesome/free-regular-svg-icons'
+import { faBell } from '@fortawesome/free-solid-svg-icons'
+import { Col, Row, Space, Dropdown } from 'antd'
+import { DownOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
+import UserIcon from './UserIcon'
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Footer, Sider } = Layout
 
-interface IHeader{
-  pageName:string
+interface IHeader {
+  pageName: string
 }
 
-const items: MenuProps["items"] = [
+const items: MenuProps['items'] = [
   {
-    key: "1",
+    key: '0',
     label: (
-      <Link to='/signin'
-      >
-       Log out
-      </Link>
+      <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+        <UserIcon username="MinhDQ" />
+        <p>MinhDQ</p>
+        <p>MinhDQ</p>
+        <p>MinhDQ</p>
+      </Space>
     ),
-  }
-];
+  },
+  {
+    type: 'divider',
+  },
+  {
+    key: '1',
+    label: <Link to="/signin">Log out</Link>,
+  },
+]
 
-const CustomHeader: React.FC<IHeader> = ({pageName}) => {
+const CustomHeader: React.FC<IHeader> = ({ pageName }) => {
   return (
-    <Header style={{ padding: 0, background: "white" }}>
+    <Header style={{ padding: 0, background: 'white' }}>
       <Row>
         <Col span={12}>
           <Breadcrumbs main="Home" sub={pageName} />
         </Col>
         <Col span={12}>
-          <div className="space-align-block" style={{float:'right'}}>
+          <div
+            className="space-align-block"
+            style={{ float: 'right', margin: '0 30px' }}
+          >
             <Space align="center">
               <FontAwesomeIcon icon={faBell} />
               <Dropdown
@@ -55,7 +68,7 @@ const CustomHeader: React.FC<IHeader> = ({pageName}) => {
         </Col>
       </Row>
     </Header>
-  );
-};
+  )
+}
 
-export default CustomHeader;
+export default CustomHeader

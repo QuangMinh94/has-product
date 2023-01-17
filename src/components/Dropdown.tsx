@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DownOutlined } from '@ant-design/icons'
-import type { MenuProps } from 'antd'
+import { Button, MenuProps } from 'antd'
 import { Dropdown, Space } from 'antd'
 import FindIcon from '../data/util'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -10,23 +10,30 @@ import { statusData } from '../data/statusData'
 interface Type {
   type: string
   text: string
+  button?: boolean
 }
 
 let items: MenuProps['items'] = []
 
-const DropdownProps: React.FC<Type> = ({ type, text }) => {
+const DropdownProps: React.FC<Type> = ({ type, text, button }) => {
+  if (button === undefined) {
+    button = true
+  }
   const [txt, setTxt] = useState(text)
+  useEffect(() => {
+    setTxt(text)
+  }, [text])
 
   function getPriorityValue(value: string) {
     setTxt(value)
     sessionStorage.setItem('priority', value)
-    console.log('Priority :' + sessionStorage.getItem('priority'))
+    //console.log('Priority :' + sessionStorage.getItem('priority'))
   }
 
   function getStatusValue(value: string) {
     setTxt(value)
     sessionStorage.setItem('status', value)
-    console.log('Status :' + sessionStorage.getItem('status'))
+    //console.log('Status :' + sessionStorage.getItem('status'))
   }
 
   const priority: MenuProps['items'] = [
@@ -65,11 +72,11 @@ const DropdownProps: React.FC<Type> = ({ type, text }) => {
         <>
           <Space size="small" align="center">
             <FontAwesomeIcon icon={faFlag} color="#2DD4BF" />
-            <h4>Normal</h4>
+            <h4>Medium</h4>
           </Space>
         </>
       ),
-      key: 'Normal',
+      key: 'Medium',
       onClick: (e) => getPriorityValue(e.key),
     },
     {
@@ -177,7 +184,13 @@ const DropdownProps: React.FC<Type> = ({ type, text }) => {
     >
       <a onClick={(e) => e.preventDefault()}>
         <Space>
-          <FindIcon type={type} text={txt} />
+          {button === true ? (
+            <Button shape="circle">
+              <FindIcon type={type} text={txt} />
+            </Button>
+          ) : (
+            <FindIcon type={type} text={txt} />
+          )}
         </Space>
       </a>
     </Dropdown>

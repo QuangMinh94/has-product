@@ -16,7 +16,7 @@ export default [
   },
   {
     id: 3,
-    name: 'Normal',
+    name: 'Medium',
     icon: <FontAwesomeIcon icon={faFlag} color="#2DD4BF" />,
     color: '#2DD4BF',
   },

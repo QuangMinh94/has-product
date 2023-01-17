@@ -6,14 +6,16 @@ import '../../assets/css/index.css'
 import { Tasks } from '../../data/database/Tasks'
 import ParagraphExample from '../ParagraphExample'
 import DateFormatter from '../../util/DateFormatter'
+import { useNavigate } from 'react-router-dom'
+import { CustomRoutes } from '../../customRoutes'
 
 interface DataType {
   key: string
   status: React.ReactNode
   task: React.ReactNode
-  path: string
+  path?: string
   priority: React.ReactNode
-  startDate: React.ReactNode
+  startDate?: React.ReactNode
   dueDate: React.ReactNode
 }
 
@@ -21,6 +23,7 @@ interface InputData {
   inputData: Tasks[]
   showMore: boolean
   increment: number
+  collapseShowMore: boolean
 }
 
 const columns: ColumnsType<DataType> = [
@@ -35,22 +38,22 @@ const columns: ColumnsType<DataType> = [
     dataIndex: 'task',
     width: '35vw',
   },
-  {
+  /* {
     title: 'Path',
     dataIndex: 'path',
     width: '14vw',
-  },
+  }, */
   {
     title: 'Priority',
     dataIndex: 'priority',
     align: 'center',
     width: '13vw',
   },
-  {
+  /* {
     title: 'Start date',
     dataIndex: 'startDate',
     width: '10vw',
-  },
+  }, */
   {
     title: 'Due date',
     dataIndex: 'dueDate',
@@ -62,11 +65,16 @@ let countIndex = 0
 let inputLength = 0
 let inputObj: Tasks[] = []
 
-const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
-  const [isShowMore, setShowMore] = useState(true)
+const TaskList: React.FC<InputData> = ({
+  inputData,
+  showMore,
+  increment,
+  collapseShowMore,
+}) => {
+  const navigate = useNavigate()
+  const [isShowMore, setShowMore] = useState(collapseShowMore)
   let data: DataType[] = []
   let noButton = false
-  console.log('Input ' + inputData)
   //do some math
   const ShowMore = (startPositon: number, endPosition: number) => {
     /* if (startPositon < endPosition) {
@@ -94,6 +102,19 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
     setShowMore(false)
   }
 
+  const OnNavigate = (taskData: Tasks) => {
+    //setOpen(true)
+    //setModalData(taskData)
+    // return <TaskDetails openModal={open} taskData={modalData} />
+    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
+      state: {
+        search: '/' + taskData._id, // query string
+        // location state
+        taskData: taskData,
+      },
+    })
+  }
+
   if (inputData.length !== 0) {
     //data = [];
     inputObj = inputData
@@ -106,13 +127,29 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
     for (let index = 0; index < inputLength; index++) {
       data.push({
         key: inputObj[index]._id ? index.toString() : index.toString(),
-        status: <DropdownProps type="Status" text={inputObj[index].Status} />,
-        task: <ParagraphExample name={inputObj[index].TaskName} />,
-        path: inputObj[index].GroupPath,
-        priority: (
-          <DropdownProps type="Priority" text={inputObj[index].Priority} />
+        status: (
+          <DropdownProps
+            type="Status"
+            text={inputObj[index].Status}
+            button={false}
+          />
         ),
-        startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
+        task: (
+          <div onClick={() => OnNavigate(inputObj[index])}>
+            <ParagraphExample name={inputObj[index].TaskName} />
+          </div>
+        ),
+        //path: inputObj[index].GroupPath,
+        priority: (
+          <>
+            <DropdownProps
+              type="Priority"
+              text={inputObj[index].Priority}
+              button={false}
+            />
+          </>
+        ),
+        //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
         dueDate: (
           <>
             {new Date(inputObj[index].DueDate) < new Date() ? (
@@ -151,7 +188,7 @@ const TaskList: React.FC<InputData> = ({ inputData, showMore, increment }) => {
           size="middle"
         />
         {noButton === true && (
-          <center>
+          <center className="show-more-btn">
             <br />
             <Button onClick={() => ShowMore(countIndex, inputLength)}>
               Show more

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Button,
   Checkbox,
@@ -8,58 +8,56 @@ import {
   Layout,
   Modal,
   Space,
-} from "antd";
-import CustomTab from "../components/CustomTab";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTasks } from "@fortawesome/free-solid-svg-icons";
-import "../assets/css/index.css";
+} from 'antd'
+import CustomTab from '../components/CustomTab'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTasks } from '@fortawesome/free-solid-svg-icons'
+import '../assets/css/index.css'
 
-import CustomHeader from "../components/CustomHeader";
-import { CustomRoutes } from "../customRoutes";
-import {
-  GetNotDoneTasksAssignee,
-  GetNotDoneTasksReporter,
-} from "../data/tasks";
-import { Tasks } from "../data/database/Tasks";
-import Description from "../components/description";
-import CustomFloatButton from "../components/FloatButton";
+import CustomHeader from '../components/CustomHeader'
+import { CustomRoutes } from '../customRoutes'
+import { GetNotDoneTasksAssignee, GetNotDoneTasksReporter } from '../data/tasks'
+import { Tasks } from '../data/database/Tasks'
+import Description from '../components/description'
+import CustomFloatButton from '../components/FloatButton'
+import { Outlet } from 'react-router-dom'
 
-const { Content } = Layout;
+const { Content } = Layout
 
-const {Search } = Input;
+const { Search } = Input
 
 const ClickMe = () => {
-  alert("Click me");
-};
+  alert('Click me')
+}
 const MyWork: React.FC = () => {
-  const _id = sessionStorage.getItem("user_id");
-  const [todayData, setTodayData] = useState<Tasks[]>([]);
-  const [otherData, setOtherData] = useState<Tasks[]>([]);
- 
+  const _id = sessionStorage.getItem('user_id')
+  const [todayData, setTodayData] = useState<Tasks[]>([])
+  const [otherData, setOtherData] = useState<Tasks[]>([])
+
   //setData("")
   useEffect(() => {
-    GetNotDoneTasksAssignee("/api/task/getnotdonetask/", _id as string)
+    GetNotDoneTasksAssignee('/api/task/getnotdonetask/', _id as string)
       .then((r: Tasks[]) => {
-        setTodayData(r);
+        setTodayData(r)
         //console.log("Data "+data)
         //myData = data;
         //console.log(dataRef.current)
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
 
-    GetNotDoneTasksReporter("/api/task/getnotdonetask/", _id as string)
+    GetNotDoneTasksReporter('/api/task/getnotdonetask/', _id as string)
       .then((r: Tasks[]) => {
-        setOtherData(r);
+        setOtherData(r)
         //console.log("Data "+data)
         //myData = data;
         //console.log(dataRef.current)
       })
-      .catch((err) => console.log(err));
-  }, []);
+      .catch((err) => console.log(err))
+  }, [])
 
   return (
     <>
-      <CustomFloatButton/>
+      <CustomFloatButton />
       <CustomHeader pageName={CustomRoutes.MyWork.name} />
       <Content className="inner-content">
         <div
@@ -78,8 +76,9 @@ const MyWork: React.FC = () => {
           />
         </div>
       </Content>
+      <Outlet />
     </>
-  );
-};
+  )
+}
 
-export default MyWork;
+export default MyWork
