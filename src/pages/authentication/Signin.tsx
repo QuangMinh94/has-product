@@ -50,10 +50,16 @@ export default () => {
           //get userId
           GetUserId('/api/users/getuserid', { username }.username).then((r) => {
             if (r) {
-              setCookie('user_id', r._id as string, { expires: 1 })
-              setCookie('userInfo', JSON.stringify(r) as string, { expires: 1 })
-              sessionStorage.setItem('user_id', r._id as string)
-              navigate(CustomRoutes.HomePage.path)
+              if (r.code !== undefined) {
+                alert('Service failed with code ' + r.code)
+              } else {
+                setCookie('user_id', r._id as string, { expires: 1 })
+                setCookie('userInfo', JSON.stringify(r) as string, {
+                  expires: 1,
+                })
+                sessionStorage.setItem('user_id', r._id as string)
+                navigate(CustomRoutes.HomePage.path)
+              }
             } else {
               alert('Wrong')
             }
