@@ -38,12 +38,18 @@ const DateFormatter: React.FC<DateString> = ({ dateString }) => {
   let mo = noTimeZoneDate.toLocaleString('en-GB', { month: 'numeric' })
   let ho = noTimeZoneDate.toLocaleString('en-GB', { hour: '2-digit' })
   let mi = noTimeZoneDate.toLocaleString('en-GB', { minute: '2-digit' })
+  let se = noTimeZoneDate.toLocaleString('en-GB', { second: '2-digit' })
   da = FormatDateNum(da)
   mo = FormatDateNum(mo)
   ho = FormatSmallNum(ho)
   mi = FormatSmallNum(mi)
-  const output = da + '/' + mo + ' , ' + ho + ':' + mi
-
+  se = FormatSmallNum(se)
+  let output = ''
+  if (ho === '23' && mi === '59' && se === '59') {
+    output = da + '/' + mo
+  } else {
+    output = da + '/' + mo + ' , ' + ho + ':' + mi
+  }
   return <>{output}</>
 }
 

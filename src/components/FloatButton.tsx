@@ -13,7 +13,7 @@ import {
   TreeSelect,
   Upload,
 } from 'antd'
-import type { UploadProps, MenuProps } from 'antd'
+import type { UploadProps, MenuProps, DatePickerProps } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faPlus, faTags } from '@fortawesome/free-solid-svg-icons'
 import '../assets/css/index.css'
@@ -31,15 +31,16 @@ import { faCalendar } from '@fortawesome/free-regular-svg-icons'
 import UserIcon from './UserIcon'
 import { InsertTask } from '../data/tasks'
 import { InputTasks } from '../data/database/InputTasks'
-import DateFormatter from '../util/DateFormatter'
 import OverDueDate from '../util/OverDueDate'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 
 interface ItemProps {
   label: string
   value: string
 }
 
-let startDate = ''
+let taskKey = 'Item'
 let dueDate = ''
 
 /* for (let i = 10; i < 36; i++) {
@@ -90,7 +91,7 @@ const onRangeChange = (
   if (dates) {
     console.log('From: ', dates[0], ', to: ', dates[1])
     console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
-    startDate = dateStrings[0]
+    //startDate = dateStrings[0]
     dueDate = dateStrings[1]
   } else {
     console.log('Clear')
@@ -107,16 +108,24 @@ const rangePresets: {
   { label: 'Last 90 Days', value: [dayjs().add(-90, 'd'), dayjs()] },
 ]
 
+const customFormat: DatePickerProps['format'] = (value) => {
+  if (value.hour() === 23 && value.minute() === 59 && value.second() === 59) {
+    return `${value.format('DD/MM')}`
+  } else {
+    return `${value.format('DD/MM hh:mm:ss')}`
+  }
+}
+
 const items: MenuProps['items'] = [
   {
     label: (
       <DatePicker
         placeholder="Due date"
         showTime={{
-          format: 'HH:mm',
-          defaultValue: dayjs('23:59', 'HH:mm'),
+          format: 'HH:mm:ss',
+          defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
         }}
-        format="DD/MM HH:mm"
+        format={customFormat}
         onChange={onChangeDate}
       />
     ),
@@ -159,6 +168,7 @@ let assigneeOptions: ItemProps[] = []
 let reporterOptions: ItemProps[] = []
 
 const CustomFloatButton: React.FC = () => {
+  const [editorValue, setEditorValue] = useState('')
   const _id = sessionStorage.getItem('user_id')
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -210,6 +220,7 @@ const CustomFloatButton: React.FC = () => {
     //}
 
     //if (reporterOptions.length === 0) {
+    console.log('Userid ' + sessionStorage.getItem('user_id'))
     GetUserByType(
       'api/users/getReporterOrAssignee',
       'reporter',
@@ -228,7 +239,7 @@ const CustomFloatButton: React.FC = () => {
       }
     })
     //}
-  }, [assigneeOptions])
+  }, [assigneeOptions, reporterOptions])
 
   const selectProps: SelectProps = {
     mode: 'multiple',
@@ -298,14 +309,14 @@ const CustomFloatButton: React.FC = () => {
     const myTask: InputTasks = {
       TaskName: taskName,
       Description: description,
-      Priority: sessionStorage.getItem('priority')?.toString()
-        ? sessionStorage.getItem('priority')?.toString()
+      Priority: sessionStorage.getItem('priority' + taskKey)?.toString()
+        ? sessionStorage.getItem('priority' + taskKey)?.toString()
         : 'Medium',
       CreateDate: new Date(),
       //StartDate: new Date(startDate),
       DueDate: new Date(dueDate),
-      Status: sessionStorage.getItem('status')?.toString()
-        ? sessionStorage.getItem('status')?.toString()
+      Status: sessionStorage.getItem('status' + taskKey)?.toString()
+        ? sessionStorage.getItem('status' + taskKey)?.toString()
         : 'To do',
       Assignee: users,
       Reporter: reporter,
@@ -313,10 +324,12 @@ const CustomFloatButton: React.FC = () => {
     }
 
     InsertTask('api/task/', myTask).then((r) => {
-      console.log(r)
+      //console.log(r)
       form.resetFields()
       clearData()
       setOpen(false)
+      sessionStorage.setItem('priority' + taskKey, 'Medium')
+      sessionStorage.setItem('status' + taskKey, 'To do')
     })
   }
 
@@ -365,32 +378,6 @@ const CustomFloatButton: React.FC = () => {
           </Form.Item>
 
           <Space align="baseline">
-            {/* <Form.Item
-              //label="Password"
-              name="group"
-              rules={[{ required: true, message: 'Please select group' }]}
-            >
-              <TreeSelect
-                placeholder="Select folder"
-                showSearch
-                allowClear
-                style={{ width: '15vw' }}
-                treeData={[
-                  {
-                    title: 'HAS',
-                    value: 'HAS',
-                    children: [
-                      {
-                        title: 'Công việc chung',
-                        value: 'HAS/Công việc chung',
-                      },
-                      { title: 'BPM BIDV', value: 'HAS/BPM BIDV' },
-                      { title: 'RPA VTB', value: 'HAS/RPA VTB' },
-                    ],
-                  },
-                ]}
-              />
-            </Form.Item> */}
             <Form.Item name="assignee">
               {/* <UserListComp /> */}
               <Space direction="vertical" style={{ width: '25vw' }}>
@@ -424,6 +411,11 @@ const CustomFloatButton: React.FC = () => {
             //rules={[{ required: true, message: "Please input your password!" }]}
           >
             <TextArea placeholder="Description" allowClear />
+            {/* <ReactQuill
+              theme="snow"
+              value={editorValue}
+              onChange={setEditorValue}
+            /> */}
           </Form.Item>
           <Form.Item name="attachment">
             <Dragger {...props}>
@@ -456,13 +448,13 @@ const CustomFloatButton: React.FC = () => {
                 name="priority"
                 //rules={[{ required: true, message: "Select Folder" }]}
               >
-                <DropdownProps type={'Priority'} text={'Medium'} />
+                <DropdownProps type={'Priority'} text={'Medium'} id={taskKey} />
               </Form.Item>
             </Tooltip>
 
             <Form.Item
               //label="Password"
-              name="someDate"
+              name="dueDate"
               //rules={[{ required: true, message: 'Select Date' }]}
             >
               <Space direction="horizontal">
@@ -479,14 +471,6 @@ const CustomFloatButton: React.FC = () => {
                     <FontAwesomeIcon icon={faCalendar} />
                   </Button>
                 </Dropdown>
-                {/* <RangePicker
-                //presets={rangePresets}
-                disabledDate={disabledDate}
-                //disabledTime={disabledRangeTime}
-                showTime
-                format="YYYY/MM/DD HH:mm:ss"
-                onChange={onRangeChange}
-              /> */}
                 {dueDate !== '' && (
                   <OverDueDate inputDate={new Date(dueDate)} />
                 )}

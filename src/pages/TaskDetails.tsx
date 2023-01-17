@@ -119,7 +119,11 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                 </Button>
               </Col>
               <Col className="gutter-row" span={2} style={{ flex: 'revert' }}>
-                <OverDueDate inputDate={taskData?.DueDate as Date} />
+                {taskData?.DueDate === null ? (
+                  ''
+                ) : (
+                  <OverDueDate inputDate={taskData?.DueDate as Date} />
+                )}
               </Col>
               <Col className="gutter-row" span={1} style={{ flex: 'revert' }}>
                 <DropdownProps type={'Priority'} text={taskData?.Priority} />

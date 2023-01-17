@@ -103,9 +103,6 @@ const TaskList: React.FC<InputData> = ({
   }
 
   const OnNavigate = (taskData: Tasks) => {
-    //setOpen(true)
-    //setModalData(taskData)
-    // return <TaskDetails openModal={open} taskData={modalData} />
     navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
       state: {
         search: '/' + taskData._id, // query string
@@ -152,7 +149,9 @@ const TaskList: React.FC<InputData> = ({
         //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
         dueDate: (
           <>
-            {new Date(inputObj[index].DueDate) < new Date() ? (
+            {inputObj[index].DueDate === null ? (
+              ''
+            ) : new Date(inputObj[index].DueDate) < new Date() ? (
               <div className="overdue">
                 <DateFormatter dateString={inputObj[index].DueDate} />
               </div>

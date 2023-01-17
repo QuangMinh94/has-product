@@ -11,11 +11,12 @@ interface Type {
   type: string
   text: string
   button?: boolean
+  id?: string
 }
 
 let items: MenuProps['items'] = []
 
-const DropdownProps: React.FC<Type> = ({ type, text, button }) => {
+const DropdownProps: React.FC<Type> = ({ type, text, button, id }) => {
   if (button === undefined) {
     button = true
   }
@@ -26,13 +27,13 @@ const DropdownProps: React.FC<Type> = ({ type, text, button }) => {
 
   function getPriorityValue(value: string) {
     setTxt(value)
-    sessionStorage.setItem('priority', value)
+    sessionStorage.setItem('priority' + id, value)
     //console.log('Priority :' + sessionStorage.getItem('priority'))
   }
 
   function getStatusValue(value: string) {
     setTxt(value)
-    sessionStorage.setItem('status', value)
+    sessionStorage.setItem('status' + id, value)
     //console.log('Status :' + sessionStorage.getItem('status'))
   }
 

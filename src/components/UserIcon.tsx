@@ -7,6 +7,7 @@ interface User {
   userColor?: string
   tooltipName?: string
   userInfo?: Users
+  size?: string
 }
 
 //const UserList = ['U', 'Lucy', 'Tom', 'Edward'];
@@ -18,6 +19,7 @@ const UserIcon: React.FC<User> = ({
   userColor,
   tooltipName,
   userInfo,
+  size,
 }) => {
   let user = username
   const [gap, setGap] = useState(GapList[0])
@@ -38,10 +40,14 @@ const UserIcon: React.FC<User> = ({
             backgroundColor:
               userColor !== ''
                 ? userColor
-                : (Math.random() * 16777215).toString(
-                    16,
-                  ) /* , verticalAlign: 'middle' */,
-          }} /* size="large"  gap={gap} */
+                : userInfo?.Color /* , verticalAlign: 'middle' */,
+          }}
+          size={
+            size === undefined
+              ? 'default'
+              : { xs: 24, sm: 32, md: 40, lg: 64, xl: 40, xxl: 65 }
+          }
+          /*gap={gap} */
         >
           {user}
         </Avatar>

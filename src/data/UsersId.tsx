@@ -12,13 +12,13 @@ const GetUserId = async (serviceUrl: string, username: string) => {
       if (res.data !== '') {
         output = JSON.parse(JSON.stringify(res.data))
       }
-      return output._id
+      return output
     })
     .catch(function (error) {
       console.log(error)
     })
 
-  return output._id
+  return output
 }
 
 export { GetUserId }
