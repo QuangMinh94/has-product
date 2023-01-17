@@ -8,9 +8,10 @@ import HPTIcon from '../../assets/img/hptIconKnowingIT.png'
 import SignInImage from '../../assets/img/signin-side-image.png'
 import { CustomRoutes } from '../../customRoutes'
 import { GetUserId } from '../../data/UsersId'
-import { setCookie } from 'typescript-cookie'
+import { removeCookie, setCookie } from 'typescript-cookie'
 
 export default () => {
+  removeCookie('user_id')
   const [form] = Form.useForm()
 
   let navigate = useNavigate()
