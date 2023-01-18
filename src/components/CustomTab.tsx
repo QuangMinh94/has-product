@@ -121,7 +121,7 @@ const App: React.FC<TaskInput> = ({
         onPressEnter={(e) => onSearch(e)}
         style={{ width: '11%', margin: '-2% 0 0 89%' }}
         value={inputValue}
-        onBlur={(e) => InputChange(e.target.value)}
+        onChange={(e) => InputChange(e.target.value)}
         allowClear
       />
       <Tabs
