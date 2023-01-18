@@ -178,6 +178,8 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                     type="Status"
                     text={taskData?.Status}
                     button={true}
+                    taskId={taskData?._id}
+                    id={'details'}
                   />
                   <p className="bold-weight">{taskData?.TaskName}</p>
                 </Space>
@@ -195,7 +197,12 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                 )}
               </Col>
               <Col className="gutter-row" span={1} style={{ flex: 'revert' }}>
-                <DropdownProps type={'Priority'} text={taskData?.Priority} />
+                <DropdownProps
+                  type={'Priority'}
+                  text={taskData?.Priority}
+                  taskId={taskData?._id}
+                  id={'details'}
+                />
               </Col>
               <Col className="gutter-row" span={3} style={{ flex: 'revert' }}>
                 <UserListComp
