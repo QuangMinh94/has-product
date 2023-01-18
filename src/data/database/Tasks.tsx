@@ -5,6 +5,7 @@ export interface Tasks {
   TaskName: string
   Description: string
   Priority: string
+  PriorityNum?: number
   CreateDate: Date
   StartDate?: Date
   DueDate: Date

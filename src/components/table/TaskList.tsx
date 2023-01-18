@@ -116,11 +116,28 @@ const TaskList: React.FC<InputData> = ({
     //data = [];
     inputObj = inputData
     inputLength = inputObj.length
+
     inputObj = inputObj.sort(
+      (a, b) => -1 * a.Priority.localeCompare(b.Priority),
+      //|| new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
+    )
+
+    const notOverDueObj = inputObj.filter(
+      (data) => new Date(data.DueDate).getTime() >= new Date().getTime(),
+    )
+
+    const overDueObj = inputObj.filter(
+      (data) => new Date(data.DueDate).getTime() < new Date().getTime(),
+    )
+
+    /* inputObj = inputObj.sort(
       (a, b) =>
         -1 * a.Priority.localeCompare(b.Priority) ||
         new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
-    )
+    ) */
+
+    //inputObj = notOverDueObj.concat(overDueObj)
+
     for (let index = 0; index < inputLength; index++) {
       data.push({
         key: inputObj[index]._id ? index.toString() : index.toString(),
