@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.6",
+    "@types/lodash": "^4.14.191",
     "@types/react-bootstrap": "^0.32.32",
     "@types/react-router-dom": "^5.3.3",
     "bootstrap": "^5.2.3",

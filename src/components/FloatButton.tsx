@@ -167,16 +167,33 @@ let assigneeOptions: ItemProps[] = []
 
 let reporterOptions: ItemProps[] = []
 
+function GetData(
+  url: string,
+  type: string,
+  items: ItemProps[],
+  userId?: string,
+) {
+  GetUserByType(url, type, userId).then((r) => {
+    if (r.length > 0) {
+      r.forEach((value) => {
+        const su = items.filter((obj) => obj.value === value._id)
+        if (su.length === 0) {
+          items.push({
+            label: value.Name as string,
+            value: value._id as string,
+          })
+        }
+      })
+    }
+  })
+}
+
 const CustomFloatButton: React.FC = () => {
+  //let reporterOptions: ItemProps[] = []
   const [editorValue, setEditorValue] = useState('')
-  const onChangeEditor = (
-    content: any,
-    delta: any,
-    source: any,
-    editor: any,
-  ) => {
-    setEditorValue(editor.getHTML())
-  }
+  const [taskName, setTaskName] = useState('')
+  const [description, setDescription] = useState('')
+
   const _id = sessionStorage.getItem('user_id')
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -184,8 +201,6 @@ const CustomFloatButton: React.FC = () => {
   const [value, setValue] = useState<string[]>([])
 
   const [openMenu, setOpenMenu] = useState(false)
-
-  const [openWatcher, setWatcher] = useState(false)
 
   const [rep, setRep] = useState('')
 
@@ -199,54 +214,21 @@ const CustomFloatButton: React.FC = () => {
     setOpenMenu(flag)
   }
 
-  const handleOpenWatcher = (flag: boolean) => {
-    setWatcher(flag)
-  }
-
   useEffect(() => {
-    assigneeOptions = []
-    reporterOptions = []
-    //console.log('Assignee ' + assigneeOptions.length)
-    //if (assigneeOptions.length === 0) {
-    GetUserByType(
-      'api/users/getReporterOrAssignee',
-      'assignee',
-      sessionStorage.getItem('user_id')?.toString(),
-    ).then((r) => {
-      if (r.length > 0) {
-        r.forEach((value) => {
-          const su = assigneeOptions.filter((obj) => obj.value === value._id)
-          if (su.length === 0) {
-            assigneeOptions.push({
-              label: value.Name as string,
-              value: value._id as string,
-            })
-          }
-        })
-      }
-    })
-    //}
-
-    //if (reporterOptions.length === 0) {
-    GetUserByType(
+    GetData(
       'api/users/getReporterOrAssignee',
       'reporter',
+      reporterOptions,
       sessionStorage.getItem('user_id')?.toString(),
-    ).then((r) => {
-      if (r.length > 0) {
-        r.forEach((value) => {
-          const su = reporterOptions.filter((obj) => obj.value === value._id)
-          if (su.length === 0) {
-            reporterOptions.push({
-              label: value.Name as string,
-              value: value._id as string,
-            })
-          }
-        })
-      }
-    })
-    //}
-  }, [assigneeOptions, reporterOptions])
+    )
+
+    GetData(
+      'api/users/getReporterOrAssignee',
+      'assignee',
+      assigneeOptions,
+      sessionStorage.getItem('user_id')?.toString(),
+    )
+  }, [])
 
   const selectProps: SelectProps = {
     mode: 'multiple',
@@ -261,9 +243,9 @@ const CustomFloatButton: React.FC = () => {
   }
 
   const [form] = Form.useForm()
-  let taskName = Form.useWatch('taskname', form)
-  let group = Form.useWatch('group', form)
-  let description = Form.useWatch('description', form)
+  //const taskName = Form.useWatch('taskname', form)
+  const group = Form.useWatch('group', form)
+  //const description = '' //Form.useWatch('description', form)
 
   const onChangeReporter = (value: string) => {
     setRep(value)
@@ -383,7 +365,11 @@ const CustomFloatButton: React.FC = () => {
               { required: true, message: 'Please input your task name!' },
             ]}
           >
-            <Input placeholder="Task Name" />
+            <Input
+              placeholder="Task Name"
+              defaultValue={taskName}
+              onBlur={(e) => setTaskName(e.target.value)}
+            />
           </Form.Item>
 
           <Form.Item name="users" style={{ margin: '0 0 -0.2% 0' }}>
@@ -423,7 +409,12 @@ const CustomFloatButton: React.FC = () => {
             name="description"
             //rules={[{ required: true, message: "Please input your password!" }]}
           >
-            <TextArea placeholder="Description" allowClear />
+            <TextArea
+              placeholder="Description"
+              allowClear
+              defaultValue={description}
+              onBlur={(e) => setDescription(e.target.value)}
+            />
             {/* <ReactQuill
               theme="snow"
               value={editorValue}

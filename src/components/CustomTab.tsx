@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Input, Space, Tabs } from 'antd'
 import TaskList from './table/TaskList'
 import { Task } from '../data/entity/task'
@@ -8,6 +8,7 @@ import Search from 'antd/es/input/Search'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { ToLowerCaseNonAccentVietnamese } from '../util/FormatText'
+import _ from 'lodash'
 
 interface TaskInput {
   assigneeTask: Tasks[]
@@ -23,7 +24,6 @@ const App: React.FC<TaskInput> = ({
   otherTaskNum,
 }) => {
   const [tabKey, setTabKey] = useState('1')
-  const [searchValue, setSearchValue] = useState('')
   const [srcAssigneeTask, setSrcAssigneeTask] = useState<Tasks[]>(assigneeTask)
   const [srcOtherTask, setSrcOtherTask] = useState<Tasks[]>(otherTask)
   const [inputValue, setInputValue] = useState('')
@@ -40,6 +40,26 @@ const App: React.FC<TaskInput> = ({
       //console.log('Me effect')
     }
   }, [assigneeTask])
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      console.log(inputValue)
+      // Send Axios request here
+      if (inputValue === '') {
+        if (tabKey === '1') {
+          setSrcAssigneeTask(assigneeTask)
+          setAssigneeTaskNum(assigneeTaskNum)
+        } else {
+          setSrcOtherTask(otherTask)
+          setOtherTaskNum(otherTaskNum)
+        }
+      }
+    }, 500)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [inputValue])
+
+  const OnSearchDebounce = _.debounce((e: string) => InputChange(e), 1)
 
   const onSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     let value = inputValue
@@ -104,7 +124,6 @@ const App: React.FC<TaskInput> = ({
       }
     }
   }
-
   return (
     <>
       {/* <Search
@@ -121,7 +140,10 @@ const App: React.FC<TaskInput> = ({
         onPressEnter={(e) => onSearch(e)}
         style={{ width: '11%', margin: '-2% 0 0 89%' }}
         value={inputValue}
-        onChange={(e) => InputChange(e.target.value)}
+        //defaultValue={inputValue}
+        //onChange={(e) => setInputValue(e.target.value)}
+        onChange={(e) => OnSearchDebounce(e.target.value)}
+        //onBlur={(e) => InputChange(e.target.value)}
         allowClear
       />
       <Tabs

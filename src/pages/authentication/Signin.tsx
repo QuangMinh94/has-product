@@ -46,6 +46,7 @@ export default () => {
       .then((resText) => {
         if (resText.includes('Error')) {
           alert('Failed to login')
+          setLoading(false)
           //setShowDefault(true)
         } else {
           console.log('Success', resText)
