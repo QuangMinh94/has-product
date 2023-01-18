@@ -117,19 +117,134 @@ const TaskList: React.FC<InputData> = ({
     inputObj = inputData
     inputLength = inputObj.length
 
+    inputObj.forEach((element) => {
+      if (element.Priority === 'Urgent') {
+        element.PriorityNum = 1
+      } else if (element.Priority === 'High') {
+        element.PriorityNum = 2
+      } else if (element.Priority === 'Medium') {
+        element.PriorityNum = 3
+      } else if (element.Priority === 'Low') {
+        element.PriorityNum = 4
+      } else {
+        element.PriorityNum = 5
+      }
+    })
+
     inputObj = inputObj.sort(
-      (a, b) => -1 * a.Priority.localeCompare(b.Priority),
-      //|| new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
+      (a, b) =>
+        (a.PriorityNum as number) - (b.PriorityNum as number) ||
+        new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
+    )
+    const urgentTask = inputObj
+      .filter(
+        (data) =>
+          data.PriorityNum === 1 &&
+          data.DueDate !== null &&
+          new Date(data.DueDate).getTime() >= new Date().getTime(),
+      )
+      .concat(
+        inputObj.filter(
+          (data) =>
+            data.PriorityNum === 1 &&
+            data.DueDate !== null &&
+            new Date(data.DueDate).getTime() < new Date().getTime(),
+        ),
+      )
+      .concat(
+        inputObj.filter(
+          (data) => data.PriorityNum === 1 && data.DueDate === null,
+        ),
+      )
+
+    const highTask = inputObj
+      .filter(
+        (data) =>
+          data.PriorityNum === 2 &&
+          data.DueDate !== null &&
+          new Date(data.DueDate).getTime() >= new Date().getTime(),
+      )
+      .concat(
+        inputObj.filter(
+          (data) =>
+            data.PriorityNum === 2 &&
+            data.DueDate !== null &&
+            new Date(data.DueDate).getTime() < new Date().getTime(),
+        ),
+      )
+      .concat(
+        inputObj.filter(
+          (data) => data.PriorityNum === 2 && data.DueDate === null,
+        ),
+      )
+
+    const mediumTask = inputObj
+      .filter(
+        (data) =>
+          data.PriorityNum === 3 &&
+          data.DueDate !== null &&
+          new Date(data.DueDate).getTime() >= new Date().getTime(),
+      )
+      .concat(
+        inputObj.filter(
+          (data) =>
+            data.PriorityNum === 3 &&
+            data.DueDate !== null &&
+            new Date(data.DueDate).getTime() < new Date().getTime(),
+        ),
+      )
+      .concat(
+        inputObj.filter(
+          (data) => data.PriorityNum === 3 && data.DueDate === null,
+        ),
+      )
+
+    const lowTask = inputObj
+      .filter(
+        (data) =>
+          data.PriorityNum === 4 &&
+          data.DueDate !== null &&
+          new Date(data.DueDate).getTime() >= new Date().getTime(),
+      )
+      .concat(
+        inputObj.filter(
+          (data) =>
+            data.PriorityNum === 4 &&
+            data.DueDate !== null &&
+            new Date(data.DueDate).getTime() < new Date().getTime(),
+        ),
+      )
+      .concat(
+        inputObj.filter(
+          (data) => data.PriorityNum === 4 && data.DueDate === null,
+        ),
+      )
+
+    const undefinedTask = inputObj
+      .filter(
+        (data) =>
+          data.PriorityNum === 5 &&
+          data.DueDate !== null &&
+          new Date(data.DueDate).getTime() >= new Date().getTime(),
+      )
+      .concat(
+        inputObj.filter(
+          (data) =>
+            data.PriorityNum === 5 &&
+            data.DueDate !== null &&
+            new Date(data.DueDate).getTime() < new Date().getTime(),
+        ),
+      )
+      .concat(
+        inputObj.filter(
+          (data) => data.PriorityNum === 5 && data.DueDate === null,
+        ),
+      )
+    inputObj = urgentTask.concat(
+      highTask.concat(mediumTask.concat(lowTask.concat(undefinedTask))),
     )
 
-    const notOverDueObj = inputObj.filter(
-      (data) => new Date(data.DueDate).getTime() >= new Date().getTime(),
-    )
-
-    const overDueObj = inputObj.filter(
-      (data) => new Date(data.DueDate).getTime() < new Date().getTime(),
-    )
-
+    //console.log('Filtered ' + inputObj.length)
     /* inputObj = inputObj.sort(
       (a, b) =>
         -1 * a.Priority.localeCompare(b.Priority) ||
@@ -157,6 +272,7 @@ const TaskList: React.FC<InputData> = ({
         //path: inputObj[index].GroupPath,
         priority: (
           <>
+            {/* <>{inputObj[index].CreateDate}</> */}
             <DropdownProps
               type="Priority"
               text={inputObj[index].Priority}

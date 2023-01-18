@@ -111,7 +111,8 @@ const TaskListOverDue: React.FC<InputData> = ({
     inputLength = inputObj.length
     inputObj = inputObj.sort(
       (a, b) =>
-        -1 * a.Priority.localeCompare(b.Priority) ||
+        new Date(b.DueDate).getTime() - new Date(a.DueDate).getTime() ||
+        1 * a.Priority.localeCompare(b.Priority) ||
         new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
     )
     for (let index = 0; index < inputLength; index++) {
