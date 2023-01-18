@@ -169,6 +169,14 @@ let reporterOptions: ItemProps[] = []
 
 const CustomFloatButton: React.FC = () => {
   const [editorValue, setEditorValue] = useState('')
+  const onChangeEditor = (
+    content: any,
+    delta: any,
+    source: any,
+    editor: any,
+  ) => {
+    setEditorValue(editor.getHTML())
+  }
   const _id = sessionStorage.getItem('user_id')
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -220,7 +228,6 @@ const CustomFloatButton: React.FC = () => {
     //}
 
     //if (reporterOptions.length === 0) {
-    console.log('Userid ' + sessionStorage.getItem('user_id'))
     GetUserByType(
       'api/users/getReporterOrAssignee',
       'reporter',
@@ -331,6 +338,8 @@ const CustomFloatButton: React.FC = () => {
       sessionStorage.setItem('priority' + taskKey, 'Medium')
       sessionStorage.setItem('status' + taskKey, 'To do')
     })
+
+    console.log('My description ' + editorValue)
   }
 
   const onFinishFailed = (errorInfo: any) => {
@@ -414,12 +423,13 @@ const CustomFloatButton: React.FC = () => {
             name="description"
             //rules={[{ required: true, message: "Please input your password!" }]}
           >
-            <TextArea placeholder="Description" allowClear />
-            {/* <ReactQuill
+            {/* <TextArea placeholder="Description" allowClear /> */}
+            <ReactQuill
               theme="snow"
               value={editorValue}
-              onChange={setEditorValue}
-            /> */}
+              onChange={onChangeEditor}
+              style={{ height: '200px', minHeight: '200px', overflow: 'auto' }}
+            />
           </Form.Item>
           <Form.Item name="attachment">
             <Dragger {...props}>
@@ -429,10 +439,6 @@ const CustomFloatButton: React.FC = () => {
               <p className="ant-upload-text">
                 Drag & drop or <a href="#">browse</a>
               </p>
-              {/* <p className="ant-upload-hint">
-                Support for a single or bulk upload. Strictly prohibit from
-                uploading company data or other band files
-              </p> */}
             </Dragger>
           </Form.Item>
 
@@ -443,7 +449,7 @@ const CustomFloatButton: React.FC = () => {
                 name="status"
                 //rules={[{ required: true, message: "Select Folder" }]}
               >
-                <DropdownProps type={'Status'} text={'To do'} />
+                <DropdownProps type={'Status'} text={'To do'} id={taskKey} />
               </Form.Item>
             </Tooltip>
             <Tooltip placement="top" title="Priority">
