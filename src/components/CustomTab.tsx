@@ -119,7 +119,7 @@ const App: React.FC<TaskInput> = ({
         prefix={<FontAwesomeIcon icon={faSearch} />}
         placeholder="Search..."
         onPressEnter={(e) => onSearch(e)}
-        style={{ width: 200, margin: '-2% 0 0 89%' }}
+        style={{ width: '11%', margin: '-2% 0 0 89%' }}
         value={inputValue}
         onChange={(e) => InputChange(e.target.value)}
         allowClear
