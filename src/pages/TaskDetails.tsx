@@ -26,6 +26,7 @@ import { Users } from '../data/database/Users'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { faUserCheck, faUserPlus, faX } from '@fortawesome/free-solid-svg-icons'
 import { CustomRoutes } from '../customRoutes'
+import TextArea from 'antd/es/input/TextArea'
 
 interface TaskData {
   taskData?: Tasks
@@ -172,8 +173,21 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
         <Content>
           <Row>
             <Col span={16} style={{ marginRight: '0.5%' }}>
-              <Space direction="vertical">
-                <Descriptions
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <TextArea
+                  style={{
+                    borderStyle: 'solid',
+                    borderWidth: 'thin',
+                    borderRadius: '4px',
+                    border: '1px solid #9CA3AF',
+                    minHeight: '230px',
+                    overflow: 'auto',
+                    height: '412px',
+                    width: '100%',
+                  }}
+                  defaultValue={taskData?.Description}
+                ></TextArea>
+                {/*   <Descriptions
                   title=""
                   style={{
                     borderStyle: 'solid',
@@ -190,7 +204,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       ? 'No description'
                       : taskData?.Description}
                   </Descriptions.Item>
-                </Descriptions>
+                </Descriptions> */}
                 <Dragger {...props}>
                   <p className="ant-upload-text">
                     Drag & drop or <a href="#">browse</a>
