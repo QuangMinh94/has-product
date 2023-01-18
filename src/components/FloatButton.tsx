@@ -423,13 +423,13 @@ const CustomFloatButton: React.FC = () => {
             name="description"
             //rules={[{ required: true, message: "Please input your password!" }]}
           >
-            {/* <TextArea placeholder="Description" allowClear /> */}
-            <ReactQuill
+            <TextArea placeholder="Description" allowClear />
+            {/* <ReactQuill
               theme="snow"
               value={editorValue}
               onChange={onChangeEditor}
               style={{ height: '200px', minHeight: '200px', overflow: 'auto' }}
-            />
+            /> */}
           </Form.Item>
           <Form.Item name="attachment">
             <Dragger {...props}>

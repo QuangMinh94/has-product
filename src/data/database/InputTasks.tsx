@@ -2,12 +2,12 @@ import { Users } from './Users'
 
 export interface InputTasks {
   _id?: string
-  TaskName: string
+  TaskName?: string
   Description?: string
   Priority?: string
-  CreateDate: Date
+  CreateDate?: Date
   StartDate?: Date
-  DueDate: Date
+  DueDate?: Date
   Assignee?: Users[]
   Watcher?: Users[]
   Tag?: string[]

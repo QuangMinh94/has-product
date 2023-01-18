@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Button,
   Col,
@@ -9,6 +9,7 @@ import {
   message,
   Descriptions,
   Avatar,
+  notification,
 } from 'antd'
 import Breadcrumbs from '../components/Breadcrumbs'
 import '../assets/css/layout.css'
@@ -27,6 +28,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { faUserCheck, faUserPlus, faX } from '@fortawesome/free-solid-svg-icons'
 import { CustomRoutes } from '../customRoutes'
 import TextArea from 'antd/es/input/TextArea'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
+import { UpdateTask } from '../data/tasks'
+import { InputTasks } from '../data/database/InputTasks'
 
 interface TaskData {
   taskData?: Tasks
@@ -49,6 +54,25 @@ const items: TabsProps['items'] = [
 const { Header, Content } = Layout
 
 const { Dragger } = Upload
+
+function useOutsideAlerter(ref: any) {
+  useEffect(() => {
+    /**
+     * Alert if clicked on outside of element
+     */
+    function handleClickOutside(event: any) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        alert('You clicked outside of me!')
+      }
+    }
+    // Bind the event listener
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [ref])
+}
 
 const props: UploadProps = {
   name: 'file',
@@ -76,6 +100,50 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   const taskData = location.state.taskData as Tasks // Read values passed on state
 
   const [open, setOpen] = useState(openModal)
+  const [editorValue, setEditorValue] = useState(taskData?.Description)
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      console.log(editorValue)
+      // Send Axios request here
+      const inputTask: InputTasks = {
+        Description: editorValue,
+      }
+      UpdateTask('/api/task/' + taskData._id, inputTask).then((r) => {
+        notification.open({
+          message: 'Notification',
+          description: 'Update successfully',
+          duration: 2,
+          onClick: () => {
+            //console.log('Notification Clicked!')
+          },
+        })
+      })
+    }, 3000)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [editorValue])
+
+  /* const OnChangeTextArea = (e: string) => {
+    //setEditorValue(e)
+    setTimeout(() => {
+      setEditorValue(e)
+    }, 3000)
+    console.log(e)
+  }
+ */
+  const wrapperRef = useRef(null)
+  useOutsideAlerter(wrapperRef)
+  /* console.log('HTML value ' + editorValue)
+  const reactQuillRef = useRef(null)
+  const onChangeEditor = (
+    content: any,
+    delta: any,
+    source: any,
+    editor: any,
+  ) => {
+    setEditorValue(editor.getHTML())
+  } */
   const showModal = () => {
     setOpen(true)
   }
@@ -186,7 +254,54 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                     width: '100%',
                   }}
                   defaultValue={taskData?.Description}
+                  value={editorValue}
+                  onChange={(e) => setEditorValue(e.target.value)}
+                  ref={wrapperRef}
                 ></TextArea>
+                {/* <ReactQuill
+                  ref={reactQuillRef}
+                  modules={{
+                    toolbar: [
+                      [
+                        { font: [] },
+                        { size: ['small', false, 'large', 'huge'] },
+                      ], // custom dropdown
+
+                      ['bold', 'italic', 'underline', 'strike'],
+
+                      [{ color: [] }, { background: [] }],
+
+                      [{ script: 'sub' }, { script: 'super' }],
+
+                      [
+                        { header: 1 },
+                        { header: 2 },
+                        'blockquote',
+                        'code-block',
+                      ],
+
+                      [
+                        { list: 'ordered' },
+                        { list: 'bullet' },
+                        { indent: '-1' },
+                        { indent: '+1' },
+                      ],
+
+                      [{ direction: 'rtl' }, { align: [] }],
+
+                      ['link', 'image', 'video', 'formula'],
+
+                      ['clean'],
+                    ],
+                  }}
+                  value={editorValue}
+                  onChange={onChangeEditor}
+                  style={{
+                    height: '200px',
+                    maxHeight: '300px',
+                    overflow: 'auto',
+                  }}
+                /> */}
                 {/*   <Descriptions
                   title=""
                   style={{

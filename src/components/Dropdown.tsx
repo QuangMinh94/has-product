@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import { DownOutlined } from '@ant-design/icons'
-import { Button, MenuProps } from 'antd'
+import { Button, MenuProps, Spin, notification } from 'antd'
 import { Dropdown, Space } from 'antd'
 import FindIcon from '../data/util'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFlag, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { statusData } from '../data/statusData'
+import { InputTasks } from '../data/database/InputTasks'
+import { UpdateTask } from '../data/tasks'
 
 interface Type {
   type: string
   text: string
   button?: boolean
   id?: string
+  taskId?: string
 }
 
 let items: MenuProps['items'] = []
 
-const DropdownProps: React.FC<Type> = ({ type, text, button, id }) => {
+const DropdownProps: React.FC<Type> = ({ type, text, button, id, taskId }) => {
+  const [loading, setLoading] = useState(false)
+
   if (button === undefined) {
     button = true
   }
@@ -25,15 +30,56 @@ const DropdownProps: React.FC<Type> = ({ type, text, button, id }) => {
     setTxt(text)
   }, [text])
 
+  function updateService(inputTask: InputTasks) {
+    if (taskId !== undefined) {
+      setLoading(true)
+      UpdateTask('/api/task/' + taskId, inputTask)
+        .then((r) => {
+          notification.open({
+            message: 'Notification',
+            description: 'Update successfully',
+            duration: 2,
+            onClick: () => {
+              //console.log('Notification Clicked!')
+            },
+          })
+          setLoading(false)
+        })
+        .catch((error) => {
+          setLoading(false)
+          notification.open({
+            message: 'Notification',
+            description: 'Update Failed',
+            duration: 2,
+            onClick: () => {
+              //console.log('Notification Clicked!')
+            },
+          })
+        })
+    }
+  }
+
   function getPriorityValue(value: string) {
     setTxt(value)
     sessionStorage.setItem('priority' + id, value)
+    //call update service
+    const inputTask: InputTasks = {
+      Priority: value,
+    }
+    updateService(inputTask)
+
     //console.log('Priority :' + sessionStorage.getItem('priority'))
   }
 
   function getStatusValue(value: string) {
     setTxt(value)
     sessionStorage.setItem('status' + id, value)
+    //call update service
+    const inputTask: InputTasks = {
+      Status: value,
+    }
+
+    updateService(inputTask)
     //console.log('Status :' + sessionStorage.getItem('status'))
   }
 
@@ -184,15 +230,21 @@ const DropdownProps: React.FC<Type> = ({ type, text, button, id }) => {
       onOpenChange={(e) => console.log}
     >
       <a onClick={(e) => e.preventDefault()}>
-        <Space>
-          {button === true ? (
-            <Button shape="circle">
+        {loading === false ? (
+          <Space>
+            {button === true ? (
+              <Button shape="circle">
+                <FindIcon type={type} text={txt} />
+              </Button>
+            ) : (
               <FindIcon type={type} text={txt} />
-            </Button>
-          ) : (
-            <FindIcon type={type} text={txt} />
-          )}
-        </Space>
+            )}
+          </Space>
+        ) : (
+          <Space>
+            <Spin size="small" />
+          </Space>
+        )}
       </a>
     </Dropdown>
   )

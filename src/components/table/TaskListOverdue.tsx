@@ -122,6 +122,7 @@ const TaskListOverDue: React.FC<InputData> = ({
             type="Status"
             text={inputObj[index].Status}
             button={false}
+            taskId={inputObj[index]._id}
           />
         ),
         task: (
@@ -137,6 +138,7 @@ const TaskListOverDue: React.FC<InputData> = ({
             type="Priority"
             text={inputObj[index].Priority}
             button={false}
+            taskId={inputObj[index]._id}
           />
         ),
         //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,

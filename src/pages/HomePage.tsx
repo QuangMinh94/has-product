@@ -18,6 +18,8 @@ const HomePage: React.FC = () => {
     //if (sessionStorage.getItem('user_id') === null) {
     if (getCookie('user_id') === undefined) {
       navigate(CustomRoutes.Signin.path)
+    } else {
+      //navigate(CustomRoutes.MyWork.path)
     }
   })
 
