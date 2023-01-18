@@ -377,17 +377,20 @@ const CustomFloatButton: React.FC = () => {
             <Input placeholder="Task Name" />
           </Form.Item>
 
-          <Space align="baseline">
-            <Form.Item name="assignee">
-              {/* <UserListComp /> */}
-              <Space direction="vertical" style={{ width: '25vw' }}>
+          <Form.Item name="users" style={{ margin: '0 0 -0.2% 0' }}>
+            <Input.Group compact>
+              <Form.Item name="assignee" style={{ width: '65%' }}>
+                {/* <UserListComp /> */}
+
                 <Select {...selectProps} />
-              </Space>
-            </Form.Item>
-            <Form.Item name="reporter">
-              {/* <UserListComp /> */}
-              <Space direction="vertical" style={{ width: '15vw' }}>
+              </Form.Item>
+              <Form.Item
+                name="reporter"
+                style={{ width: '32%', margin: '0 0 0 3%' }}
+              >
+                {/* <UserListComp /> */}
                 <Select
+                  style={{ width: '100%' }}
                   showSearch
                   placeholder="Report to"
                   optionFilterProp="children"
@@ -402,9 +405,10 @@ const CustomFloatButton: React.FC = () => {
                   options={reporterOptions}
                   onChange={(e) => onChangeReporter(e)}
                 />
-              </Space>
-            </Form.Item>
-          </Space>
+              </Form.Item>
+            </Input.Group>
+          </Form.Item>
+
           <Form.Item
             //label="Password"
             name="description"
