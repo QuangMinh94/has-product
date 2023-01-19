@@ -19,9 +19,9 @@ const HomePage: React.FC = () => {
     if (getCookie('user_id') === undefined) {
       navigate(CustomRoutes.Signin.path)
     } else {
-      //navigate(CustomRoutes.MyWork.path)
+      navigate(CustomRoutes.MyWork.path)
     }
-  })
+  }, [])
 
   const userData =
     getCookie('userInfo') !== undefined
