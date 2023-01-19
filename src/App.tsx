@@ -1,5 +1,6 @@
 import React from 'react'
 import { ConfigProvider } from 'antd'
+import { Provider } from 'react-redux'
 
 import MainRoutes from './routes'
 

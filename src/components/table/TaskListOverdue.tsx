@@ -145,7 +145,9 @@ const TaskListOverDue: React.FC<InputData> = ({
         //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
         dueDate: (
           <>
-            {new Date(inputObj[index].DueDate) < new Date() ? (
+            {inputObj[index].DueDate === null ? (
+              ''
+            ) : new Date(inputObj[index].DueDate) < new Date() ? (
               <div className="overdue">
                 <DateFormatter dateString={inputObj[index].DueDate} />
               </div>
