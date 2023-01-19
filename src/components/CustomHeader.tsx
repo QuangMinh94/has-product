@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Layout } from 'antd'
+import { Button, Layout } from 'antd'
 import Breadcrumbs from './Breadcrumbs'
 import type { MenuProps } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -7,9 +7,10 @@ import { faUser } from '@fortawesome/free-regular-svg-icons'
 import { faBell } from '@fortawesome/free-solid-svg-icons'
 import { Col, Row, Space, Dropdown } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import UserIcon from './UserIcon'
 import { Users } from '../data/database/Users'
+import { CustomRoutes } from '../customRoutes'
 
 const { Header, Content, Footer, Sider } = Layout
 
@@ -20,6 +21,7 @@ interface IHeader {
 
 const CustomHeader: React.FC<IHeader> = ({ pageName, userData }) => {
   const [openMenu, setOpenMenu] = useState(false)
+  const navigate = useNavigate()
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
     setOpenMenu(false)
@@ -55,8 +57,11 @@ const CustomHeader: React.FC<IHeader> = ({ pageName, userData }) => {
     {
       key: '1',
       label: (
-        <center>
-          <Link to="/signin">Log out</Link>
+        <center
+          style={{ width: '100%' }}
+          onClick={() => navigate(CustomRoutes.Signin.path)}
+        >
+          <Link to={CustomRoutes.Signin.path}>Log out</Link>
         </center>
       ),
     },
