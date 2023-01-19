@@ -31,7 +31,7 @@ const ClickMe = () => {
   alert('Click me')
 }
 const MyWork: React.FC = () => {
-  const _id = getCookie('user_id')
+  const _id = getCookie('user_id') as string
   const [todayData, setTodayData] = useState<Tasks[]>([])
   const [otherData, setOtherData] = useState<Tasks[]>([])
 
