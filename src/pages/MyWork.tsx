@@ -21,6 +21,7 @@ import { Tasks } from '../data/database/Tasks'
 import Description from '../components/description'
 import CustomFloatButton from '../components/FloatButton'
 import { Outlet } from 'react-router-dom'
+import { getCookie } from 'typescript-cookie'
 
 const { Content } = Layout
 
@@ -30,7 +31,7 @@ const ClickMe = () => {
   alert('Click me')
 }
 const MyWork: React.FC = () => {
-  const _id = sessionStorage.getItem('user_id')
+  const _id = getCookie('user_id')
   const [todayData, setTodayData] = useState<Tasks[]>([])
   const [otherData, setOtherData] = useState<Tasks[]>([])
 
