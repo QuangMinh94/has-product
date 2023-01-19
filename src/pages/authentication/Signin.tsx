@@ -52,7 +52,6 @@ export default () => {
           console.log('Success', resText)
           //get userId
           GetUserId('/api/users/getuserid', { username }.username).then((r) => {
-            console.log('Response ' + JSON.stringify(r))
             if (r) {
               if (r.code !== undefined) {
                 setLoading(false)
