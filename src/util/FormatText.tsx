@@ -1,4 +1,3 @@
-import React from 'react'
 // This function converts the string to lowercase, then perform the conversion
 const ToLowerCaseNonAccentVietnamese = (str: string) => {
   str = str.toLowerCase()

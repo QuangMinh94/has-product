@@ -154,6 +154,7 @@ export default () => {
                         iconRender={(visible) =>
                           visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                         }
+                        onPressEnter={() => routeChange('api/users/authen')}
                       />
                     </Form.Item>
                     {loading === false ? (

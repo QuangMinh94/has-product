@@ -32,18 +32,18 @@ const App: React.FC<TaskInput> = ({
   const [otherTaskNumSrc, setOtherTaskNum] = useState(otherTaskNum)
 
   useEffect(() => {
-    if (srcAssigneeTask.length === 0) {
-      setSrcAssigneeTask(assigneeTask)
-      setAssigneeTaskNum(assigneeTaskNum)
-      setSrcOtherTask(otherTask)
-      setOtherTaskNum(otherTaskNum)
-      //console.log('Me effect')
-    }
+    //if (srcAssigneeTask.length === 0) {
+    setSrcAssigneeTask(assigneeTask)
+    setAssigneeTaskNum(assigneeTaskNum)
+    setSrcOtherTask(otherTask)
+    setOtherTaskNum(otherTaskNum)
+    //console.log('Me effect')
+    //}
   }, [assigneeTask])
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      console.log(inputValue)
+      //console.log(inputValue)
       // Send Axios request here
       if (inputValue === '') {
         if (tabKey === '1') {

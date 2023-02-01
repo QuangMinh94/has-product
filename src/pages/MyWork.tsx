@@ -1,38 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react'
-import {
-  Button,
-  Checkbox,
-  FloatButton,
-  Form,
-  Input,
-  Layout,
-  Modal,
-  Space,
-} from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Layout } from 'antd'
 import CustomTab from '../components/CustomTab'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTasks } from '@fortawesome/free-solid-svg-icons'
 import '../assets/css/index.css'
 
-import CustomHeader from '../components/CustomHeader'
 import { CustomRoutes } from '../customRoutes'
 import { GetNotDoneTasksAssignee, GetNotDoneTasksReporter } from '../data/tasks'
 import { Tasks } from '../data/database/Tasks'
-import Description from '../components/description'
 import CustomFloatButton from '../components/FloatButton'
 import { Outlet } from 'react-router-dom'
 import { getCookie } from 'typescript-cookie'
 
 const { Content } = Layout
 
-const { Search } = Input
-
-const ClickMe = () => {
-  alert('Click me')
-}
 const MyWork: React.FC = () => {
   const _id = getCookie('user_id') as string
   const [todayData, setTodayData] = useState<Tasks[]>([])
+  const [loading, setLoading] = useState(true)
   const [otherData, setOtherData] = useState<Tasks[]>([])
 
   //setData("")
@@ -49,12 +32,13 @@ const MyWork: React.FC = () => {
     GetNotDoneTasksReporter('/api/task/getnotdonetask/', _id as string)
       .then((r: Tasks[]) => {
         setOtherData(r)
+        setLoading(false)
         //console.log("Data "+data)
         //myData = data;
         //console.log(dataRef.current)
       })
       .catch((err) => console.log(err))
-  }, [])
+  }, [_id])
 
   return (
     <>
@@ -69,12 +53,16 @@ const MyWork: React.FC = () => {
           }}
         >
           <h3>{CustomRoutes.MyWork.name}</h3>
-          <CustomTab
-            assigneeTask={todayData}
-            assigneeTaskNum={todayData.length === 0 ? 0 : todayData.length}
-            otherTask={otherData}
-            otherTaskNum={otherData.length === 0 ? 0 : otherData.length}
-          />
+          {loading === false ? (
+            <CustomTab
+              assigneeTask={todayData}
+              assigneeTaskNum={todayData.length}
+              otherTask={otherData}
+              otherTaskNum={otherData.length}
+            />
+          ) : (
+            <h1>Please wait</h1>
+          )}
         </div>
       </Content>
       <Outlet />

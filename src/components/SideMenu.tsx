@@ -1,6 +1,6 @@
 import React from 'react'
 import type { MenuProps } from 'antd'
-import { Menu, Image, theme } from 'antd'
+import { Menu, theme } from 'antd'
 import {
   faHome,
   faArchive,
@@ -16,7 +16,6 @@ import { CustomRoutes } from '../customRoutes'
 import '../assets/css/index.css'
 
 const { useToken } = theme
-const { SubMenu } = Menu
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -39,12 +38,12 @@ function getItem(
 const items: MenuItem[] = [
   getItem(
     'Home',
-    '1',
+    'Home',
     <Link to={CustomRoutes.HomePage.path}>
       <FontAwesomeIcon icon={faHome} />
     </Link>,
   ),
-  getItem('Work', '2', <FontAwesomeIcon icon={faTasks} />, [
+  getItem('Work', 'Work', <FontAwesomeIcon icon={faTasks} />, [
     getItem(
       'Công việc của tôi',
       CustomRoutes.MyWork.name,
@@ -54,33 +53,42 @@ const items: MenuItem[] = [
     ),
     getItem(
       'My Space',
-      '4',
+      'My Space',
       <Link to={CustomRoutes.About.path}>
         <FontAwesomeIcon icon={faProjectDiagram} />
       </Link>,
       [
-        getItem('HAS BA', '5', <FontAwesomeIcon icon={faProjectDiagram} />, [
-          getItem(
-            'Công việc chung',
-            '6',
-            <FontAwesomeIcon icon={faProjectDiagram} />,
-          ),
-          getItem(
-            'RPA Scheduler',
-            '7',
-            <FontAwesomeIcon icon={faProjectDiagram} />,
-          ),
-        ]),
-        getItem('HAS Sales', '8', <FontAwesomeIcon icon={faProjectDiagram} />),
+        getItem(
+          'HAS BA',
+          'HAS BA',
+          <FontAwesomeIcon icon={faProjectDiagram} />,
+          [
+            getItem(
+              'Công việc chung',
+              'Công việc chung',
+              <FontAwesomeIcon icon={faProjectDiagram} />,
+            ),
+            getItem(
+              'RPA Scheduler',
+              'RPA Scheduler',
+              <FontAwesomeIcon icon={faProjectDiagram} />,
+            ),
+          ],
+        ),
+        getItem(
+          'HAS Sales',
+          'HAS Sales',
+          <FontAwesomeIcon icon={faProjectDiagram} />,
+        ),
       ],
     ),
   ]),
-  getItem('User', '9', <FontAwesomeIcon icon={faUser} />),
-  getItem('Team', '10', <FontAwesomeIcon icon={faDollarSign} />, [
-    getItem('Team 1', '6'),
-    getItem('Team 2', '8'),
+  getItem('User', 'User', <FontAwesomeIcon icon={faUser} />),
+  getItem('Team', 'Team', <FontAwesomeIcon icon={faDollarSign} />, [
+    getItem('Team 1', 'Team 1'),
+    getItem('Team 2', 'Team 2'),
   ]),
-  getItem('Files', '11', <FontAwesomeIcon icon={faCogs} />),
+  getItem('Files', 'Files', <FontAwesomeIcon icon={faCogs} />),
 ]
 
 const SideMenu: React.FC = () => {
