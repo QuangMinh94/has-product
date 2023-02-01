@@ -31,6 +31,8 @@ const App: React.FC<TaskInput> = ({
   const [assigneeTaskNumSrc, setAssigneeTaskNum] = useState(assigneeTaskNum)
   const [otherTaskNumSrc, setOtherTaskNum] = useState(otherTaskNum)
 
+  console.log('Asignee task ' + srcAssigneeTask.length)
+
   useEffect(() => {
     //if (srcAssigneeTask.length === 0) {
     setSrcAssigneeTask(assigneeTask)
@@ -39,7 +41,7 @@ const App: React.FC<TaskInput> = ({
     setOtherTaskNum(otherTaskNum)
     //console.log('Me effect')
     //}
-  }, [assigneeTask])
+  }, [])
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
