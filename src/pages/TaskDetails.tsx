@@ -1,27 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react'
-import {
-  Button,
-  Col,
-  Layout,
-  Row,
-  Space,
-  Upload,
-  message,
-  Descriptions,
-  Avatar,
-  notification,
-} from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Button, Col, Layout, Row, Space, Upload, message, Avatar } from 'antd'
 import Breadcrumbs from '../components/Breadcrumbs'
 import '../assets/css/layout.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendar } from '@fortawesome/free-regular-svg-icons'
-import UserIcon from '../components/UserIcon'
 import DropdownProps from '../components/Dropdown'
 import UserListComp from '../components/UserListComp'
 import { Tabs } from 'antd'
 import { TabsProps, UploadProps, Modal } from 'antd'
 import OverDueDate from '../util/OverDueDate'
-import IconGroup from '../components/IconGroup'
 import { Tasks } from '../data/database/Tasks'
 import { Users } from '../data/database/Users'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -90,7 +77,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      console.log(editorValue)
+      //console.log(editorValue)
       // Send Axios request here
       const inputTask: InputTasks = {
         Description: JSON.stringify(editorValue),
