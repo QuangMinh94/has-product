@@ -33,6 +33,7 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { getCookie } from 'typescript-cookie'
 import { useNavigate } from 'react-router-dom'
+import { Status } from '../data/entity/Status'
 
 interface ItemProps {
   label: string
@@ -49,6 +50,21 @@ let dueDate = ''
     value,
   })
 } */
+
+const ignoreStt: Status[] = [
+  {
+    id: 1,
+  },
+  {
+    id: 4,
+  },
+  {
+    id: 5,
+  },
+  {
+    id: 6,
+  },
+]
 
 const { Dragger } = Upload
 
@@ -242,7 +258,7 @@ const CustomFloatButton: React.FC = () => {
     )
   }, [])
 
-  const selectProps: SelectProps = {
+  /* const selectProps: SelectProps = {
     mode: 'multiple',
     style: { width: '100%' },
     value,
@@ -252,7 +268,7 @@ const CustomFloatButton: React.FC = () => {
     },
     placeholder: 'Assign to',
     maxTagCount: 'responsive',
-  }
+  } */
 
   const [form] = Form.useForm()
   //const taskName = Form.useWatch('taskname', form)
@@ -290,7 +306,7 @@ const CustomFloatButton: React.FC = () => {
     const reporter: Users = {
       _id: rep ? rep : (sessionStorage.getItem('user_id') as string),
     }
-    const assigneesString = (selectProps.value + '') as string
+    /* const assigneesString = (selectProps.value + '') as string
     //console.log('Assignee ' + assigneesString)
     const assignees = assigneesString.split(',')
     assignees.forEach((value) => {
@@ -299,7 +315,7 @@ const CustomFloatButton: React.FC = () => {
           _id: value,
         })
       }
-    })
+    }) */
 
     if (users.length === 0) {
       users.push({
@@ -391,7 +407,23 @@ const CustomFloatButton: React.FC = () => {
               <Form.Item name="assignee" style={{ width: '65%' }}>
                 {/* <UserListComp /> */}
 
-                <Select {...selectProps} />
+                {/* <Select {...selectProps} /> */}
+                <Select
+                  style={{ width: '100%' }}
+                  showSearch
+                  placeholder="Assign to"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').includes(input)
+                  }
+                  filterSort={(optionA, optionB) =>
+                    (optionA?.label ?? '')
+                      .toLowerCase()
+                      .localeCompare((optionB?.label ?? '').toLowerCase())
+                  }
+                  options={assigneeOptions}
+                  onChange={(e) => onChangeReporter(e)}
+                />
               </Form.Item>
               <Form.Item
                 name="reporter"
@@ -423,12 +455,6 @@ const CustomFloatButton: React.FC = () => {
             name="description"
             //rules={[{ required: true, message: "Please input your password!" }]}
           >
-            {/* <TextArea
-              placeholder="Description"
-              allowClear
-              defaultValue={description}
-              onBlur={(e) => setDescription(e.target.value)}
-            /> */}
             <ReactQuill
               //ref={reactQuillRef}
               preserveWhitespace={true}
@@ -440,22 +466,28 @@ const CustomFloatButton: React.FC = () => {
 
                   [{ color: [] }, { background: [] }],
 
-                  [{ script: 'sub' }, { script: 'super' }],
+                  /* [{ script: 'sub' }, { script: 'super' }], */
 
-                  [{ header: 1 }, { header: 2 }, 'blockquote', 'code-block'],
+                  /* [
+                        { header: 1 },
+                        { header: 2 }, 
+                        'blockquote',
+                        'code-block',
+                      ], */
 
                   [
                     { list: 'ordered' },
                     { list: 'bullet' },
-                    { indent: '-1' },
-                    { indent: '+1' },
+                    /* { indent: '-1' },
+                        { indent: '+1' }, */
                   ],
 
-                  [{ direction: 'rtl' }, { align: [] }],
+                  /* [{ direction: 'rtl' }, { align: [] }],
 
-                  ['link', 'image', 'video', 'formula'],
-
-                  ['clean'],
+                      ['link', 'image', 'video', 'formula'],
+                        
+                      ['clean'] */
+                  ['image'],
                 ],
               }}
               value={editorValue}
@@ -470,26 +502,28 @@ const CustomFloatButton: React.FC = () => {
           <br />
           <br />
           <br />
-          <Form.Item name="attachment">
+          {/* <Form.Item name="attachment">
             <Dragger {...props}>
-              {/* <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p> */}
               <p className="ant-upload-text">
                 Drag & drop or <a href="#">browse</a>
               </p>
             </Dragger>
-          </Form.Item>
+          </Form.Item> */}
 
           <Space align="baseline" size={20}>
             <Tooltip placement="top" title="Status">
-              <Form.Item
+              {/* <Form.Item
                 //label="Password"
                 name="status"
                 //rules={[{ required: true, message: "Select Folder" }]}
               >
-                <DropdownProps type={'Status'} text={'To do'} id={taskKey} />
-              </Form.Item>
+                <DropdownProps
+                  type={'Status'}
+                  text={'In progress'}
+                  id={taskKey}
+                  ignoreStt={ignoreStt}
+                />
+              </Form.Item> */}
             </Tooltip>
             <Tooltip placement="top" title="Priority">
               <Form.Item
@@ -526,15 +560,13 @@ const CustomFloatButton: React.FC = () => {
               </Space>
             </Form.Item>
 
-            <Form.Item
-              //label="Password"
+            {/* <Form.Item
               name="tags"
-              //rules={[{ required: true, message: "Select Folder" }]}
             >
               <Button shape="circle">
                 <FontAwesomeIcon icon={faTags} />
               </Button>
-            </Form.Item>
+            </Form.Item> */}
           </Space>
           <Form.Item>
             <center>

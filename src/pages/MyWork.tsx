@@ -57,7 +57,6 @@ const MyWork: React.FC = () => {
 
   return (
     <>
-      <CustomFloatButton />
       {/* <CustomHeader pageName={CustomRoutes.MyWork.name} /> */}
       <Content className="inner-content">
         <div
@@ -67,7 +66,6 @@ const MyWork: React.FC = () => {
             //background: colorBgContainer,
           }}
         >
-          <h3>{CustomRoutes.MyWork.name}</h3>
           {loading === false ? (
             <CustomTab
               assigneeTask={todayData}

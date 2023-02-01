@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { DownOutlined } from '@ant-design/icons'
 import { Button, MenuProps, Spin, notification } from 'antd'
 import { Dropdown, Space } from 'antd'
 import FindIcon from '../data/util'
@@ -8,6 +7,8 @@ import { faFlag, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { statusData } from '../data/statusData'
 import { InputTasks } from '../data/database/InputTasks'
 import { UpdateTask } from '../data/tasks'
+import { UPDATE_FAIL, UPDATE_SUCCESS } from '../util/ConfigText'
+import { Status } from '../data/entity/Status'
 
 interface Type {
   type: string
@@ -15,11 +16,18 @@ interface Type {
   button?: boolean
   id?: string
   taskId?: string
+  ignoreStt?: Status[]
 }
 
-let items: MenuProps['items'] = []
-
-const DropdownProps: React.FC<Type> = ({ type, text, button, id, taskId }) => {
+const DropdownProps: React.FC<Type> = ({
+  type,
+  text,
+  button,
+  id,
+  taskId,
+  ignoreStt,
+}) => {
+  let items: MenuProps['items'] = []
   const [loading, setLoading] = useState(false)
 
   if (button === undefined) {
@@ -37,7 +45,7 @@ const DropdownProps: React.FC<Type> = ({ type, text, button, id, taskId }) => {
         .then((r) => {
           notification.open({
             message: 'Notification',
-            description: 'Update successfully',
+            description: UPDATE_SUCCESS,
             duration: 2,
             onClick: () => {
               //console.log('Notification Clicked!')
@@ -49,7 +57,7 @@ const DropdownProps: React.FC<Type> = ({ type, text, button, id, taskId }) => {
           setLoading(false)
           notification.open({
             message: 'Notification',
-            description: 'Update Failed',
+            description: UPDATE_FAIL,
             duration: 2,
             onClick: () => {
               //console.log('Notification Clicked!')
@@ -216,11 +224,55 @@ const DropdownProps: React.FC<Type> = ({ type, text, button, id, taskId }) => {
       key: statusData[4].name,
       onClick: (e) => getStatusValue(e.key),
     },
+    {
+      type: 'divider',
+    },
+    {
+      label: (
+        <>
+          <Space>
+            <FontAwesomeIcon icon={faSquare} color={statusData[5].color} />
+            <h4>{statusData[5].name}</h4>
+          </Space>
+        </>
+      ),
+      key: statusData[5].name,
+      onClick: (e) => getStatusValue(e.key),
+    },
   ]
+
   if (type === 'Priority') {
     items = priority
   } else {
-    items = status
+    if (ignoreStt !== undefined) {
+      const r = statusData.filter(
+        (elem) => !ignoreStt.find(({ id }) => elem.id === id),
+      )
+      //statusFilter = statusData.filter((value) => ignoreStt.find({id} => values.id !== id))
+
+      r.map((element) => {
+        items?.push(
+          {
+            label: (
+              <>
+                <Space>
+                  <FontAwesomeIcon icon={faSquare} color={element.color} />
+                  <h4>{element.name}</h4>
+                </Space>
+              </>
+            ),
+            key: element.name,
+            onClick: (e) => getStatusValue(e.key),
+          },
+          {
+            type: 'divider',
+          },
+        )
+      })
+      //items = status
+    } else {
+      items = status
+    }
   }
 
   return (
