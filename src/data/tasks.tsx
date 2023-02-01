@@ -13,15 +13,24 @@ const GetAllTasks = async (serviceUrl: string) => {
 const GetNotDoneTasksAssignee = async (serviceUrl: string, userId: string) => {
   let output: Tasks[] = []
   await axios
-    .post(serviceUrl, {
-      assigneeid: userId,
-    })
+    .post(
+      serviceUrl,
+      {
+        assigneeid: userId,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
     .then((res) => {
       output = JSON.parse(JSON.stringify(res.data))
+      //console.log('Assignee result ' + count.toString())
       return output
     })
     .catch(function (error) {
-      console.log(error)
+      console.log('Assignee ' + error)
     })
   return output
 }
@@ -29,15 +38,23 @@ const GetNotDoneTasksAssignee = async (serviceUrl: string, userId: string) => {
 const GetNotDoneTasksReporter = async (serviceUrl: string, userId: string) => {
   let output: Tasks[] = []
   await axios
-    .post(serviceUrl, {
-      reporterid: userId,
-    })
+    .post(
+      serviceUrl,
+      {
+        reporterid: userId,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
     .then((res) => {
       output = JSON.parse(JSON.stringify(res.data))
       return output
     })
     .catch(function (error) {
-      console.log(error)
+      console.log('Reporter ' + error)
     })
   return output
 }

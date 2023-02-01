@@ -10,14 +10,12 @@ import {
   Select,
   Space,
   Tooltip,
-  TreeSelect,
   Upload,
 } from 'antd'
 import type { UploadProps, MenuProps, DatePickerProps } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEye, faPlus, faTags } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faTags } from '@fortawesome/free-solid-svg-icons'
 import '../assets/css/index.css'
-import { InboxOutlined } from '@ant-design/icons'
 import DropdownProps from './Dropdown'
 import type { RangePickerProps } from 'antd/es/date-picker'
 import type { SelectProps } from 'antd'
@@ -28,12 +26,13 @@ import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import TextArea from 'antd/es/input/TextArea'
 import { faCalendar } from '@fortawesome/free-regular-svg-icons'
-import UserIcon from './UserIcon'
 import { InsertTask } from '../data/tasks'
 import { InputTasks } from '../data/database/InputTasks'
 import OverDueDate from '../util/OverDueDate'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
+import { getCookie } from 'typescript-cookie'
+import { useNavigate } from 'react-router-dom'
 
 interface ItemProps {
   label: string
@@ -189,8 +188,10 @@ function GetData(
 }
 
 const CustomFloatButton: React.FC = () => {
+  const navigate = useNavigate()
   //let reporterOptions: ItemProps[] = []
   const [editorValue, setEditorValue] = useState('')
+
   const [taskName, setTaskName] = useState('')
   const [description, setDescription] = useState('')
 
@@ -203,6 +204,17 @@ const CustomFloatButton: React.FC = () => {
   const [openMenu, setOpenMenu] = useState(false)
 
   const [rep, setRep] = useState('')
+
+  const onChangeEditor = (
+    content: any,
+    delta: any,
+    source: any,
+    editor: any,
+  ) => {
+    //setEditorValue(parse(editor.getHTML()) as string)
+    setEditorValue(editor.getContents())
+    //setEditorValue(editor.getText())
+  }
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
     if (e.key === '3') {
@@ -219,14 +231,14 @@ const CustomFloatButton: React.FC = () => {
       'api/users/getReporterOrAssignee',
       'reporter',
       reporterOptions,
-      sessionStorage.getItem('user_id')?.toString(),
+      getCookie('user_id')?.toString(),
     )
 
     GetData(
       'api/users/getReporterOrAssignee',
       'assignee',
       assigneeOptions,
-      sessionStorage.getItem('user_id')?.toString(),
+      getCookie('user_id')?.toString(),
     )
   }, [])
 
@@ -297,7 +309,7 @@ const CustomFloatButton: React.FC = () => {
 
     const myTask: InputTasks = {
       TaskName: taskName,
-      Description: description,
+      Description: JSON.stringify(editorValue),
       Priority: sessionStorage.getItem('priority' + taskKey)?.toString()
         ? sessionStorage.getItem('priority' + taskKey)?.toString()
         : 'Medium',
@@ -319,9 +331,11 @@ const CustomFloatButton: React.FC = () => {
       setOpen(false)
       sessionStorage.setItem('priority' + taskKey, 'Medium')
       sessionStorage.setItem('status' + taskKey, 'To do')
+      navigate(0)
     })
 
-    console.log('My description ' + editorValue)
+    //
+    //console.log('My description ' + editorValue)
   }
 
   const onFinishFailed = (errorInfo: any) => {
@@ -409,19 +423,53 @@ const CustomFloatButton: React.FC = () => {
             name="description"
             //rules={[{ required: true, message: "Please input your password!" }]}
           >
-            <TextArea
+            {/* <TextArea
               placeholder="Description"
               allowClear
               defaultValue={description}
               onBlur={(e) => setDescription(e.target.value)}
-            />
-            {/* <ReactQuill
-              theme="snow"
+            /> */}
+            <ReactQuill
+              //ref={reactQuillRef}
+              preserveWhitespace={true}
+              modules={{
+                toolbar: [
+                  [{ font: [] }, { size: ['small', false, 'large', 'huge'] }], // custom dropdown
+
+                  ['bold', 'italic', 'underline', 'strike'],
+
+                  [{ color: [] }, { background: [] }],
+
+                  [{ script: 'sub' }, { script: 'super' }],
+
+                  [{ header: 1 }, { header: 2 }, 'blockquote', 'code-block'],
+
+                  [
+                    { list: 'ordered' },
+                    { list: 'bullet' },
+                    { indent: '-1' },
+                    { indent: '+1' },
+                  ],
+
+                  [{ direction: 'rtl' }, { align: [] }],
+
+                  ['link', 'image', 'video', 'formula'],
+
+                  ['clean'],
+                ],
+              }}
               value={editorValue}
               onChange={onChangeEditor}
-              style={{ height: '200px', minHeight: '200px', overflow: 'auto' }}
-            /> */}
+              style={{
+                height: '300px',
+                maxHeight: '500px',
+                overflow: 'inline',
+              }}
+            ></ReactQuill>
           </Form.Item>
+          <br />
+          <br />
+          <br />
           <Form.Item name="attachment">
             <Dragger {...props}>
               {/* <p className="ant-upload-drag-icon">

@@ -27,11 +27,11 @@ import { Users } from '../data/database/Users'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { faUserCheck, faUserPlus, faX } from '@fortawesome/free-solid-svg-icons'
 import { CustomRoutes } from '../customRoutes'
-import TextArea from 'antd/es/input/TextArea'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { UpdateTask } from '../data/tasks'
 import { InputTasks } from '../data/database/InputTasks'
+import _ from 'lodash'
 
 interface TaskData {
   taskData?: Tasks
@@ -54,25 +54,6 @@ const items: TabsProps['items'] = [
 const { Header, Content } = Layout
 
 const { Dragger } = Upload
-
-function useOutsideAlerter(ref: any) {
-  useEffect(() => {
-    /**
-     * Alert if clicked on outside of element
-     */
-    function handleClickOutside(event: any) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        alert('You clicked outside of me!')
-      }
-    }
-    // Bind the event listener
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [ref])
-}
 
 const props: UploadProps = {
   name: 'file',
@@ -100,57 +81,57 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   const taskData = location.state.taskData as Tasks // Read values passed on state
 
   const [open, setOpen] = useState(openModal)
-  const [editorValue, setEditorValue] = useState(taskData?.Description)
+
+  let description = ''
+  try {
+    description = JSON.parse(taskData?.Description)
+  } catch (error) {}
+  const [editorValue, setEditorValue] = useState(description)
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       console.log(editorValue)
       // Send Axios request here
       const inputTask: InputTasks = {
-        Description: editorValue,
+        Description: JSON.stringify(editorValue),
       }
       UpdateTask('/api/task/' + taskData._id, inputTask).then((r) => {
-        notification.open({
+        /* notification.open({
           message: 'Notification',
           description: 'Update successfully',
           duration: 2,
           onClick: () => {
             //console.log('Notification Clicked!')
           },
-        })
+        }) */
       })
-    }, 3000)
+    }, 1000)
 
     return () => clearTimeout(delayDebounceFn)
   }, [editorValue])
 
-  /* const OnChangeTextArea = (e: string) => {
-    //setEditorValue(e)
-    setTimeout(() => {
-      setEditorValue(e)
-    }, 3000)
-    console.log(e)
-  }
- */
-  const wrapperRef = useRef(null)
-  useOutsideAlerter(wrapperRef)
-  /* console.log('HTML value ' + editorValue)
-  const reactQuillRef = useRef(null)
+  const onChangeEditorDebounce = _.debounce(
+    (content: any, delta: any, source: any, editor: any) =>
+      onChangeEditor(content, delta, source, editor),
+    10,
+  )
+
   const onChangeEditor = (
     content: any,
     delta: any,
     source: any,
     editor: any,
   ) => {
-    setEditorValue(editor.getHTML())
-  } */
+    //setEditorValue(parse(editor.getHTML()) as string)
+    setEditorValue(editor.getContents())
+    //setEditorValue(editor.getText())
+  }
   const showModal = () => {
     setOpen(true)
   }
 
   const hideModal = () => {
     setOpen(false)
-    console.log('Des :' + taskData?.Description)
     navigate(CustomRoutes.MyWork.path)
   }
 
@@ -249,7 +230,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
           <Row>
             <Col span={16} style={{ marginRight: '0.5%' }}>
               <Space direction="vertical" style={{ width: '100%' }}>
-                <TextArea
+                {/* <TextArea
                   style={{
                     borderStyle: 'solid',
                     borderWidth: 'thin',
@@ -264,9 +245,10 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                   value={editorValue}
                   onChange={(e) => setEditorValue(e.target.value)}
                   ref={wrapperRef}
-                ></TextArea>
-                {/* <ReactQuill
-                  ref={reactQuillRef}
+                ></TextArea> */}
+                <ReactQuill
+                  //ref={reactQuillRef}
+                  preserveWhitespace={true}
                   modules={{
                     toolbar: [
                       [
@@ -304,11 +286,13 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                   value={editorValue}
                   onChange={onChangeEditor}
                   style={{
-                    height: '200px',
-                    maxHeight: '300px',
-                    overflow: 'auto',
+                    height: '300px',
+                    maxHeight: '500px',
+                    overflow: 'inline',
                   }}
-                /> */}
+                ></ReactQuill>
+                <br />
+                <br />
                 {/*   <Descriptions
                   title=""
                   style={{
