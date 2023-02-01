@@ -1,6 +1,7 @@
 # v1.1
 
-Add editor toolbar for description field
+1.Add editor toolbar for description field
+2.Fix loading lag when reload my work
 
 # Getting Started with Create React App
 
