@@ -11,6 +11,9 @@ import TaskDetails from '../../pages/TaskDetails'
 import { CustomRoutes } from '../../customRoutes'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
+import { getCookie } from 'typescript-cookie'
+import { Role } from '../../data/database/Role'
+import { Status } from '../../data/entity/Status'
 
 interface DataType {
   key: string
@@ -115,6 +118,22 @@ const TaskListOverDue: React.FC<InputData> = ({
         1 * a.Priority.localeCompare(b.Priority) ||
         new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
     )
+
+    const role: Role = JSON.parse(getCookie('userInfo') as string).Role
+    let ignoreStt: Status[] = [
+      {
+        id: 1,
+      },
+      {
+        id: 4,
+      },
+    ]
+    if (role.Level >= 5) {
+      ignoreStt.push({
+        id: 6,
+      })
+    }
+
     for (let index = 0; index < inputLength; index++) {
       data.push({
         key: inputObj[index]._id ? index.toString() : index.toString(),
@@ -124,6 +143,7 @@ const TaskListOverDue: React.FC<InputData> = ({
             text={inputObj[index].Status}
             button={false}
             taskId={inputObj[index]._id}
+            ignoreStt={ignoreStt}
           />
         ),
         task: (

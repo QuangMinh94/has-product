@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
-import { Col, Row, Form, Card, Button, Modal, Input, Spin } from 'antd'
+import { Form, Card, Button, Input, Spin } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 //import BgImage from "../../assets/img/illustrations/signin.svg";
@@ -9,6 +9,8 @@ import SignInImage from '../../assets/img/signin-side-image.png'
 import { CustomRoutes } from '../../customRoutes'
 import { GetUserId } from '../../data/UsersId'
 import { removeCookie, setCookie } from 'typescript-cookie'
+import '../../assets/css/layout.css'
+import { LOGIN_ERROR, LOGIN_SERVICE_ERROR } from '../../util/ConfigText'
 
 export default () => {
   removeCookie('user_id')
@@ -16,6 +18,7 @@ export default () => {
 
   let navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState('')
 
   const username = Form.useWatch('username', form)
   const password = Form.useWatch('password', form)
@@ -45,17 +48,20 @@ export default () => {
       })
       .then((resText) => {
         if (resText.includes('Error')) {
-          alert('Failed to login')
+          //alert('Failed to login')
+          setErr(LOGIN_ERROR)
           setLoading(false)
           //setShowDefault(true)
         } else {
-          console.log('Success', resText)
+          //console.log('Success', resText)
+          setErr('')
           //get userId
           GetUserId('/api/users/getuserid', { username }.username).then((r) => {
             if (r) {
               if (r.code !== undefined) {
                 setLoading(false)
-                alert('Service failed with code ' + r.code)
+                setErr(LOGIN_SERVICE_ERROR + ' ' + r.code)
+                //alert('Service failed with code ' + r.code)
               } else {
                 setCookie('user_id', r._id as string, { expires: 1 })
                 setCookie('userInfo', JSON.stringify(r) as string, {
@@ -65,13 +71,15 @@ export default () => {
                 navigate(CustomRoutes.HomePage.path)
               }
             } else {
-              alert('Wrong')
+              setLoading(false)
+              setErr(LOGIN_SERVICE_ERROR)
             }
           })
         }
       })
       .catch((error) => {
-        alert(error.body)
+        setLoading(false)
+        setErr(LOGIN_SERVICE_ERROR)
       })
   }
 
@@ -168,6 +176,9 @@ export default () => {
                     ) : (
                       <Spin size="large" />
                     )}
+                    <br />
+                    <br />
+                    {err !== '' && <div className="overdue">{err}</div>}
                   </Form>
                 </div>
               </div>

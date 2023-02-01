@@ -8,6 +8,9 @@ import ParagraphExample from '../ParagraphExample'
 import DateFormatter from '../../util/DateFormatter'
 import { useNavigate } from 'react-router-dom'
 import { CustomRoutes } from '../../customRoutes'
+import { Role } from '../../data/database/Role'
+import { Status } from '../../data/entity/Status'
+import { getCookie } from 'typescript-cookie'
 
 interface DataType {
   key: string
@@ -244,14 +247,20 @@ const TaskList: React.FC<InputData> = ({
       highTask.concat(mediumTask.concat(lowTask.concat(undefinedTask))),
     )
 
-    //console.log('Filtered ' + inputObj.length)
-    /* inputObj = inputObj.sort(
-      (a, b) =>
-        -1 * a.Priority.localeCompare(b.Priority) ||
-        new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
-    ) */
-
-    //inputObj = notOverDueObj.concat(overDueObj)
+    const role: Role = JSON.parse(getCookie('userInfo') as string).Role
+    let ignoreStt: Status[] = [
+      {
+        id: 1,
+      },
+      {
+        id: 4,
+      },
+    ]
+    if (role.Level >= 5) {
+      ignoreStt.push({
+        id: 6,
+      })
+    }
 
     for (let index = 0; index < inputLength; index++) {
       data.push({
@@ -262,6 +271,7 @@ const TaskList: React.FC<InputData> = ({
             text={inputObj[index].Status}
             button={false}
             taskId={inputObj[index]._id}
+            ignoreStt={ignoreStt}
           />
         ),
         task: (

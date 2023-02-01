@@ -7,6 +7,7 @@ import { CustomRoutes } from '../customRoutes'
 import CustomHeader from '../components/CustomHeader'
 import { Users } from '../data/database/Users'
 import { getCookie } from 'typescript-cookie'
+import CustomFloatButton from '../components/FloatButton'
 
 const { Header, Content, Footer, Sider } = Layout
 
@@ -56,7 +57,7 @@ const HomePage: React.FC = () => {
           Ant Design ©2018 Created by Ant UED
         </Footer> */}
         </Layout>
-
+        <CustomFloatButton />
         {/* <MainRoutes/> */}
       </Layout>
     </>
