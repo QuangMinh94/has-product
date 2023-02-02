@@ -57,7 +57,6 @@ const MyWork: React.FC = () => {
 
   return (
     <>
-      <CustomFloatButton />
       {/* <CustomHeader pageName={CustomRoutes.MyWork.name} /> */}
       <Content className="inner-content">
         <div

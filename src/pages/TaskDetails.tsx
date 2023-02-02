@@ -20,6 +20,7 @@ import { UpdateTask } from '../data/tasks'
 import { InputTasks } from '../data/database/InputTasks'
 import _ from 'lodash'
 import { IGNORE_STT_DEFAULT } from '../util/ConfigText'
+import CustomFloatButton from '../components/FloatButton'
 
 interface TaskData {
   taskData?: Tasks
@@ -112,7 +113,6 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   ) => {
     //setEditorValue(parse(editor.getHTML()) as string)
     setEditorValue(editor.getContents())
-    //setEditorValue(editor.getText())
   }
   const showModal = () => {
     setOpen(true)
@@ -127,147 +127,151 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   let reporter: Users[] = []
   reporter.push(taskData?.Reporter)
   return (
-    <Modal
-      //title="Basic Modal"
-      open={open}
-      //onOk={this.handleOk}
-      onCancel={hideModal}
-      width="92%"
-      footer={[]}
-    >
-      <Layout>
-        <Header style={{ height: '20%' }}>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Space direction="horizontal" style={{ width: '100%' }}>
-              <Breadcrumbs main={'Home'} sub={CustomRoutes.TaskDetails.name} />
-            </Space>
-            <Row gutter={5}>
-              <Col className="gutter-row" span={16}>
-                <Space direction="horizontal">
+    <>
+      <Modal
+        //title="Basic Modal"
+        open={open}
+        //onOk={this.handleOk}
+        onCancel={hideModal}
+        width="92%"
+        footer={[]}
+      >
+        <Layout>
+          <Header style={{ height: '20%' }}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Space direction="horizontal" style={{ width: '100%' }}>
+                <Breadcrumbs
+                  main={'Home'}
+                  sub={CustomRoutes.TaskDetails.name}
+                />
+              </Space>
+              <Row gutter={5}>
+                <Col className="gutter-row" span={16}>
+                  <Space direction="horizontal">
+                    <DropdownProps
+                      type="Status"
+                      text={taskData?.Status}
+                      button={true}
+                      taskId={taskData?._id}
+                      id={'details'}
+                      ignoreStt={IGNORE_STT_DEFAULT()}
+                    />
+                    <p className="bold-weight">{taskData?.TaskName}</p>
+                  </Space>
+                </Col>
+                <Col className="gutter-row" span={1} style={{ flex: 0 }}>
+                  <Button shape="circle">
+                    <FontAwesomeIcon icon={faCalendar} />
+                  </Button>
+                </Col>
+                <Col className="gutter-row" span={2} style={{ flex: 'revert' }}>
+                  {taskData?.DueDate === null ? (
+                    ''
+                  ) : (
+                    <OverDueDate inputDate={taskData?.DueDate as Date} />
+                  )}
+                </Col>
+                <Col className="gutter-row" span={1} style={{ flex: 'revert' }}>
                   <DropdownProps
-                    type="Status"
-                    text={taskData?.Status}
-                    button={true}
+                    type={'Priority'}
+                    text={taskData?.Priority}
                     taskId={taskData?._id}
                     id={'details'}
-                    ignoreStt={IGNORE_STT_DEFAULT()}
                   />
-                  <p className="bold-weight">{taskData?.TaskName}</p>
-                </Space>
-              </Col>
-              <Col className="gutter-row" span={1} style={{ flex: 0 }}>
-                <Button shape="circle">
-                  <FontAwesomeIcon icon={faCalendar} />
-                </Button>
-              </Col>
-              <Col className="gutter-row" span={2} style={{ flex: 'revert' }}>
-                {taskData?.DueDate === null ? (
-                  ''
-                ) : (
-                  <OverDueDate inputDate={taskData?.DueDate as Date} />
-                )}
-              </Col>
-              <Col className="gutter-row" span={1} style={{ flex: 'revert' }}>
-                <DropdownProps
-                  type={'Priority'}
-                  text={taskData?.Priority}
-                  taskId={taskData?._id}
-                  id={'details'}
-                />
-              </Col>
-              <Col className="gutter-row" span={3} style={{ flex: 'revert' }}>
-                <UserListComp
-                  userData={taskData?.Assignee}
-                  maxCount={2}
-                  icon={
-                    <Avatar
-                      style={{
-                        borderColor: '#9CA3AF',
-                        backgroundColor: 'white',
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faUserPlus} color="#000000" />
-                    </Avatar>
-                  }
-                  tooltipText="Assignee"
-                />
-                {/*  <IconGroup
+                </Col>
+                <Col className="gutter-row" span={3} style={{ flex: 'revert' }}>
+                  <UserListComp
+                    userData={taskData?.Assignee}
+                    maxCount={2}
+                    icon={
+                      <Avatar
+                        style={{
+                          borderColor: '#9CA3AF',
+                          backgroundColor: 'white',
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faUserPlus} color="#000000" />
+                      </Avatar>
+                    }
+                    tooltipText="Assignee"
+                  />
+                  {/*  <IconGroup
                   inputList={taskData?.Assignee as Users[]}
                   maxCount={5}
                 /> */}
-              </Col>
-              <Col className="gutter-row" span={1}>
-                <UserListComp
-                  userData={reporter}
-                  maxCount={3}
-                  icon={
-                    <Avatar
-                      style={{
-                        borderColor: '#9CA3AF',
-                        backgroundColor: 'white',
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faUserCheck} color="#000000" />
-                    </Avatar>
-                  }
-                  tooltipText="Reporter"
-                />
-              </Col>
-            </Row>
-          </Space>
-        </Header>
-        <Content>
-          <Row>
-            <Col span={16} style={{ marginRight: '0.5%' }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <ReactQuill
-                  //ref={reactQuillRef}
-                  preserveWhitespace={true}
-                  modules={{
-                    toolbar: [
-                      [
-                        { font: [] },
-                        { size: ['small', false, 'large', 'huge'] },
-                      ], // custom dropdown
+                </Col>
+                <Col className="gutter-row" span={1}>
+                  <UserListComp
+                    userData={reporter}
+                    maxCount={3}
+                    icon={
+                      <Avatar
+                        style={{
+                          borderColor: '#9CA3AF',
+                          backgroundColor: 'white',
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faUserCheck} color="#000000" />
+                      </Avatar>
+                    }
+                    tooltipText="Reporter"
+                  />
+                </Col>
+              </Row>
+            </Space>
+          </Header>
+          <Content>
+            <Row>
+              <Col span={16} style={{ marginRight: '0.5%' }}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <ReactQuill
+                    //ref={reactQuillRef}
+                    preserveWhitespace={true}
+                    modules={{
+                      toolbar: [
+                        [
+                          { font: [] },
+                          { size: ['small', false, 'large', 'huge'] },
+                        ], // custom dropdown
 
-                      ['bold', 'italic', 'underline', 'strike'],
+                        ['bold', 'italic', 'underline', 'strike'],
 
-                      [{ color: [] }, { background: [] }],
+                        [{ color: [] }, { background: [] }],
 
-                      /* [{ script: 'sub' }, { script: 'super' }], */
+                        /* [{ script: 'sub' }, { script: 'super' }], */
 
-                      /* [
+                        /* [
                         { header: 1 },
                         { header: 2 }, 
                         'blockquote',
                         'code-block',
                       ], */
 
-                      [
-                        { list: 'ordered' },
-                        { list: 'bullet' },
-                        /* { indent: '-1' },
+                        [
+                          { list: 'ordered' },
+                          { list: 'bullet' },
+                          /* { indent: '-1' },
                         { indent: '+1' }, */
-                      ],
+                        ],
 
-                      /* [{ direction: 'rtl' }, { align: [] }],
+                        /* [{ direction: 'rtl' }, { align: [] }],
 
                       ['link', 'image', 'video', 'formula'],
                         
                       ['clean'] */
-                      ['image'],
-                    ],
-                  }}
-                  value={editorValue}
-                  onChange={onChangeEditor}
-                  style={{
-                    height: '188px',
-                    overflow: 'inline',
-                  }}
-                ></ReactQuill>
-                <br />
-                <br />
-                {/*   <Descriptions
+                        ['image'],
+                      ],
+                    }}
+                    value={editorValue}
+                    onChange={onChangeEditor}
+                    style={{
+                      height: '188px',
+                      overflow: 'inline',
+                    }}
+                  ></ReactQuill>
+                  <br />
+                  <br />
+                  {/*   <Descriptions
                   title=""
                   style={{
                     borderStyle: 'solid',
@@ -285,31 +289,33 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       : taskData?.Description}
                   </Descriptions.Item>
                 </Descriptions> */}
-                {/*  <Dragger {...props}>
+                  {/*  <Dragger {...props}>
                     <p className="ant-upload-text">
                       Drag & drop or <a href="#">browse</a>
                     </p>
                   </Dragger> */}
-              </Space>
-            </Col>
-            <Col flex={8}>
-              <Tabs
-                defaultActiveKey="1"
-                items={items}
-                style={{
-                  borderStyle: 'solid',
-                  borderWidth: 'thin',
-                  borderRadius: '4px',
-                  border: '1px solid #9CA3AF',
-                  minHeight: '230px',
-                  padding: '1%',
-                }}
-              />
-            </Col>
-          </Row>
-        </Content>
-      </Layout>
-    </Modal>
+                </Space>
+              </Col>
+              <Col flex={8}>
+                <Tabs
+                  defaultActiveKey="1"
+                  items={items}
+                  style={{
+                    borderStyle: 'solid',
+                    borderWidth: 'thin',
+                    borderRadius: '4px',
+                    border: '1px solid #9CA3AF',
+                    minHeight: '230px',
+                    padding: '1%',
+                  }}
+                />
+              </Col>
+            </Row>
+          </Content>
+        </Layout>
+        <CustomFloatButton />
+      </Modal>
+    </>
   )
 }
 

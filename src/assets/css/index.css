@@ -46,3 +46,7 @@ p {
 .show-more-btn {
   background-color: #ffffff;
 }
+
+.custom-picker input {
+  visibility: hidden;
+}

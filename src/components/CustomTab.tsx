@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Input, Space, Tabs } from 'antd'
 import TaskList from './table/TaskList'
 import { Task } from '../data/entity/task'
@@ -127,6 +127,7 @@ const App: React.FC<TaskInput> = ({
       }
     }
   }
+
   return (
     <>
       {/* <Search
@@ -139,9 +140,9 @@ const App: React.FC<TaskInput> = ({
       /> */}
       <Input
         prefix={<FontAwesomeIcon icon={faSearch} />}
-        placeholder="Search..."
+        placeholder="Tim task"
         onPressEnter={(e) => onSearch(e)}
-        style={{ width: '11%', margin: '-2% 0 0 89%' }}
+        style={{ width: '12%', margin: '-2% 0 0 88%' }}
         value={inputValue}
         //defaultValue={inputValue}
         //onChange={(e) => setInputValue(e.target.value)}
