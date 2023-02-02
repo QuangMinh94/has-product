@@ -1,7 +1,15 @@
 import React from 'react'
 import type { MenuProps } from 'antd'
 import { Menu, theme } from 'antd'
-import { faArchive, faTasks } from '@fortawesome/free-solid-svg-icons'
+import {
+  faArchive,
+  faCogs,
+  faDollarSign,
+  faHome,
+  faProjectDiagram,
+  faTasks,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
 import { CustomRoutes } from '../customRoutes'
@@ -28,7 +36,7 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  /*  getItem(
+  /* getItem(
     'Home',
     'Home',
     <Link to={CustomRoutes.HomePage.path}>
@@ -43,7 +51,7 @@ const items: MenuItem[] = [
         <FontAwesomeIcon icon={faArchive} />
       </Link>,
     ),
-    /* getItem(
+    /*  getItem(
       'My Space',
       'My Space',
       <Link to={CustomRoutes.About.path}>

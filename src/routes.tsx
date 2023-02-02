@@ -19,6 +19,7 @@ const MainRoutes = () => {
               element={<TaskDetails openModal={true} />}
             />
           </Route>
+
           <Route path={CustomRoutes.Setting.path} element={<SettingPage />} />
           <Route path={CustomRoutes.About.path} element={<AboutPage />} />
         </Route>
