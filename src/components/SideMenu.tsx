@@ -1,15 +1,7 @@
 import React from 'react'
 import type { MenuProps } from 'antd'
 import { Menu, theme } from 'antd'
-import {
-  faHome,
-  faArchive,
-  faProjectDiagram,
-  faDollarSign,
-  faTasks,
-  faUser,
-  faCogs,
-} from '@fortawesome/free-solid-svg-icons'
+import { faArchive, faTasks } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
 import { CustomRoutes } from '../customRoutes'
@@ -36,13 +28,13 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem(
+  /*  getItem(
     'Home',
     'Home',
     <Link to={CustomRoutes.HomePage.path}>
       <FontAwesomeIcon icon={faHome} />
     </Link>,
-  ),
+  ), */
   getItem('Work', 'Work', <FontAwesomeIcon icon={faTasks} />, [
     getItem(
       'Công việc của tôi',
@@ -51,7 +43,7 @@ const items: MenuItem[] = [
         <FontAwesomeIcon icon={faArchive} />
       </Link>,
     ),
-    getItem(
+    /* getItem(
       'My Space',
       'My Space',
       <Link to={CustomRoutes.About.path}>
@@ -81,14 +73,14 @@ const items: MenuItem[] = [
           <FontAwesomeIcon icon={faProjectDiagram} />,
         ),
       ],
-    ),
+    ), */
   ]),
-  getItem('User', 'User', <FontAwesomeIcon icon={faUser} />),
+  /* getItem('User', 'User', <FontAwesomeIcon icon={faUser} />),
   getItem('Team', 'Team', <FontAwesomeIcon icon={faDollarSign} />, [
     getItem('Team 1', 'Team 1'),
     getItem('Team 2', 'Team 2'),
   ]),
-  getItem('Files', 'Files', <FontAwesomeIcon icon={faCogs} />),
+  getItem('Files', 'Files', <FontAwesomeIcon icon={faCogs} />), */
 ]
 
 const SideMenu: React.FC = () => {

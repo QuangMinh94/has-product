@@ -79,7 +79,7 @@ const CustomHeader: React.FC<IHeader> = ({ pageName, userData }) => {
             style={{ float: 'right', margin: '0 30px' }}
           >
             <Space align="center">
-              <FontAwesomeIcon icon={faBell} />
+              {/* <FontAwesomeIcon icon={faBell} /> */}
               <Dropdown
                 menu={{ items, onClick: handleMenuClick }}
                 placement="bottomRight"

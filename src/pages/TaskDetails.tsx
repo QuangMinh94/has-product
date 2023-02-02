@@ -12,14 +12,14 @@ import OverDueDate from '../util/OverDueDate'
 import { Tasks } from '../data/database/Tasks'
 import { Users } from '../data/database/Users'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { faUserCheck, faUserPlus, faX } from '@fortawesome/free-solid-svg-icons'
+import { faUserCheck, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { CustomRoutes } from '../customRoutes'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { UpdateTask } from '../data/tasks'
 import { InputTasks } from '../data/database/InputTasks'
 import _ from 'lodash'
-import CustomFloatButton from '../components/FloatButton'
+import { IGNORE_STT_DEFAULT } from '../util/ConfigText'
 
 interface TaskData {
   taskData?: Tasks
@@ -96,7 +96,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     }, 1000)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [editorValue])
+  }, [editorValue, taskData._id])
 
   const onChangeEditorDebounce = _.debounce(
     (content: any, delta: any, source: any, editor: any) =>
@@ -154,6 +154,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       button={true}
                       taskId={taskData?._id}
                       id={'details'}
+                      ignoreStt={IGNORE_STT_DEFAULT()}
                     />
                     <p className="bold-weight">{taskData?.TaskName}</p>
                   </Space>

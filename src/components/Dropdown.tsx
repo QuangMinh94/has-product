@@ -43,14 +43,14 @@ const DropdownProps: React.FC<Type> = ({
       setLoading(true)
       UpdateTask('/api/task/' + taskId, inputTask)
         .then((r) => {
-          notification.open({
+          /*  notification.open({
             message: 'Notification',
             description: UPDATE_SUCCESS,
             duration: 2,
             onClick: () => {
               //console.log('Notification Clicked!')
             },
-          })
+          }) */
           setLoading(false)
         })
         .catch((error) => {
