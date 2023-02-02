@@ -31,8 +31,9 @@ const App: React.FC<TaskInput> = ({
   const [assigneeTaskNumSrc, setAssigneeTaskNum] = useState(assigneeTaskNum)
   const [otherTaskNumSrc, setOtherTaskNum] = useState(otherTaskNum)
 
-  /* console.log('Asignee task ' + srcAssigneeTask.length)
-
+  /*
+  console.log('Asignee task ' + srcAssigneeTask.length)
+  
   useEffect(() => {
     //if (srcAssigneeTask.length === 0) {
     setSrcAssigneeTask(assigneeTask)

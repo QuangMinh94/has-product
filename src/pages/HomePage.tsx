@@ -1,6 +1,6 @@
-import { Breadcrumb, Layout, Menu, theme, Image } from 'antd'
+import { Layout, theme, Image } from 'antd'
 import { useEffect, useState } from 'react'
-import { Outlet, Route, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import SideMenu from '../components/SideMenu'
 import hptIcon from '../assets/img/hpt-icon.svg'
 import { CustomRoutes } from '../customRoutes'
@@ -9,7 +9,7 @@ import { Users } from '../data/database/Users'
 import { getCookie } from 'typescript-cookie'
 import CustomFloatButton from '../components/FloatButton'
 
-const { Header, Content, Footer, Sider } = Layout
+const { Sider } = Layout
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -17,12 +17,12 @@ const HomePage: React.FC = () => {
   const [collapsed, setCollapsed] = useState(true)
   useEffect(() => {
     //if (sessionStorage.getItem('user_id') === null) {
-    if (getCookie('user_id') === undefined) {
+    if (getCookie('user_id') === undefined || getCookie('user_id') === null) {
       navigate(CustomRoutes.Signin.path)
     } else {
       navigate(CustomRoutes.MyWork.path)
     }
-  }, [])
+  }, [navigate])
 
   const userData =
     getCookie('userInfo') !== undefined
@@ -42,7 +42,7 @@ const HomePage: React.FC = () => {
           onCollapse={(value) => setCollapsed(value)}
         >
           <div style={{ height: 32, margin: 16 }}>
-            <Image src={hptIcon} />
+            <Image src={hptIcon} preview={false} />
           </div>
           <SideMenu />
         </Sider>

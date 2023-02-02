@@ -332,9 +332,7 @@ const CustomFloatButton: React.FC = () => {
       CreateDate: new Date(),
       //StartDate: new Date(startDate),
       DueDate: new Date(dueDate),
-      Status: sessionStorage.getItem('status' + taskKey)?.toString()
-        ? sessionStorage.getItem('status' + taskKey)?.toString()
-        : 'To do',
+      Status: 'In progress',
       Assignee: users,
       Reporter: reporter,
       GroupPath: group,
@@ -493,13 +491,12 @@ const CustomFloatButton: React.FC = () => {
               value={editorValue}
               onChange={onChangeEditor}
               style={{
-                height: '300px',
-                maxHeight: '500px',
+                height: '150px',
+                //maxHeight: '500px',
                 overflow: 'inline',
               }}
             ></ReactQuill>
           </Form.Item>
-          <br />
           <br />
           <br />
           {/* <Form.Item name="attachment">
@@ -511,20 +508,6 @@ const CustomFloatButton: React.FC = () => {
           </Form.Item> */}
 
           <Space align="baseline" size={20}>
-            <Tooltip placement="top" title="Status">
-              {/* <Form.Item
-                //label="Password"
-                name="status"
-                //rules={[{ required: true, message: "Select Folder" }]}
-              >
-                <DropdownProps
-                  type={'Status'}
-                  text={'In progress'}
-                  id={taskKey}
-                  ignoreStt={ignoreStt}
-                />
-              </Form.Item> */}
-            </Tooltip>
             <Tooltip placement="top" title="Priority">
               <Form.Item
                 //label="Password"
