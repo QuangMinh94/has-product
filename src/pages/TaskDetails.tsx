@@ -261,7 +261,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                   value={editorValue}
                   onChange={onChangeEditor}
                   style={{
-                    height: '150px',
+                    height: '188px',
                     overflow: 'inline',
                   }}
                 ></ReactQuill>
