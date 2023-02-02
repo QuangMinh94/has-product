@@ -22,7 +22,7 @@ const HomePage: React.FC = () => {
     } else {
       navigate(CustomRoutes.MyWork.path)
     }
-  }, [navigate])
+  }, [])
 
   const userData =
     getCookie('userInfo') !== undefined
@@ -57,7 +57,7 @@ const HomePage: React.FC = () => {
           Ant Design ©2018 Created by Ant UED
         </Footer> */}
         </Layout>
-        <CustomFloatButton />
+
         {/* <MainRoutes/> */}
       </Layout>
     </>
