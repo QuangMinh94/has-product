@@ -34,6 +34,8 @@ import 'react-quill/dist/quill.snow.css'
 import { getCookie } from 'typescript-cookie'
 import { useNavigate } from 'react-router-dom'
 import { Status } from '../data/entity/Status'
+import { Calendar, Popover } from 'antd'
+import { CalendarOutlined } from '@ant-design/icons'
 
 interface ItemProps {
   label: string
@@ -43,6 +45,25 @@ interface ItemProps {
 let taskKey = 'Item'
 let dueDate = ''
 
+const CustomPicker = () => {
+  return (
+    <Popover
+      content={
+        <DatePicker
+          placeholder="Due date"
+          showTime={{
+            format: 'HH:mm:ss',
+            defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
+          }}
+          format={customFormat}
+          onChange={onChangeDate}
+        />
+      }
+    >
+      <Button icon={<CalendarOutlined />} />
+    </Popover>
+  )
+}
 /* for (let i = 10; i < 36; i++) {
   const value = i.toString(36) + i
   options.push({
@@ -142,6 +163,7 @@ const items: MenuProps['items'] = [
         }}
         format={customFormat}
         onChange={onChangeDate}
+        suffixIcon={<FontAwesomeIcon icon={faCalendar} />}
       />
     ),
     key: '0',
@@ -220,6 +242,7 @@ const CustomFloatButton: React.FC = () => {
   const [openMenu, setOpenMenu] = useState(false)
 
   const [rep, setRep] = useState('')
+  const [assignee, setAssignee] = useState('')
 
   const onChangeEditor = (
     content: any,
@@ -279,6 +302,10 @@ const CustomFloatButton: React.FC = () => {
     setRep(value)
   }
 
+  const onChangeAssignee = (value: string) => {
+    setAssignee(value)
+  }
+
   const showModal = () => {
     setOpen(true)
   }
@@ -302,12 +329,15 @@ const CustomFloatButton: React.FC = () => {
   const onFinish = (values: any) => {
     //call service here
 
-    const users: Users[] = []
-    const reporter: Users = {
-      _id: rep ? rep : (sessionStorage.getItem('user_id') as string),
+    //const users: Users[] = []
+
+    const _assignee: Users[] = []
+
+    const _reporter: Users = {
+      _id: rep ? rep : (getCookie('user_id') as string),
     }
     /* const assigneesString = (selectProps.value + '') as string
-    //console.log('Assignee ' + assigneesString)
+    
     const assignees = assigneesString.split(',')
     assignees.forEach((value) => {
       if (value !== '') {
@@ -317,11 +347,20 @@ const CustomFloatButton: React.FC = () => {
       }
     }) */
 
-    if (users.length === 0) {
-      users.push({
-        _id: sessionStorage.getItem('user_id') as string,
+    if (_assignee.length === 0) {
+      _assignee.push({
+        _id: assignee ? assignee : (getCookie('user_id') as string),
       })
     }
+
+    /* console.log('Assignee ' + _assignee[0]._id)
+    console.log('Reporter ' + _reporter._id) */
+
+    /* if (users.length === 0) {
+      users.push({
+        _id: getCookie('user_id') as string,
+      })
+    } */
 
     const myTask: InputTasks = {
       TaskName: taskName,
@@ -333,8 +372,8 @@ const CustomFloatButton: React.FC = () => {
       //StartDate: new Date(startDate),
       DueDate: new Date(dueDate),
       Status: 'In progress',
-      Assignee: users,
-      Reporter: reporter,
+      Assignee: _assignee,
+      Reporter: _reporter,
       GroupPath: group,
     }
 
@@ -420,7 +459,7 @@ const CustomFloatButton: React.FC = () => {
                       .localeCompare((optionB?.label ?? '').toLowerCase())
                   }
                   options={assigneeOptions}
-                  onChange={(e) => onChangeReporter(e)}
+                  onChange={(e) => onChangeAssignee(e)}
                 />
               </Form.Item>
               <Form.Item
@@ -524,7 +563,7 @@ const CustomFloatButton: React.FC = () => {
               //rules={[{ required: true, message: 'Select Date' }]}
             >
               <Space direction="horizontal">
-                <Dropdown
+                {/* <Dropdown
                   menu={{
                     items,
                     onClick: handleMenuClick,
@@ -536,7 +575,18 @@ const CustomFloatButton: React.FC = () => {
                   <Button shape="circle">
                     <FontAwesomeIcon icon={faCalendar} />
                   </Button>
-                </Dropdown>
+                </Dropdown> */}
+                <DatePicker
+                  placeholder="Due date"
+                  showTime={{
+                    format: 'HH:mm:ss',
+                    defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
+                  }}
+                  format={customFormat}
+                  onChange={onChangeDate}
+                  suffixIcon={<FontAwesomeIcon icon={faCalendar} />}
+                  bordered={false}
+                />
                 {dueDate !== '' && (
                   <OverDueDate inputDate={new Date(dueDate)} />
                 )}

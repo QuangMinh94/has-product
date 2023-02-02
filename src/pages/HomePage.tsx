@@ -60,6 +60,7 @@ const HomePage: React.FC = () => {
 
         {/* <MainRoutes/> */}
       </Layout>
+      <CustomFloatButton />
     </>
   )
 }
