@@ -563,7 +563,7 @@ const CustomFloatButton: React.FC = () => {
               //rules={[{ required: true, message: 'Select Date' }]}
             >
               <Space direction="horizontal">
-                {/* <Dropdown
+                <Dropdown
                   menu={{
                     items,
                     onClick: handleMenuClick,
@@ -575,8 +575,8 @@ const CustomFloatButton: React.FC = () => {
                   <Button shape="circle">
                     <FontAwesomeIcon icon={faCalendar} />
                   </Button>
-                </Dropdown> */}
-                <DatePicker
+                </Dropdown>
+                {/*  <DatePicker
                   placeholder="Due date"
                   showTime={{
                     format: 'HH:mm:ss',
@@ -586,7 +586,7 @@ const CustomFloatButton: React.FC = () => {
                   onChange={onChangeDate}
                   suffixIcon={<FontAwesomeIcon icon={faCalendar} />}
                   bordered={false}
-                />
+                /> */}
                 {dueDate !== '' && (
                   <OverDueDate inputDate={new Date(dueDate)} />
                 )}
