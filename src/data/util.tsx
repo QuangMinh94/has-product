@@ -27,7 +27,18 @@ const FindIcon: React.FC<Tasks> = ({ type, text }) => {
   } else {
     statusData.filter((obj) => {
       if (obj.name.toUpperCase() === text.toUpperCase()) {
-        color = obj.color
+        if (
+          text.toUpperCase() === 'To do'.toUpperCase() ||
+          text.toUpperCase() === 'pending'.toUpperCase()
+        ) {
+          color = '#93C5FD'
+        } else if (text.toUpperCase() === 'Close'.toUpperCase()) {
+          color = '#14B8A6'
+        } else if (text.toUpperCase() === 'In review'.toUpperCase()) {
+          color = '#A855F7'
+        } else {
+          color = obj.color
+        }
       }
     })
     return (
