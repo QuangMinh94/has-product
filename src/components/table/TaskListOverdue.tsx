@@ -97,13 +97,16 @@ const TaskListOverDue: React.FC<InputData> = ({
     //setOpen(true)
     //setModalData(taskData)
     // return <TaskDetails openModal={open} taskData={modalData} />
-    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
+    navigate(
+      CustomRoutes.TaskDetails.path + '/' + taskData._id,
+      { replace: true } /* {
       state: {
         search: '/' + taskData._id, // query string
         // location state
         taskData: taskData,
       },
-    })
+    } */,
+    )
   }
 
   if (inputData.length !== 0) {
@@ -114,7 +117,7 @@ const TaskListOverDue: React.FC<InputData> = ({
     inputLength = inputObj.length
     inputObj = inputObj.sort(
       (a, b) =>
-        new Date(b.DueDate).getTime() - new Date(a.DueDate).getTime() ||
+        new Date(b.DueDate!).getTime() - new Date(a.DueDate!).getTime() ||
         1 * a.Priority.localeCompare(b.Priority) ||
         new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
     )
@@ -167,13 +170,13 @@ const TaskListOverDue: React.FC<InputData> = ({
           <>
             {inputObj[index].DueDate === null ? (
               ''
-            ) : new Date(inputObj[index].DueDate) < new Date() ? (
+            ) : new Date(inputObj[index].DueDate!) < new Date() ? (
               <div className="overdue">
-                <DateFormatter dateString={inputObj[index].DueDate} />
+                <DateFormatter dateString={inputObj[index].DueDate!} />
               </div>
             ) : (
               <div>
-                <DateFormatter dateString={inputObj[index].DueDate} />
+                <DateFormatter dateString={inputObj[index].DueDate!} />
               </div>
             )}
           </>

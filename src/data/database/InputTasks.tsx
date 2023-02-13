@@ -1,3 +1,4 @@
+import { Tasks } from './Tasks'
 import { Users } from './Users'
 
 export interface InputTasks {

@@ -16,10 +16,18 @@ const GetUserByType = async (
 ) => {
   let output: Users[] = []
   await axios
-    .post(serviceUrl, {
-      userId: userId,
-      type: type,
-    })
+    .post(
+      serviceUrl,
+      {
+        userId: userId,
+        type: type,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
     .then((res) => {
       if (res.data !== '') {
         output = JSON.parse(JSON.stringify(res.data))

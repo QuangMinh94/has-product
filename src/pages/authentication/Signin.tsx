@@ -14,6 +14,7 @@ import { LOGIN_ERROR, LOGIN_SERVICE_ERROR } from '../../util/ConfigText'
 
 export default () => {
   removeCookie('user_id')
+  removeCookie('userInfo')
   const [form] = Form.useForm()
 
   let navigate = useNavigate()
@@ -68,7 +69,7 @@ export default () => {
                   expires: 1,
                 })
                 sessionStorage.setItem('user_id', r._id as string)
-                navigate(CustomRoutes.HomePage.path)
+                navigate(CustomRoutes.MyWork.path)
               }
             } else {
               setLoading(false)

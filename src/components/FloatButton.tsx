@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Button,
-  Dropdown,
   FloatButton,
   Form,
   Input,
@@ -17,25 +16,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faTags } from '@fortawesome/free-solid-svg-icons'
 import '../assets/css/index.css'
 import DropdownProps from './Dropdown'
-import type { RangePickerProps } from 'antd/es/date-picker'
-import type { SelectProps } from 'antd'
 import { Users } from '../data/database/Users'
 import { GetUserByType } from '../data/allUsers'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
-import TextArea from 'antd/es/input/TextArea'
 import { faCalendar } from '@fortawesome/free-regular-svg-icons'
 import { InsertTask } from '../data/tasks'
-import { InputTasks } from '../data/database/InputTasks'
 import OverDueDate from '../util/OverDueDate'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { getCookie } from 'typescript-cookie'
 import { useNavigate } from 'react-router-dom'
 import { Status } from '../data/entity/Status'
-import { Calendar, Popover } from 'antd'
-import { CalendarOutlined } from '@ant-design/icons'
+import { Tasks } from '../data/database/Tasks'
+import SubTask from './SubTasks'
+import { DEFAULT_STT, INSERT_MODE } from '../util/ConfigText'
+import update from 'immutability-helper'
+import ObjectID from 'bson-objectid'
+import { SubTaskCompProp, SubTaskProp } from '../data/entity/SubTaskProp'
 
 interface ItemProps {
   label: string
@@ -43,27 +42,8 @@ interface ItemProps {
 }
 
 let taskKey = 'Item'
-let dueDate = ''
+//let dueDate = ''
 
-const CustomPicker = () => {
-  return (
-    <Popover
-      content={
-        <DatePicker
-          placeholder="Due date"
-          showTime={{
-            format: 'HH:mm:ss',
-            defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
-          }}
-          format={customFormat}
-          onChange={onChangeDate}
-        />
-      }
-    >
-      <Button icon={<CalendarOutlined />} />
-    </Popover>
-  )
-}
 /* for (let i = 10; i < 36; i++) {
   const value = i.toString(36) + i
   options.push({
@@ -71,21 +51,6 @@ const CustomPicker = () => {
     value,
   })
 } */
-
-const ignoreStt: Status[] = [
-  {
-    id: 1,
-  },
-  {
-    id: 4,
-  },
-  {
-    id: 5,
-  },
-  {
-    id: 6,
-  },
-]
 
 const { Dragger } = Upload
 
@@ -109,41 +74,6 @@ const props: UploadProps = {
   },
 }
 
-const { RangePicker } = DatePicker
-
-const onChangeDate = (date: null | (Dayjs | null), dateStrings: string) => {
-  if (date) {
-    console.log('Date: ', date.toString())
-    dueDate = date.toString()
-    // dateStrings + '/' + new Date().getFullYear()
-  } else {
-    console.log('Clear')
-  }
-}
-const onRangeChange = (
-  dates: null | (Dayjs | null)[],
-  dateStrings: string[],
-) => {
-  if (dates) {
-    console.log('From: ', dates[0], ', to: ', dates[1])
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1])
-    //startDate = dateStrings[0]
-    dueDate = dateStrings[1]
-  } else {
-    console.log('Clear')
-  }
-}
-
-const rangePresets: {
-  label: string
-  value: [Dayjs, Dayjs]
-}[] = [
-  { label: 'Last 7 Days', value: [dayjs().add(-7, 'd'), dayjs()] },
-  { label: 'Last 14 Days', value: [dayjs().add(-14, 'd'), dayjs()] },
-  { label: 'Last 30 Days', value: [dayjs().add(-30, 'd'), dayjs()] },
-  { label: 'Last 90 Days', value: [dayjs().add(-90, 'd'), dayjs()] },
-]
-
 const customFormat: DatePickerProps['format'] = (value) => {
   if (value.hour() === 23 && value.minute() === 59 && value.second() === 59) {
     return `${value.format('DD/MM')}`
@@ -151,26 +81,6 @@ const customFormat: DatePickerProps['format'] = (value) => {
     return `${value.format('DD/MM hh:mm:ss')}`
   }
 }
-
-const items: MenuProps['items'] = [
-  {
-    label: (
-      <DatePicker
-        placeholder="Due date"
-        showTime={{
-          format: 'HH:mm:ss',
-          defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
-        }}
-        format={customFormat}
-        onChange={onChangeDate}
-        suffixIcon={<FontAwesomeIcon icon={faCalendar} />}
-      />
-    ),
-    key: '0',
-  },
-]
-
-let userItems: MenuProps['items'] = []
 
 const range = (start: number, end: number) => {
   const result = []
@@ -180,29 +90,11 @@ const range = (start: number, end: number) => {
   return result
 }
 
-const disabledDate: RangePickerProps['disabledDate'] = (current) => {
-  // Can not select days before today and today
-  return current && current < dayjs().endOf('day')
-}
-
-const disabledRangeTime: RangePickerProps['disabledTime'] = (_, type) => {
-  if (type === 'start') {
-    return {
-      disabledHours: () => range(0, 60).splice(4, 20),
-      disabledMinutes: () => range(30, 60),
-      disabledSeconds: () => [55, 56],
-    }
-  }
-  return {
-    disabledHours: () => range(0, 60).splice(20, 4),
-    disabledMinutes: () => range(0, 31),
-    disabledSeconds: () => [55, 56],
-  }
-}
-
 let assigneeOptions: ItemProps[] = []
 
 let reporterOptions: ItemProps[] = []
+
+const subTask: Tasks[] = []
 
 function GetData(
   url: string,
@@ -231,7 +123,6 @@ const CustomFloatButton: React.FC = () => {
   const [editorValue, setEditorValue] = useState('')
 
   const [taskName, setTaskName] = useState('')
-  const [description, setDescription] = useState('')
 
   const _id = sessionStorage.getItem('user_id')
   const [loading, setLoading] = useState(false)
@@ -239,10 +130,45 @@ const CustomFloatButton: React.FC = () => {
 
   const [value, setValue] = useState<string[]>([])
 
-  const [openMenu, setOpenMenu] = useState(false)
-
   const [rep, setRep] = useState('')
   const [assignee, setAssignee] = useState('')
+  const [assigneeData, setAssigneeData] = useState<Users[]>([])
+  const [reporterData, setReporterData] = useState<Users[]>([])
+  const [dueDate, setDueDate] = useState('')
+  const [subTasksComp, setSubTaskComp] = useState<SubTaskCompProp[]>([])
+  const [openSubTaskBtn, setOpenSubTaskBtn] = useState(true)
+  const _assignUser: Users[] = []
+  const [myTask, setMyTask] = useState<Tasks>({
+    TaskName: '',
+    Description: '',
+    Priority: '',
+    CreateDate: new Date(),
+    StartDate: new Date(),
+    Assignee: _assignUser,
+    Watcher: [],
+    Tag: [],
+    Subtask: [],
+    Attachment: [],
+    Comment: [],
+    Status: '',
+    Reporter: {},
+    GroupPath: '',
+  })
+
+  //const [subTask, setSubTask] = useState<Tasks[]>([])
+  const [subTaskIdList, setSubTaskIdList] = useState<string[]>([])
+
+  const onChangeDate = (date: null | (Dayjs | null), dateStrings: string) => {
+    if (date) {
+      //console.log('Date: ', date.toString())
+      setDueDate(date.toString())
+      /* {
+      dueDate !== '' && <OverDueDate inputDate={new Date(dueDate)} />
+    } */
+    } else {
+      setDueDate('')
+    }
+  }
 
   const onChangeEditor = (
     content: any,
@@ -250,60 +176,64 @@ const CustomFloatButton: React.FC = () => {
     source: any,
     editor: any,
   ) => {
-    //setEditorValue(parse(editor.getHTML()) as string)
     setEditorValue(editor.getContents())
-    //setEditorValue(editor.getText())
   }
 
-  const handleMenuClick: MenuProps['onClick'] = (e) => {
-    if (e.key === '3') {
-      setOpenMenu(false)
-    }
-  }
-
-  const handleOpenChange = (flag: boolean) => {
-    setOpenMenu(flag)
-  }
-
-  useEffect(() => {
-    GetData(
-      'api/users/getReporterOrAssignee',
-      'reporter',
-      reporterOptions,
-      getCookie('user_id')?.toString(),
-    )
-
-    GetData(
+  const fetchData = useCallback(async () => {
+    const data = await GetUserByType(
       'api/users/getReporterOrAssignee',
       'assignee',
-      assigneeOptions,
       getCookie('user_id')?.toString(),
     )
+    setAssigneeData(data)
+    data.forEach((value) => {
+      const su = assigneeOptions.filter((obj) => obj.value === value._id)
+      if (su.length === 0) {
+        assigneeOptions.push({
+          label: value.Name as string,
+          value: value._id as string,
+        })
+      }
+    })
+
+    const dataRp = await GetUserByType(
+      'api/users/getReporterOrAssignee',
+      'reporter',
+      getCookie('user_id')?.toString(),
+    )
+    setReporterData(dataRp)
+    dataRp.forEach((value) => {
+      const su = reporterOptions.filter((obj) => obj.value === value._id)
+      if (su.length === 0) {
+        reporterOptions.push({
+          label: value.Name as string,
+          value: value._id as string,
+        })
+      }
+    })
   }, [])
 
-  /* const selectProps: SelectProps = {
-    mode: 'multiple',
-    style: { width: '100%' },
-    value,
-    options: assigneeOptions,
-    onChange: (newValue: string[]) => {
-      setValue(newValue)
-    },
-    placeholder: 'Assign to',
-    maxTagCount: 'responsive',
-  } */
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const [form] = Form.useForm()
-  //const taskName = Form.useWatch('taskname', form)
   const group = Form.useWatch('group', form)
-  //const description = '' //Form.useWatch('description', form)
 
   const onChangeReporter = (value: string) => {
     setRep(value)
+    const users: Users = {
+      _id: value,
+    }
+    setMyTask({ ...myTask, Reporter: users })
   }
 
   const onChangeAssignee = (value: string) => {
     setAssignee(value)
+    const users: Users = {
+      _id: value,
+    }
+    setMyTask({ ...myTask, Assignee: [users] })
   }
 
   const showModal = () => {
@@ -319,76 +249,200 @@ const CustomFloatButton: React.FC = () => {
   }
 
   const handleCancel = () => {
+    setSubTaskIdList([])
     setOpen(false)
+    console.log('My subtask id list ' + JSON.stringify(subTaskIdList))
   }
 
   const clearData = () => {
     setValue([])
   }
 
-  const onFinish = (values: any) => {
-    //call service here
+  const SubTaskCom: React.FC<SubTaskProp> = ({ index, subTaskId }) => {
+    const onFinish = (values: any) => {
+      console.log('Sucess ' + JSON.stringify(values))
+      const _task: Tasks = JSON.parse(JSON.stringify(values))
+      _task.Status = DEFAULT_STT
+      _task.CreateDate = new Date()
+      _task.StartDate = new Date()
+      if (_task.DueDate === undefined) {
+        _task.DueDate = new Date('')
+      }
 
-    //const users: Users[] = []
+      if (_task.Reporter === undefined) {
+        const user: Users = {
+          _id: getCookie('user_id')?.toString(),
+        }
+        _task.Reporter = user
+      }
+
+      if (_task.Assignee === undefined || _task.Assignee.length === 0) {
+        const user: Users = {
+          _id: getCookie('user_id')?.toString(),
+        }
+        _task.Assignee = [user]
+      }
+
+      if (_task.Priority === undefined) {
+        _task.Priority = 'Medium'
+      }
+
+      //subTask.push(_task)
+      const subTaskFilter = subTask.filter((e) => e._id === _task._id)
+      if (subTaskFilter.length === 0) {
+        //insert
+        console.log('Insert the id')
+
+        subTask.push(_task)
+
+        //setSubTask([...subTask, _task])
+      } else {
+        //update
+        console.log('Update the id')
+        for (let indexS = 0; indexS < subTask.length; indexS++) {
+          if (subTask[indexS]._id === _task._id) {
+            /* setSubTask(
+              update(subTask, {
+                $splice: [[indexS, 1, _task]],
+              }),
+            ) */
+            subTask[indexS] = _task
+            break
+          }
+        }
+      }
+
+      //setMyTask({ ...myTask, Subtask: subTask })
+      setOpenSubTaskBtn(true)
+    }
+
+    const onFinishFailed = (values: any) => {
+      console.log('Failed ' + JSON.stringify(values))
+    }
+
+    return assigneeData.length !== 0 ? (
+      <Space direction="horizontal">
+        <SubTask
+          tasks={myTask}
+          //onChange={(e) => console.log('All data ' + e.target.value)}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          assigneeData={assigneeData}
+          reporterData={reporterData}
+          mode={INSERT_MODE}
+          taskId={subTaskId}
+        />
+      </Space>
+    ) : (
+      <h1>Please wait</h1>
+    )
+  }
+
+  const AddTask = () => {
+    //console.log('Hello ' + subTasks.length)
+    const subId = ObjectID().toHexString()
+    setSubTaskIdList([...subTaskIdList, subId])
+    setSubTaskComp(
+      subTasksComp.concat({
+        id: subId,
+        content: (
+          <SubTaskCom
+            key={subTasksComp.length}
+            index={subTasksComp.length}
+            subTaskId={subId}
+          />
+        ),
+      }),
+    )
+    setOpenSubTaskBtn(false)
+  }
+
+  const onFinish = async (values: any) => {
+    // get only the task that has Id
+    /* setSubTask((subTask) => {
+      return subTask.filter(
+        (element) =>
+          element._id !== undefined &&
+          element._id !== null &&
+          element._id !== '',
+      )
+    }) */
+    const subTaskFilter = subTask.filter(
+      (element) =>
+        element._id !== undefined && element._id !== null && element._id !== '',
+    )
+
+    //update the tasks that has id on SubTaskComp by getting the index of from SubTask
+    setSubTaskComp((subTasksComp) => {
+      return subTasksComp.filter((e) =>
+        subTaskFilter.find(({ _id }) => e.id === _id),
+      )
+    })
+
+    //update the sub tasks id list
+    /* setSubTaskIdList((subTaskIdList) => {
+      return subTaskIdList.filter((e) => subTask.find(({ _id }) => e === _id!))
+    }) */
+
+    const idList: string[] = []
+    subTaskFilter.forEach((element) => {
+      idList.push(element._id!)
+    })
 
     const _assignee: Users[] = []
 
     const _reporter: Users = {
       _id: rep ? rep : (getCookie('user_id') as string),
     }
-    /* const assigneesString = (selectProps.value + '') as string
-    
-    const assignees = assigneesString.split(',')
-    assignees.forEach((value) => {
-      if (value !== '') {
-        users.push({
-          _id: value,
-        })
-      }
-    }) */
-
     if (_assignee.length === 0) {
       _assignee.push({
         _id: assignee ? assignee : (getCookie('user_id') as string),
       })
     }
 
-    /* console.log('Assignee ' + _assignee[0]._id)
-    console.log('Reporter ' + _reporter._id) */
-
-    /* if (users.length === 0) {
-      users.push({
-        _id: getCookie('user_id') as string,
-      })
-    } */
-
-    const myTask: InputTasks = {
+    const myInputTask: Tasks = {
+      _id: ObjectID().toHexString(),
       TaskName: taskName,
       Description: JSON.stringify(editorValue),
-      Priority: sessionStorage.getItem('priority' + taskKey)?.toString()
-        ? sessionStorage.getItem('priority' + taskKey)?.toString()
+      Priority: sessionStorage.getItem('priority' + taskKey)?.toString()!
+        ? sessionStorage.getItem('priority' + taskKey)?.toString()!
         : 'Medium',
       CreateDate: new Date(),
       //StartDate: new Date(startDate),
+      Subtask: idList,
       DueDate: new Date(dueDate),
       Status: 'In progress',
       Assignee: _assignee,
       Reporter: _reporter,
       GroupPath: group,
+      Watcher: [],
+      Tag: [],
+      Attachment: [],
+      Comment: [],
     }
 
-    InsertTask('api/task/', myTask).then((r) => {
-      //console.log(r)
-      form.resetFields()
-      clearData()
-      setOpen(false)
-      sessionStorage.setItem('priority' + taskKey, 'Medium')
-      sessionStorage.setItem('status' + taskKey, 'To do')
-      navigate(0)
-    })
+    subTaskFilter.unshift(myInputTask)
 
-    //
+    console.log('Task all ' + JSON.stringify(subTaskFilter))
+    //console.log('Task all ' + JSON.stringify(subTaskNew))
+    //console.log('Task all ' + JSON.stringify(subTaskNewID))
+
+    //await InsertTask('api/task/', myInputTask)
+    await InsertTask(
+      'api/task/addTaskWithSubtask',
+      JSON.stringify(subTaskFilter),
+    )
+    form.resetFields()
+    clearData()
+    setOpen(false)
+    sessionStorage.setItem('priority' + taskKey, 'Medium')
+    sessionStorage.setItem('status' + taskKey, 'To do')
+    navigate(0)
     //console.log('My description ' + editorValue)
+  }
+
+  const submitForm = () => {
+    form.submit()
   }
 
   const onFinishFailed = (errorInfo: any) => {
@@ -427,7 +481,7 @@ const CustomFloatButton: React.FC = () => {
         >
           <Form.Item
             //label="Username"
-            name="taskname"
+            name="task name"
             rules={[
               { required: true, message: 'Please input your task name!' },
             ]}
@@ -435,7 +489,10 @@ const CustomFloatButton: React.FC = () => {
             <Input
               placeholder="Task Name"
               defaultValue={taskName}
-              onBlur={(e) => setTaskName(e.target.value)}
+              onBlur={(e) => {
+                setTaskName(e.target.value)
+                setMyTask({ ...myTask, TaskName: e.target.value })
+              }}
             />
           </Form.Item>
 
@@ -487,11 +544,7 @@ const CustomFloatButton: React.FC = () => {
             </Input.Group>
           </Form.Item>
 
-          <Form.Item
-            //label="Password"
-            name="description"
-            //rules={[{ required: true, message: "Please input your password!" }]}
-          >
+          <Form.Item name="description">
             <ReactQuill
               //ref={reactQuillRef}
               preserveWhitespace={true}
@@ -538,72 +591,75 @@ const CustomFloatButton: React.FC = () => {
           </Form.Item>
           <br />
           <br />
-          {/* <Form.Item name="attachment">
-            <Dragger {...props}>
-              <p className="ant-upload-text">
-                Drag & drop or <a href="#">browse</a>
-              </p>
-            </Dragger>
-          </Form.Item> */}
-
-          <Space align="baseline" size={20}>
-            <Tooltip placement="top" title="Priority">
-              <Form.Item
-                //label="Password"
-                name="priority"
-                //rules={[{ required: true, message: "Select Folder" }]}
-              >
-                <DropdownProps type={'Priority'} text={'Medium'} id={taskKey} />
-              </Form.Item>
-            </Tooltip>
-
-            <Form.Item
-              //label="Password"
-              name="dueDate"
-              //rules={[{ required: true, message: 'Select Date' }]}
-            >
-              <Space direction="horizontal">
-                <Dropdown
-                  menu={{
-                    items,
-                    onClick: handleMenuClick,
-                  }}
-                  onOpenChange={handleOpenChange}
-                  open={openMenu}
-                  trigger={['click']}
+          <Space direction="vertical">
+            <Space direction="vertical">
+              <>
+                {subTasksComp.map((element) => element.content)}
+                <Button
+                  type="dashed"
+                  onClick={AddTask}
+                  block
+                  icon={<FontAwesomeIcon icon={faPlus} />}
+                  disabled={!openSubTaskBtn}
+                  style={{ width: '100px' }}
                 >
-                  <Button shape="circle">
-                    <FontAwesomeIcon icon={faCalendar} />
-                  </Button>
-                </Dropdown>
-                {/*  <DatePicker
-                  placeholder="Due date"
-                  showTime={{
-                    format: 'HH:mm:ss',
-                    defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
-                  }}
-                  format={customFormat}
-                  onChange={onChangeDate}
-                  suffixIcon={<FontAwesomeIcon icon={faCalendar} />}
-                  bordered={false}
-                /> */}
-                {dueDate !== '' && (
-                  <OverDueDate inputDate={new Date(dueDate)} />
-                )}
-              </Space>
-            </Form.Item>
+                  Add tasks
+                </Button>
+              </>
+            </Space>
+            <Space align="baseline" size={10}>
+              <Tooltip placement="top" title="Priority">
+                <Form.Item name="priority">
+                  <DropdownProps
+                    type={'Priority'}
+                    text={'Medium'}
+                    id={taskKey}
+                  />
+                </Form.Item>
+              </Tooltip>
 
-            {/* <Form.Item
+              <Form.Item name="dueDate">
+                <Space direction="horizontal">
+                  <DatePicker
+                    className={'datePicker'}
+                    placeholder=""
+                    showTime={{
+                      format: 'HH:mm:ss',
+                      defaultValue: dayjs('23:59:59', 'HH:mm:ss'),
+                    }}
+                    format={customFormat}
+                    onChange={onChangeDate}
+                    suffixIcon={<FontAwesomeIcon icon={faCalendar} />}
+                    style={{
+                      width: '32px',
+                      boxSizing: 'border-box',
+                      padding: '4px 9px 4px 0px',
+                      borderBottomLeftRadius: '100px',
+                      borderTopRightRadius: '100px',
+                      borderTopLeftRadius: '100px',
+                      borderBottomRightRadius: '100px',
+                      WebkitBorderRadius: '100px',
+                    }}
+                    //bordered={false}
+                  />
+                  {dueDate !== '' && (
+                    <OverDueDate inputDate={new Date(dueDate)} />
+                  )}
+                </Space>
+              </Form.Item>
+
+              {/* <Form.Item
               name="tags"
             >
               <Button shape="circle">
                 <FontAwesomeIcon icon={faTags} />
               </Button>
             </Form.Item> */}
+            </Space>
           </Space>
           <Form.Item>
             <center>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" onClick={submitForm}>
                 Create Task
               </Button>
             </center>

@@ -47,6 +47,6 @@ p {
   background-color: #ffffff;
 }
 
-.custom-picker input {
-  visibility: hidden;
+.ant-picker .ant-picker-input > input {
+  color: white;
 }

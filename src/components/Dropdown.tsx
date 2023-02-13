@@ -1,14 +1,15 @@
-import React, { memo, useEffect, useState } from 'react'
+import React, { MouseEventHandler, useEffect, useState } from 'react'
 import { Button, MenuProps, Spin, notification } from 'antd'
 import { Dropdown, Space } from 'antd'
 import FindIcon from '../data/util'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFlag, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { statusData } from '../data/statusData'
-import { InputTasks } from '../data/database/InputTasks'
 import { UpdateTask } from '../data/tasks'
-import { UPDATE_FAIL, UPDATE_SUCCESS } from '../util/ConfigText'
+import { UPDATE_FAIL, UPDATE_MODE, UPDATE_SUCCESS } from '../util/ConfigText'
 import { Status } from '../data/entity/Status'
+import { Tasks } from '../data/database/Tasks'
+import { InputTasks } from '../data/database/InputTasks'
 
 interface Type {
   type: string
@@ -17,6 +18,8 @@ interface Type {
   id?: string
   taskId?: string
   ignoreStt?: Status[]
+  onClickMenu?: (e: any) => void
+  mode?: string
 }
 
 const DropdownProps: React.FC<Type> = ({
@@ -26,6 +29,8 @@ const DropdownProps: React.FC<Type> = ({
   id,
   taskId,
   ignoreStt,
+  onClickMenu,
+  mode,
 }) => {
   let items: MenuProps['items'] = []
   const [loading, setLoading] = useState(false)
@@ -38,7 +43,7 @@ const DropdownProps: React.FC<Type> = ({
     setTxt(text)
   }, [text])
 
-  function updateService(inputTask: InputTasks) {
+  function updateService(inputTask: InputTasks, taskId?: string) {
     if (taskId !== undefined) {
       setLoading(true)
       UpdateTask('/api/task/' + taskId, inputTask)
@@ -70,11 +75,14 @@ const DropdownProps: React.FC<Type> = ({
   function getPriorityValue(value: string) {
     setTxt(value)
     sessionStorage.setItem('priority' + id, value)
+    console.log('To priority')
     //call update service
     const inputTask: InputTasks = {
       Priority: value,
     }
-    updateService(inputTask)
+    if (mode === undefined || mode === UPDATE_MODE) {
+      updateService(inputTask, taskId)
+    }
 
     //console.log('Priority :' + sessionStorage.getItem('priority'))
   }
@@ -87,7 +95,9 @@ const DropdownProps: React.FC<Type> = ({
       Status: value,
     }
 
-    updateService(inputTask)
+    if (mode === undefined || mode === UPDATE_MODE) {
+      updateService(inputTask, taskId)
+    }
     //console.log('Status :' + sessionStorage.getItem('status'))
   }
 
@@ -277,7 +287,7 @@ const DropdownProps: React.FC<Type> = ({
 
   return (
     <Dropdown
-      menu={{ items }}
+      menu={{ items, onClick: onClickMenu }}
       trigger={['click']}
       onOpenChange={(e) => console.log}
     >

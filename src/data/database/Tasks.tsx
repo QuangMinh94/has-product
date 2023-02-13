@@ -8,15 +8,16 @@ export interface Tasks {
   PriorityNum?: number
   CreateDate: Date
   StartDate?: Date
-  DueDate: Date
+  DueDate?: Date
   Assignee: Users[]
   Watcher: Users[]
   Tag: string[]
-  Subtask: string[]
+  Subtask?: any[]
   Attachment: any[]
   Comment: any[]
   Status: string
   Reporter: Users
+  Reporters?: Users[]
   GroupPath: string
   __v?: number
 }

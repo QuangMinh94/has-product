@@ -1,19 +1,22 @@
-import React from 'react';
-import { Breadcrumb, Layout, Menu, theme, Image } from "antd";
-import UserListComp from '../components/UserListComp';
-import SubTask from '../components/SubTasks';
-import PriorityDropdown from '../components/PriorityDropdown';
+import React, { useCallback, useEffect, useState } from 'react'
+import { Button, Space, theme } from 'antd'
+import { IndexRedux } from '../redux'
 
+type SubTaskComData = {
+  key: React.Key
+  index: number
+}
+
+const SubTaskCom = () => {}
 
 const SettingPage: React.FC = () => {
   const {
     token: { colorBgContainer },
-  } = theme.useToken();
-  return (
-    <>
-      <PriorityDropdown type="Priority" text='Low'/>
-    </>
-  );
-};
+  } = theme.useToken()
 
-export default SettingPage;
+  IndexRedux()
+
+  return <h1>Hello</h1>
+}
+
+export default SettingPage

@@ -18,9 +18,9 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     //if (sessionStorage.getItem('user_id') === null) {
     if (getCookie('user_id') === undefined || getCookie('user_id') === null) {
-      navigate(CustomRoutes.Signin.path)
+      navigate(CustomRoutes.Signin.path, { replace: true })
     } else {
-      navigate(CustomRoutes.MyWork.path)
+      //navigate(CustomRoutes.MyWork.path, { replace: true })
     }
   }, [])
 
@@ -60,7 +60,6 @@ const HomePage: React.FC = () => {
 
         {/* <MainRoutes/> */}
       </Layout>
-      <CustomFloatButton />
     </>
   )
 }
