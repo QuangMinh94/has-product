@@ -12,6 +12,11 @@ import { removeCookie, setCookie } from 'typescript-cookie'
 import '../../assets/css/layout.css'
 import { LOGIN_ERROR, LOGIN_SERVICE_ERROR } from '../../util/ConfigText'
 
+type MessageResponse = {
+  message: string
+  errorMessage: string
+}
+
 export default () => {
   removeCookie('user_id')
   removeCookie('userInfo')
@@ -42,11 +47,12 @@ export default () => {
 
     fetch(serviceUrl, requestOptions)
       .then((res) => {
-        console.log('RES TEXT', res.text())
+        //const responseText: MessageResponse = res.text()
         return res.text()
       })
       .then(async (resText) => {
-        if (resText.includes('Error')) {
+        const resResponse: MessageResponse = JSON.parse(resText)
+        if (resResponse.errorMessage !== '') {
           //alert('Failed to login')
           setErr(LOGIN_ERROR)
           setLoading(false)
