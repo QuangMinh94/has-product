@@ -20,4 +20,5 @@ export interface Tasks {
   Reporters?: Users[]
   GroupPath: string
   __v?: number
+  created?: boolean
 }

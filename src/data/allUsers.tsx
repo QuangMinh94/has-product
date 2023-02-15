@@ -41,4 +41,24 @@ const GetUserByType = async (
   return output
 }
 
-export { GetAllUsers, GetUserByType }
+const GetUserByTypeAxios = async (
+  serviceUrl: string,
+  type: string,
+  userId?: string,
+) => {
+  const response = await axios.post(
+    serviceUrl,
+    {
+      userId: userId,
+      type: type,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+  return response
+}
+
+export { GetAllUsers, GetUserByType, GetUserByTypeAxios }

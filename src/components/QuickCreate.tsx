@@ -153,6 +153,7 @@ const CustomFloatButton: React.FC = () => {
     Status: '',
     Reporter: {},
     GroupPath: '',
+    created: false,
   })
 
   //const [subTask, setSubTask] = useState<Tasks[]>([])
@@ -389,6 +390,13 @@ const CustomFloatButton: React.FC = () => {
       idList.push(element._id!)
     })
 
+    /* const _subTaskFilter: Tasks[] = [...subTaskFilter]
+    _subTaskFilter.forEach((element) => {
+      const newId = ObjectID().toHexString()
+      element._id = newId
+      idList.push(newId)
+    }) */
+
     const _assignee: Users[] = []
 
     const _reporter: Users = {
@@ -424,10 +432,6 @@ const CustomFloatButton: React.FC = () => {
     subTaskFilter.unshift(myInputTask)
 
     console.log('Task all ' + JSON.stringify(subTaskFilter))
-    //console.log('Task all ' + JSON.stringify(subTaskNew))
-    //console.log('Task all ' + JSON.stringify(subTaskNewID))
-
-    //await InsertTask('api/task/', myInputTask)
     await InsertTask(
       'api/task/addTaskWithSubtask',
       JSON.stringify(subTaskFilter),
@@ -438,7 +442,6 @@ const CustomFloatButton: React.FC = () => {
     sessionStorage.setItem('priority' + taskKey, 'Medium')
     sessionStorage.setItem('status' + taskKey, 'To do')
     navigate(0)
-    //console.log('My description ' + editorValue)
   }
 
   const submitForm = () => {

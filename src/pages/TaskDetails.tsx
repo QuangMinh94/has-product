@@ -40,13 +40,13 @@ import {
   UPDATE_FAIL,
   UPDATE_MODE,
 } from '../util/ConfigText'
-import CustomFloatButton from '../components/FloatButton'
+import CustomFloatButton from '../components/QuickCreate'
 import { GetUserByType } from '../data/allUsers'
 import { getCookie } from 'typescript-cookie'
 import CustomDatePicker from '../components/CustomDatePicker'
 import { SubTaskCompProp, SubTaskProp } from '../data/entity/SubTaskProp'
 import ObjectID from 'bson-objectid'
-const SubTaskComponent = React.lazy(() => import('../components/SubTasks'))
+import SubTask from '../components/SubTasks'
 
 interface TaskData {
   taskData?: Tasks
@@ -78,11 +78,7 @@ const props: UploadProps = {
 }
 
 const ModalBreadCrumb = () => {
-  return (
-    <Space direction="horizontal" style={{ width: '100%' }}>
-      <Breadcrumbs main={'Home'} sub={CustomRoutes.TaskDetails.name} />
-    </Space>
-  )
+  return <Breadcrumbs main={'Home'} sub={CustomRoutes.TaskDetails.name} />
 }
 
 function getUnique(array: any[], key: any) {
@@ -108,6 +104,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   const navigate = useNavigate()
 
   const location = useLocation()
+  const parentTask = location.state.parentTask
   //const taskData = location.state.taskData as Tasks // Read values passed on state
   let assignee: Users[] = []
   const [loading, setLoading] = useState(true)
@@ -129,6 +126,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     GroupPath: '',
   })
 
+  const [haveParentTask, setHaveParentTask] = useState(false)
   const [open, setOpen] = useState(openModal)
   const [editTaskName, setEditTaskName] = useState(false)
   const [assigneeData, setAssigneeData] = useState<Users[]>([])
@@ -157,7 +155,19 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     GroupPath: '',
   })
 
+  const BackToMainTask = (taskId: string) => {
+    navigate(CustomRoutes.TaskDetails.path + '/' + taskId, {
+      state: {
+        search: '/' + taskData._id, // query string
+        // location state
+        //parentTask: parentTask,
+      },
+    })
+    navigate(0)
+  }
+
   const fetchData = useCallback(async () => {
+    if (parentTask) setHaveParentTask(true)
     setGetUsers(true)
 
     const data = await GetTasksById(
@@ -177,6 +187,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       'assignee',
       getCookie('user_id')?.toString(),
     )
+
     setAssigneeData(dataAssignee)
 
     const dataRp = await GetUserByType(
@@ -187,27 +198,33 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     setReporterData(dataRp)
 
     //console.log('All data ' + JSON.stringify(data[0].Subtask!))
+    setLoading(false)
+  }, [])
 
-    const _subTaskComp: SubTaskCompProp[] = []
-    for (let index = 0; index < data[0].Subtask!.length; index++) {
-      console.log('Current key ' + _subTaskComp.length)
-      _subTaskComp.push({
-        id: data[0].Subtask![index]._id,
-        content: (
-          <SubTaskCom
-            key={_subTaskComp.length}
-            index={_subTaskComp.length}
-            subTaskId={data[0].Subtask![index]._id}
-            task={data[0].Subtask![index]}
-          />
-        ),
-      })
+  useEffect(() => {
+    const _taskData: Tasks = { ...taskData }
+    let _subTaskComp: SubTaskCompProp[] = []
+    if (assigneeData.length > 0 && reporterData.length > 0) {
+      if (subTasksComp.length === 0) {
+        for (let index = 0; index < _taskData.Subtask!.length; index++) {
+          _subTaskComp.push({
+            id: _taskData.Subtask![index]._id,
+            content: (
+              <SubTaskCom
+                key={_subTaskComp.length}
+                index={_subTaskComp.length}
+                subTaskId={_taskData.Subtask![index]._id}
+                task={_taskData.Subtask![index]}
+                parentTask={_taskData._id}
+              />
+            ),
+          })
+        }
+      }
     }
 
     setSubTaskComp(subTasksComp.concat(getUnique(_subTaskComp, 'id') as any[]))
-
-    setLoading(false)
-  }, [])
+  }, [assigneeData, reporterData])
 
   useEffect(() => {
     subTasksComp.length = 0
@@ -321,7 +338,12 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   let reporter: Users[] = []
   reporter.push(taskData.Reporter)
 
-  const SubTaskCom: React.FC<SubTaskProp> = ({ index, subTaskId, task }) => {
+  const SubTaskCom: React.FC<SubTaskProp> = ({
+    index,
+    subTaskId,
+    task,
+    parentTask,
+  }) => {
     const onFinish = async (values: any) => {
       console.log('Sucess ' + JSON.stringify(values))
       const _task: Tasks = JSON.parse(JSON.stringify(values))
@@ -395,30 +417,26 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
         JSON.stringify(inputTasks),
       )
     }
+
     const onFinishFailed = (values: any) => {
       console.log('Failed ' + JSON.stringify(values))
     }
 
     //console.log('Subtask ' + taskData.Subtask?.length)
-
     return (
-      <Space direction="horizontal">
-        <>
-          <Suspense fallback={<div>Loading...</div>}>
-            <SubTaskComponent
-              tasks={task!}
-              //onChange={(e) => console.log('All data ' + e.target.value)}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              assigneeData={assigneeData}
-              reporterData={reporterData}
-              mode={UPDATE_MODE}
-              taskId={subTaskId}
-              isEditDetail={true}
-            />
-          </Suspense>
-        </>
-      </Space>
+      <SubTask
+        key={subTaskId}
+        tasks={task!}
+        //onChange={(e) => console.log('All data ' + e.target.value)}
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        assigneeData={assigneeData}
+        reporterData={reporterData}
+        mode={UPDATE_MODE}
+        taskId={subTaskId}
+        isEditDetail={true}
+        parentTask={parentTask}
+      />
     )
   }
 
@@ -457,6 +475,14 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
             <Header style={{ height: '20%' }}>
               <Space direction="vertical" style={{ width: '100%' }}>
                 <ModalBreadCrumb />
+                {haveParentTask === true && (
+                  <Button
+                    type="primary"
+                    onClick={() => BackToMainTask(parentTask)}
+                  >
+                    Back to main tasks
+                  </Button>
+                )}
                 <Row gutter={5}>
                   <Col className="gutter-row" span={16}>
                     <Space direction="horizontal">
@@ -634,7 +660,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                     )}
                     <br />
                     <br />
-                    {assigneeData.length !== 0 && (
+                    {assigneeData.length !== 0 ? (
                       <Space direction="vertical">
                         {subTasksComp.map((element) => element.content)}
 
@@ -649,6 +675,8 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                           Add tasks
                         </Button>
                       </Space>
+                    ) : (
+                      <Spin />
                     )}
                     {/*  <Dragger {...props}>
                     <p className="ant-upload-text">

@@ -50,3 +50,8 @@ p {
 .ant-picker .ant-picker-input > input {
   color: white;
 }
+
+.edit-icon:hover {
+  color: #0e7490;
+  cursor: pointer;
+}

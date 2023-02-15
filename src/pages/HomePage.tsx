@@ -7,7 +7,7 @@ import { CustomRoutes } from '../customRoutes'
 import CustomHeader from '../components/CustomHeader'
 import { Users } from '../data/database/Users'
 import { getCookie } from 'typescript-cookie'
-import CustomFloatButton from '../components/FloatButton'
+import CustomFloatButton from '../components/QuickCreate'
 
 const { Sider } = Layout
 

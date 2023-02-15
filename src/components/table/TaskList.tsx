@@ -266,6 +266,8 @@ const TaskList: React.FC<InputData> = ({
 
     //inputLength = inputObj.length
 
+    console.log('Length ' + inputLength)
+
     for (let index = 0; index < inputLength; index++) {
       data.push({
         key: inputObj[index]._id ? index.toString() : index.toString(),

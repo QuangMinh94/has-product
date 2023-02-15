@@ -34,8 +34,6 @@ export default () => {
       password: { password }.password,
     }
 
-    console.log(JSON.stringify(formInput))
-
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'text/plain' },
@@ -44,10 +42,10 @@ export default () => {
 
     fetch(serviceUrl, requestOptions)
       .then((res) => {
-        //console.log('RES TEXT', res)
+        console.log('RES TEXT', res.text())
         return res.text()
       })
-      .then((resText) => {
+      .then(async (resText) => {
         if (resText.includes('Error')) {
           //alert('Failed to login')
           setErr(LOGIN_ERROR)

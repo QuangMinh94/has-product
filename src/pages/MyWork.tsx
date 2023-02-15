@@ -6,7 +6,7 @@ import '../assets/css/index.css'
 import { CustomRoutes } from '../customRoutes'
 import { GetNotDoneTasksAssignee, GetNotDoneTasksReporter } from '../data/tasks'
 import { Tasks } from '../data/database/Tasks'
-import CustomFloatButton from '../components/FloatButton'
+import CustomFloatButton from '../components/QuickCreate'
 import { Outlet } from 'react-router-dom'
 import { getCookie } from 'typescript-cookie'
 
