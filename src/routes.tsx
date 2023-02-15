@@ -13,13 +13,11 @@ const MainRoutes = () => {
     <>
       <Routes>
         <Route path={CustomRoutes.HomePage.path} element={<HomePage />}>
-          <Route path={CustomRoutes.MyWork.path} element={<MyWork />}>
-            <Route
-              path={CustomRoutes.TaskDetails.path + '/:id'}
-              element={<TaskDetails openModal={true} />}
-            />
-          </Route>
-
+          <Route path={CustomRoutes.MyWork.path} element={<MyWork />}></Route>
+          <Route
+            path={CustomRoutes.TaskDetails.path + '/:id'}
+            element={<TaskDetails openModal={true} />}
+          />
           <Route path={CustomRoutes.Setting.path} element={<SettingPage />} />
           <Route path={CustomRoutes.About.path} element={<AboutPage />} />
         </Route>

@@ -6,7 +6,7 @@ import '../assets/css/index.css'
 import { CustomRoutes } from '../customRoutes'
 import { GetNotDoneTasksAssignee, GetNotDoneTasksReporter } from '../data/tasks'
 import { Tasks } from '../data/database/Tasks'
-import CustomFloatButton from '../components/FloatButton'
+import CustomFloatButton from '../components/QuickCreate'
 import { Outlet } from 'react-router-dom'
 import { getCookie } from 'typescript-cookie'
 
@@ -23,40 +23,36 @@ const MyWork: React.FC = () => {
       '/api/task/getnotdonetask/',
       _id as string,
     )
+
+    const inputObjFilter = data.filter(
+      (dataEle) =>
+        dataEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+        dataEle.Status.toLowerCase() !== 'Done'.toLowerCase(),
+    )
+
     const dataOther = await GetNotDoneTasksReporter(
       '/api/task/getnotdonetask/',
       _id as string,
     )
-    setTodayData(data)
-    setOtherData(dataOther)
+
+    const inputObjFilterOther = dataOther.filter(
+      (dataOtherEle) =>
+        dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+        dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase(),
+    )
+
+    setTodayData(inputObjFilter)
+    setOtherData(inputObjFilterOther)
     setLoading(false)
   }, [])
   //setData("")
   useEffect(() => {
     fetchData()
-
-    /* GetNotDoneTasksAssignee('/api/task/getnotdonetask/', _id as string)
-      .then((r: Tasks[]) => {
-        setTodayData(r)
-        //console.log("Data "+data)
-        //myData = data;
-        //console.log(dataRef.current)
-      })
-      .catch((err) => console.log(err)) */
-
-    /*  GetNotDoneTasksReporter('/api/task/getnotdonetask/', _id as string)
-      .then((r: Tasks[]) => {
-        setOtherData(r)
-        setLoading(false)
-        //console.log("Data "+data)
-        //myData = data;
-        //console.log(dataRef.current)
-      })
-      .catch((err) => console.log(err)) */
   }, [fetchData])
 
   return (
     <>
+      <CustomFloatButton />
       {/* <CustomHeader pageName={CustomRoutes.MyWork.name} /> */}
       <Content className="inner-content">
         <div
@@ -78,7 +74,7 @@ const MyWork: React.FC = () => {
           )}
         </div>
       </Content>
-      <Outlet />
+      {/* <Outlet /> */}
     </>
   )
 }

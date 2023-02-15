@@ -30,19 +30,7 @@ const App: React.FC<TaskInput> = ({
   const [collapseShowMore, setCollapseShowMore] = useState(true)
   const [assigneeTaskNumSrc, setAssigneeTaskNum] = useState(assigneeTaskNum)
   const [otherTaskNumSrc, setOtherTaskNum] = useState(otherTaskNum)
-
-  /*
-  console.log('Asignee task ' + srcAssigneeTask.length)
-  
-  useEffect(() => {
-    //if (srcAssigneeTask.length === 0) {
-    setSrcAssigneeTask(assigneeTask)
-    setAssigneeTaskNum(assigneeTaskNum)
-    setSrcOtherTask(otherTask)
-    setOtherTaskNum(otherTaskNum)
-    //console.log('Me effect')
-    //}
-  }, []) */
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -57,10 +45,19 @@ const App: React.FC<TaskInput> = ({
           setOtherTaskNum(otherTaskNum)
         }
       }
-    }, 500)
+    }, 100)
 
     return () => clearTimeout(delayDebounceFn)
   }, [inputValue])
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      //console.log(inputValue)
+      // Send Axios request here
+    }, 100)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [loading])
 
   const OnSearchDebounce = _.debounce((e: string) => InputChange(e), 1)
 
@@ -126,30 +123,27 @@ const App: React.FC<TaskInput> = ({
         setOtherTaskNum(otherTaskNum)
       }
     }
+    setLoading(false)
   }
 
   return (
     <>
-      {/* <Search
-        placeholder="input search text"
-        onSearch={onSearch}
-        value={inputValue}
-        allowClear
-        style={{ width: 200, margin: '-2% 0 0 89%' }}
-        onChange={(e) => setInputValue(e.target.value)}
-      /> */}
       <Input
         prefix={<FontAwesomeIcon icon={faSearch} />}
         placeholder="Tim task"
         onPressEnter={(e) => onSearch(e)}
-        style={{ width: '12%', margin: '-2% 0 0 88%' }}
+        style={{ width: '12%', margin: '-2% 0 0 88%', borderRadius: '0' }}
         value={inputValue}
         //defaultValue={inputValue}
         //onChange={(e) => setInputValue(e.target.value)}
-        onChange={(e) => OnSearchDebounce(e.target.value)}
+        onChange={(e) => {
+          setLoading(true)
+          OnSearchDebounce(e.target.value)
+        }}
         //onBlur={(e) => InputChange(e.target.value)}
         allowClear
       />
+
       <Tabs
         defaultActiveKey="1"
         onChange={OnChange}

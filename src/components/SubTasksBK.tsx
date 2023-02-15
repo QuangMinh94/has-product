@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react'
-import { Button, Form, Input, MenuProps, Space } from 'antd'
+import { Button, Form, Input, MenuProps, Space, Spin } from 'antd'
 import DropdownProps from './Dropdown'
 import { Tasks } from '../data/database/Tasks'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -10,12 +10,17 @@ import { Users } from '../data/database/Users'
 import type { Dayjs } from 'dayjs'
 import { useNavigate } from 'react-router-dom'
 import { CustomRoutes } from '../customRoutes'
-import { IGNORE_STT_DEFAULT, UPDATE_MODE } from '../util/ConfigText'
+import { UPDATE_MODE } from '../util/ConfigText'
 import { InputTasks } from '../data/database/InputTasks'
 import { UpdateTask } from '../data/tasks'
-import '../assets/css/index.css'
+import { assign } from 'lodash'
+import UserIcon from './UserIcon'
+import { useAppDispatch, useAppSelector } from '../redux/app/hook'
+import { Params } from '../data/entity/task'
+import { getCookie } from 'typescript-cookie/dist/src/api'
+import UserListComp from './UserListComp'
+import { userMenu } from '../data/userMenu'
 
-const UserListComp = React.lazy(() => import('./UserListComp'))
 type SubTaskInput = {
   tasks: Tasks
   onFinish?: (e: any) => void
@@ -25,7 +30,6 @@ type SubTaskInput = {
   mode?: string
   taskId?: string
   isEditDetail?: boolean
-  parentTask?: string
 }
 
 const items: MenuProps['items'] = []
@@ -39,7 +43,6 @@ const SubTask: React.FC<SubTaskInput> = ({
   mode,
   taskId,
   isEditDetail,
-  parentTask,
 }) => {
   //const taskKey = 'Subtask'
   const navigate = useNavigate()
@@ -49,31 +52,45 @@ const SubTask: React.FC<SubTaskInput> = ({
   const [hideSubmitBtn, setHideSubmitBtn] = useState(false)
   const [autoFocus, setAutoFocus] = useState(true)
   const [showEditDetail, setShowEditDetail] = useState(false)
+  const [assigneeMenu, setAssigneeMenu] = useState<MenuProps['items']>([])
+  const [reporterMenu, setReporterMenu] = useState<MenuProps['items']>([])
+  const [assigneeDataInner, setAssigneeDataInner] =
+    useState<Users[]>(assigneeData)
+
+  const [reporterDataInner, setReporterDataInner] =
+    useState<Users[]>(reporterData)
 
   useEffect(() => {
     if (tasks.TaskName !== '') {
       setHideSubmitBtn(true)
       setEditTaskName(false)
-      setShowEditDetail(true)
       form.setFieldsValue({ TaskName: tasks.TaskName })
       //setAutoFocus(false)
     } else {
       setHideSubmitBtn(false)
       setEditTaskName(true)
-      setShowEditDetail(false)
       //setAutoFocus(true)
     }
   }, [])
+
+  useEffect(() => {
+    setAssigneeDataInner(assigneeData)
+    const userMenuAssignee: MenuProps['items'] = userMenu(assigneeData)
+    setAssigneeMenu(userMenuAssignee)
+
+    setReporterDataInner(reporterData)
+    const userMenuRep: MenuProps['items'] = userMenu(reporterData)
+    setReporterMenu(userMenuRep)
+  }, [assigneeData])
 
   const OnNavigate = (taskData: Tasks) => {
     navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
       state: {
         search: '/' + taskData._id, // query string
         // location state
-        parentTask: parentTask,
+        //taskData: taskData,
       },
     })
-    navigate(0)
   }
 
   const OnChangeDateTime = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,15 +149,6 @@ const SubTask: React.FC<SubTaskInput> = ({
     console.log('Key reporter' + e.key)
   }
 
-  const onBlurTaskName = async () => {
-    //save to task
-    const inputTasks: InputTasks = {
-      TaskName: subTask.TaskName,
-    }
-
-    await UpdateTask('/api/task/' + taskId, inputTasks)
-  }
-
   const buttonOnClick = () => {
     form.submit()
     setHideSubmitBtn(true)
@@ -183,24 +191,6 @@ const SubTask: React.FC<SubTaskInput> = ({
             ></Form.Item>
             <Form.Item
               //label="Username"
-              name="Status"
-              style={{
-                marginBottom: '0px',
-              }}
-            >
-              {isEditDetail == true && (
-                <DropdownProps
-                  type="Status"
-                  text={tasks.Status ? tasks.Status : ''}
-                  //button={true}
-                  taskId={taskId}
-                  id={'details'}
-                  ignoreStt={IGNORE_STT_DEFAULT()}
-                />
-              )}
-            </Form.Item>
-            <Form.Item
-              //label="Username"
               name="TaskName"
               rules={[
                 { required: true, message: 'Please input your task name!' },
@@ -233,26 +223,20 @@ const SubTask: React.FC<SubTaskInput> = ({
                         _id: taskId,
                       })
                       form.setFieldsValue({ _id: taskId })
-
-                      if (subTask.created === undefined) onBlurTaskName()
                     }
                   }}
                   placeholder="Task name"
-                />
+                ></Input>
               ) : (
                 <p onClick={() => setEditTaskName(true)}>{subTask.TaskName}</p>
               )}
             </Form.Item>
-            {tasks.created === undefined &&
-              isEditDetail === true &&
-              showEditDetail === true && (
-                <FontAwesomeIcon
-                  className="edit-icon"
-                  icon={faEdit}
-                  onClick={() => OnNavigate(tasks)}
-                  style={{}}
-                />
-              )}
+            {isEditDetail === true && showEditDetail === true && (
+              <FontAwesomeIcon
+                icon={faEdit}
+                onClick={() => OnNavigate(tasks)}
+              />
+            )}
             <Form.Item
               //label="Username"
               name="Assignee"
@@ -260,18 +244,17 @@ const SubTask: React.FC<SubTaskInput> = ({
                 marginBottom: '0px',
               }}
             >
-              <Suspense fallback={<div>Loading...</div>}>
-                <UserListComp
-                  userData={assigneeData}
-                  maxCount={2}
-                  icon={<FontAwesomeIcon icon={faUserPlus} />}
-                  onClickMenu={handleMenuClickAssignee}
-                  mode={mode}
-                  inputUserData={subTask.Assignee}
-                  assigneeUpdate={true}
-                  taskId={taskId}
-                />
-              </Suspense>
+              <UserListComp
+                key={taskId}
+                userData={assigneeDataInner}
+                maxCount={2}
+                icon={<FontAwesomeIcon icon={faUserPlus} />}
+                onClickMenu={handleMenuClickAssignee}
+                mode={mode}
+                inputUserData={subTask.Assignee}
+                userItems={assigneeMenu}
+                taskId={taskId}
+              />
             </Form.Item>
             <Form.Item
               //label="Username"
@@ -280,17 +263,17 @@ const SubTask: React.FC<SubTaskInput> = ({
                 marginBottom: '0px',
               }}
             >
-              <Suspense fallback={<div>Loading...</div>}>
-                <UserListComp
-                  userData={reporterData}
-                  maxCount={3}
-                  icon={<FontAwesomeIcon icon={faUserPlus} />}
-                  onClickMenu={handleMenuClickReporter}
-                  mode={mode}
-                  inputUserData={reporters}
-                  taskId={taskId}
-                />
-              </Suspense>
+              <UserListComp
+                key={taskId}
+                userData={reporterDataInner}
+                maxCount={3}
+                icon={<FontAwesomeIcon icon={faUserPlus} />}
+                onClickMenu={handleMenuClickReporter}
+                mode={mode}
+                inputUserData={reporters}
+                userItems={reporterMenu}
+                taskId={taskId}
+              />
             </Form.Item>
             <Form.Item
               //label="Username"

@@ -10,13 +10,37 @@ const GetAllTasks = async (serviceUrl: string) => {
   })
 }
 
-const GetNotDoneTasksAssignee = async (serviceUrl: string, userId: string) => {
+const GetTasksById = async (serviceUrl: string, taskId: string) => {
+  let output: Tasks[] = []
+  await axios
+    .post(
+      serviceUrl,
+      { taskId: taskId, populateLevel: 1 },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    .then((res) => {
+      output = JSON.parse(JSON.stringify(res.data))
+      //const data = res.data
+    })
+  return output
+}
+
+const GetNotDoneTasksAssignee = async (
+  serviceUrl: string,
+  userId: string,
+  populateLevel: number = 1,
+) => {
   let output: Tasks[] = []
   await axios
     .post(
       serviceUrl,
       {
         assigneeid: userId,
+        populateLevel: populateLevel,
       },
       {
         headers: {
@@ -35,13 +59,18 @@ const GetNotDoneTasksAssignee = async (serviceUrl: string, userId: string) => {
   return output
 }
 
-const GetNotDoneTasksReporter = async (serviceUrl: string, userId: string) => {
+const GetNotDoneTasksReporter = async (
+  serviceUrl: string,
+  userId: string,
+  populateLevel: number = 1,
+) => {
   let output: Tasks[] = []
   await axios
     .post(
       serviceUrl,
       {
         reporterid: userId,
+        populateLevel: populateLevel,
       },
       {
         headers: {
@@ -59,7 +88,7 @@ const GetNotDoneTasksReporter = async (serviceUrl: string, userId: string) => {
   return output
 }
 
-const InsertTask = async (serviceUrl: string, task: InputTasks) => {
+const InsertTask = async (serviceUrl: string, task: any) => {
   let user: Users = {}
   let output: Tasks = {
     TaskName: '',
@@ -79,7 +108,7 @@ const InsertTask = async (serviceUrl: string, task: InputTasks) => {
     GroupPath: '',
   }
   await axios
-    .post<Tasks>(serviceUrl, JSON.stringify(task), {
+    .post<Tasks>(serviceUrl, task, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -135,4 +164,5 @@ export {
   GetAllTasks,
   InsertTask,
   UpdateTask,
+  GetTasksById,
 }

@@ -97,13 +97,21 @@ const TaskListOverDue: React.FC<InputData> = ({
     //setOpen(true)
     //setModalData(taskData)
     // return <TaskDetails openModal={open} taskData={modalData} />
-    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
+    navigate(
+      CustomRoutes.TaskDetails.path + '/' + taskData._id,
+      {
+        state: {
+          search: '/' + taskData._id, // query string
+          // location state
+        },
+      } /* {
       state: {
         search: '/' + taskData._id, // query string
         // location state
         taskData: taskData,
       },
-    })
+    } */,
+    )
   }
 
   if (inputData.length !== 0) {
@@ -112,10 +120,24 @@ const TaskListOverDue: React.FC<InputData> = ({
     //data = [];
     inputObj = inputData
     inputLength = inputObj.length
+
+    inputObj.forEach((element) => {
+      if (element.Priority === 'Urgent') {
+        element.PriorityNum = 1
+      } else if (element.Priority === 'High') {
+        element.PriorityNum = 2
+      } else if (element.Priority === 'Medium') {
+        element.PriorityNum = 3
+      } else if (element.Priority === 'Low') {
+        element.PriorityNum = 4
+      } else {
+        element.PriorityNum = 5
+      }
+    })
     inputObj = inputObj.sort(
       (a, b) =>
-        new Date(b.DueDate).getTime() - new Date(a.DueDate).getTime() ||
-        1 * a.Priority.localeCompare(b.Priority) ||
+        new Date(b.DueDate!).getTime() - new Date(a.DueDate!).getTime() ||
+        (a.PriorityNum as number) - (b.PriorityNum as number) ||
         new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
     )
 
@@ -140,7 +162,7 @@ const TaskListOverDue: React.FC<InputData> = ({
         status: (
           <DropdownProps
             type="Status"
-            text={inputObj[index].Status}
+            text={inputObj[index].Status ? inputObj[index].Status : 'undefined'}
             button={false}
             taskId={inputObj[index]._id}
             ignoreStt={ignoreStt}
@@ -157,9 +179,12 @@ const TaskListOverDue: React.FC<InputData> = ({
         priority: (
           <DropdownProps
             type="Priority"
-            text={inputObj[index].Priority}
+            text={
+              inputObj[index].Priority ? inputObj[index].Priority : 'undefined'
+            }
             button={false}
             taskId={inputObj[index]._id}
+            ignoreStt={ignoreStt}
           />
         ),
         //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
@@ -167,13 +192,13 @@ const TaskListOverDue: React.FC<InputData> = ({
           <>
             {inputObj[index].DueDate === null ? (
               ''
-            ) : new Date(inputObj[index].DueDate) < new Date() ? (
+            ) : new Date(inputObj[index].DueDate!) < new Date() ? (
               <div className="overdue">
-                <DateFormatter dateString={inputObj[index].DueDate} />
+                <DateFormatter dateString={inputObj[index].DueDate!} />
               </div>
             ) : (
               <div>
-                <DateFormatter dateString={inputObj[index].DueDate} />
+                <DateFormatter dateString={inputObj[index].DueDate!} />
               </div>
             )}
           </>

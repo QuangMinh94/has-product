@@ -110,7 +110,6 @@ const TaskList: React.FC<InputData> = ({
       state: {
         search: '/' + taskData._id, // query string
         // location state
-        taskData: taskData,
       },
     })
   }
@@ -139,19 +138,20 @@ const TaskList: React.FC<InputData> = ({
         (a.PriorityNum as number) - (b.PriorityNum as number) ||
         new Date(b.CreateDate).getTime() - new Date(a.CreateDate).getTime(),
     )
+
     const urgentTask = inputObj
       .filter(
         (data) =>
           data.PriorityNum === 1 &&
           data.DueDate !== null &&
-          new Date(data.DueDate).getTime() >= new Date().getTime(),
+          new Date(data.DueDate!).getTime() >= new Date().getTime(),
       )
       .concat(
         inputObj.filter(
           (data) =>
             data.PriorityNum === 1 &&
             data.DueDate !== null &&
-            new Date(data.DueDate).getTime() < new Date().getTime(),
+            new Date(data.DueDate!).getTime() < new Date().getTime(),
         ),
       )
       .concat(
@@ -165,14 +165,14 @@ const TaskList: React.FC<InputData> = ({
         (data) =>
           data.PriorityNum === 2 &&
           data.DueDate !== null &&
-          new Date(data.DueDate).getTime() >= new Date().getTime(),
+          new Date(data.DueDate!).getTime() >= new Date().getTime(),
       )
       .concat(
         inputObj.filter(
           (data) =>
             data.PriorityNum === 2 &&
             data.DueDate !== null &&
-            new Date(data.DueDate).getTime() < new Date().getTime(),
+            new Date(data.DueDate!).getTime() < new Date().getTime(),
         ),
       )
       .concat(
@@ -186,14 +186,14 @@ const TaskList: React.FC<InputData> = ({
         (data) =>
           data.PriorityNum === 3 &&
           data.DueDate !== null &&
-          new Date(data.DueDate).getTime() >= new Date().getTime(),
+          new Date(data.DueDate!).getTime() >= new Date().getTime(),
       )
       .concat(
         inputObj.filter(
           (data) =>
             data.PriorityNum === 3 &&
             data.DueDate !== null &&
-            new Date(data.DueDate).getTime() < new Date().getTime(),
+            new Date(data.DueDate!).getTime() < new Date().getTime(),
         ),
       )
       .concat(
@@ -207,14 +207,14 @@ const TaskList: React.FC<InputData> = ({
         (data) =>
           data.PriorityNum === 4 &&
           data.DueDate !== null &&
-          new Date(data.DueDate).getTime() >= new Date().getTime(),
+          new Date(data.DueDate!).getTime() >= new Date().getTime(),
       )
       .concat(
         inputObj.filter(
           (data) =>
             data.PriorityNum === 4 &&
             data.DueDate !== null &&
-            new Date(data.DueDate).getTime() < new Date().getTime(),
+            new Date(data.DueDate!).getTime() < new Date().getTime(),
         ),
       )
       .concat(
@@ -228,14 +228,14 @@ const TaskList: React.FC<InputData> = ({
         (data) =>
           data.PriorityNum === 5 &&
           data.DueDate !== null &&
-          new Date(data.DueDate).getTime() >= new Date().getTime(),
+          new Date(data.DueDate!).getTime() >= new Date().getTime(),
       )
       .concat(
         inputObj.filter(
           (data) =>
             data.PriorityNum === 5 &&
             data.DueDate !== null &&
-            new Date(data.DueDate).getTime() < new Date().getTime(),
+            new Date(data.DueDate!).getTime() < new Date().getTime(),
         ),
       )
       .concat(
@@ -261,6 +261,12 @@ const TaskList: React.FC<InputData> = ({
         id: 6,
       })
     }
+
+    //console.log('All task ' + JSON.stringify(inputObj))
+
+    //inputLength = inputObj.length
+
+    console.log('Length ' + inputLength)
 
     for (let index = 0; index < inputLength; index++) {
       data.push({
@@ -296,13 +302,13 @@ const TaskList: React.FC<InputData> = ({
           <>
             {inputObj[index].DueDate === null ? (
               ''
-            ) : new Date(inputObj[index].DueDate) < new Date() ? (
+            ) : new Date(inputObj[index].DueDate!) < new Date() ? (
               <div className="overdue">
-                <DateFormatter dateString={inputObj[index].DueDate} />
+                <DateFormatter dateString={inputObj[index].DueDate!} />
               </div>
             ) : (
               <div>
-                <DateFormatter dateString={inputObj[index].DueDate} />
+                <DateFormatter dateString={inputObj[index].DueDate!} />
               </div>
             )}
           </>

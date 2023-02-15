@@ -1,4 +1,4 @@
-import { Dropdown, Select, Space, Tag, Tooltip } from 'antd'
+import { Dropdown, Space, Spin, Tooltip } from 'antd'
 import type { MenuProps } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { InputTasks } from '../data/database/InputTasks'
@@ -34,19 +34,50 @@ const UserListComp: React.FC<UserData> = ({
   taskId,
   userItems,
 }) => {
-  //const [data, setData] = useState<Users[]>(userData)
+  //const myItems: MenuProps['items'] = []
+  const [items, setItems] = useState<MenuProps['items']>(userItems)
+  const [data, setData] = useState<Users[]>(userData)
   const [assignee, setAssignee] = useState<Users[]>(
     inputUserData ? inputUserData : [],
   )
-  //const [items, setItems] = useState<MenuProps['items']>([])
 
-  //const [assignee, setAssignee] = useState<Users>()
+  useEffect(() => {
+    setData(userData)
+    console.log('Heello ' + userData.length)
+  }, [userData])
 
-  //const [items, setItems] = useState<MenuProps['items']>([])
-  const items: MenuProps['items'] = []
+  useEffect(() => {
+    if (userItems) {
+      setItems(userItems)
+      console.log('Heello length ' + userItems.length)
+    }
+  }, [userItems])
+
+  /*  if (items?.length === 0 && data.length > 0) {
+    for (let index = 0; index < data.length; index++) {
+      items!.push({
+        label: (
+          <Space size="small" align="center">
+            <UserIcon
+              username={data[index].Name}
+              userColor={data[index].Color}
+              tooltipName={data[index].UserName}
+              userInfo={data[index]}
+            />
+            <h4>{data[index].Name}</h4>
+          </Space>
+        ),
+        key: data[index]._id as string,
+      })
+
+      items!.push({
+        type: 'divider',
+      })
+    }
+  } */
 
   const AddAssignee = (id: string) => {
-    userData.filter(async (obj) => {
+    data.filter(async (obj) => {
       if (obj._id === id) {
         // assignees.push(obj)
         //setAssignee([...assignee, obj])
@@ -75,42 +106,22 @@ const UserListComp: React.FC<UserData> = ({
     })
   }
 
-  if (items.length === 0) {
-    for (let index = 0; index < userData.length; index++) {
-      items?.push({
-        label: (
-          <>
-            <Space size="small" align="center">
-              <UserIcon
-                username={userData[index].Name}
-                userColor={userData[index].Color}
-                tooltipName={userData[index].UserName}
-                userInfo={userData[index]}
-              />
-              <h4>{userData[index].Name}</h4>
-            </Space>
-          </>
-        ),
-        key: userData[index]._id as string,
-      })
-
-      items?.push({
-        type: 'divider',
-      })
-    }
-  }
-
   return (
     <>
-      <Space className="ant-group-item-icons" size={0} align="baseline">
+      <Space
+        className="ant-group-item-icons"
+        size={0}
+        align="baseline"
+        key={items?.length}
+      >
         <IconGroup inputList={assignee} maxCount={maxCount} />
 
         <Tooltip title={tooltipText}>
           <Dropdown
             menu={{
-              items,
+              items: items,
               onClick: (e) => {
-                if (onClickMenu) onClickMenu(e)
+                onClickMenu!(e)
                 AddAssignee(e.key)
               },
             }}

@@ -2,11 +2,22 @@ import { getCookie } from 'typescript-cookie'
 import { Role } from '../data/database/Role'
 import { Status } from '../data/entity/Status'
 
-const LOGIN_ERROR = 'Sai tên đăng nhập hoặc mật khẩu'
-const LOGIN_SERVICE_ERROR = 'Xảy ra lỗi hệ thống, xin vui lòng thử lại sau'
-const UPDATE_SUCCESS = 'Update thành công'
-const UPDATE_FAIL = 'Update thất bại'
-function IGNORE_STT_DEFAULT() {
+//Component mode
+export const UPDATE_MODE = 'UPDATE'
+export const INSERT_MODE = 'INSERT'
+
+//status
+export const DEFAULT_STT = 'In progress'
+
+//Login text
+export const LOGIN_ERROR = 'Sai tên đăng nhập hoặc mật khẩu'
+export const LOGIN_SERVICE_ERROR =
+  'Xảy ra lỗi hệ thống, xin vui lòng thử lại sau'
+export const UPDATE_SUCCESS = 'Update thành công'
+export const UPDATE_FAIL = 'Update thất bại'
+
+//ignore status
+export function IGNORE_STT_DEFAULT() {
   let ignoreStt: Status[] = [
     {
       id: 1,
@@ -23,11 +34,4 @@ function IGNORE_STT_DEFAULT() {
     })
   }
   return ignoreStt
-}
-export {
-  UPDATE_SUCCESS,
-  UPDATE_FAIL,
-  LOGIN_ERROR,
-  LOGIN_SERVICE_ERROR,
-  IGNORE_STT_DEFAULT,
 }
