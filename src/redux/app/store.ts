@@ -3,6 +3,7 @@ import cakeReducer from '../features/cake/cakeSlice'
 import icecreamReducer from '../features/icecream/icecreamSlice'
 import userReducer from '../features/user/userSlice'
 import usersReducer from '../features/users/usersSlice'
+import errorReducer from '../features/errors/errorSlice'
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     icecream: icecreamReducer,
     user: userReducer,
     users: usersReducer,
+    errorMessage: errorReducer,
   },
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 })
