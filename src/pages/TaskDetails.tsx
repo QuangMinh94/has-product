@@ -512,8 +512,8 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                   </Col>
                   <Col
                     className="gutter-row"
-                    span={2}
-                    style={{ flex: 'revert' }}
+                    span={4}
+                    style={{ flex: 'revert', marginRight: '10px' }}
                   >
                     <CustomDatePicker
                       dueDateInput={taskData.DueDate?.toString()!}

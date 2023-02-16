@@ -9,11 +9,11 @@ const OverDueDate: React.FC<InputDate> = ({ inputDate }) => {
   return (
     <>
       {new Date(inputDate) < new Date() ? (
-        <div className="overdue">
+        <div className="overdue" style={{ float: 'right', width: 'auto' }}>
           <DateFormatter dateString={inputDate} />
         </div>
       ) : (
-        <div>
+        <div style={{ float: 'right', width: 'auto' }}>
           <DateFormatter dateString={inputDate} />
         </div>
       )}

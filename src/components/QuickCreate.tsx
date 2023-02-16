@@ -252,7 +252,8 @@ const CustomFloatButton: React.FC = () => {
   const handleCancel = () => {
     setSubTaskIdList([])
     setOpen(false)
-    console.log('My subtask id list ' + JSON.stringify(subTaskIdList))
+
+    //console.log('My subtask id list ' + JSON.stringify(subTaskIdList))
   }
 
   const clearData = () => {
@@ -390,12 +391,10 @@ const CustomFloatButton: React.FC = () => {
       idList.push(element._id!)
     })
 
-    /* const _subTaskFilter: Tasks[] = [...subTaskFilter]
+    const _subTaskFilter: Tasks[] = [...subTaskFilter]
     _subTaskFilter.forEach((element) => {
-      const newId = ObjectID().toHexString()
-      element._id = newId
-      idList.push(newId)
-    }) */
+      element.created = true
+    })
 
     const _assignee: Users[] = []
 
@@ -429,12 +428,12 @@ const CustomFloatButton: React.FC = () => {
       Comment: [],
     }
 
-    subTaskFilter.unshift(myInputTask)
+    _subTaskFilter.unshift(myInputTask)
 
-    console.log('Task all ' + JSON.stringify(subTaskFilter))
+    console.log('Task all ' + JSON.stringify(_subTaskFilter))
     await InsertTask(
       'api/task/addTaskWithSubtask',
-      JSON.stringify(subTaskFilter),
+      JSON.stringify(_subTaskFilter),
     )
     form.resetFields()
     clearData()
@@ -468,7 +467,7 @@ const CustomFloatButton: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
         footer={[]}
-        width="43vw"
+        width="50%"
       >
         <br />
         <br />

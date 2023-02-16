@@ -4,6 +4,7 @@ module.exports = function (app) {
   app.use(
     createProxyMiddleware('/api/task', {
       target: 'http://10.4.18.143:3000/api/task',
+
       changeOrigin: true,
       pathRewrite: { '^/api/task': '' },
     }),
