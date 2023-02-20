@@ -24,6 +24,7 @@ import type { Dayjs } from 'dayjs'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   faPlus,
+  faStar,
   faUserCheck,
   faUserPlus,
 } from '@fortawesome/free-solid-svg-icons'
@@ -207,6 +208,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     if (assigneeData.length > 0 && reporterData.length > 0) {
       if (subTasksComp.length === 0) {
         for (let index = 0; index < _taskData.Subtask!.length; index++) {
+          _taskData.Subtask![index].created = true
           _subTaskComp.push({
             id: _taskData.Subtask![index]._id,
             content: (
@@ -240,7 +242,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       const inputTask: InputTasks = {
         Description: JSON.stringify(editorValue),
       }
-      UpdateTask('/api/task/' + taskData._id, inputTask).then((r) => {
+      UpdateTask('/api/task/', taskData._id!, inputTask).then((r) => {
         /* notification.open({
           message: 'Notification',
           description: 'Update successfully',
@@ -260,7 +262,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     const inputTask: InputTasks = {
       Description: JSON.stringify(editorValue),
     }
-    await UpdateTask('/api/task/' + taskData._id, inputTask)
+    await UpdateTask('/api/task/', taskData._id!, inputTask)
   }
 
   const onChangeEditor = (
@@ -281,7 +283,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       DueDate: new Date(dateStr ? dateStr : ''),
     }
 
-    await UpdateTask('/api/task/' + taskData._id, inputTask).catch((error) => {
+    await UpdateTask('/api/task/', taskData._id!, inputTask).catch((error) => {
       setLoading(false)
       notification.open({
         message: 'Notification',
@@ -300,7 +302,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
 
     setTaskData({ ...taskData, TaskName: e.target.value })
     //update task
-    await UpdateTask('/api/task/' + taskData._id, inputTask)
+    await UpdateTask('/api/task/', taskData._id!, inputTask)
       .then((r) => {
         /*  notification.open({
             message: 'Notification',
@@ -509,6 +511,13 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                         />
                       )}
                     </Space>
+                  </Col>
+                  <Col
+                    className="gutter-row"
+                    span={1}
+                    style={{ flex: 'revert' }}
+                  >
+                    <FontAwesomeIcon icon={faStar} color="#FACC15" />
                   </Col>
                   <Col
                     className="gutter-row"

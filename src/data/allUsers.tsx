@@ -14,6 +14,7 @@ const GetUserByType = async (
   type: string,
   userId?: string,
 ) => {
+  serviceUrl = process.env.REACT_APP_API_USERS_GETREPORTERORASSIGNEE!
   let output: Users[] = []
   await axios
     .post(
@@ -46,6 +47,7 @@ const GetUserByTypeAxios = async (
   type: string,
   userId?: string,
 ) => {
+  serviceUrl = process.env.REACT_APP_API_USERS_GETREPORTERORASSIGNEE!
   const response = await axios.post(
     serviceUrl,
     {
