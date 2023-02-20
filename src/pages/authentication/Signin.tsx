@@ -41,7 +41,15 @@ export default () => {
 
     const requestOptions = {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'text/plain' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/plain',
+        /*  'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,POST,PUT',
+        'Access-Control-Allow-Headers':
+          'Origin, X-Requested-With, Content-Type, Accept, Authorization', */
+      },
       body: JSON.stringify(formInput),
     }
 
@@ -61,9 +69,13 @@ export default () => {
           //console.log('Success', resText)
           setErr('')
           //get userId
-          GetUserId('/api/users/getuserid', { username }.username).then((r) => {
+          GetUserId(
+            process.env.REACT_APP_API_USERS_GETUSERID!,
+            //'api.users/getuserid',
+            { username }.username,
+          ).then((r) => {
             if (r) {
-              if (r.code !== undefined) {
+              if (r.code !== 200) {
                 setLoading(false)
                 setErr(LOGIN_SERVICE_ERROR + ' ' + r.code)
                 //alert('Service failed with code ' + r.code)
@@ -167,14 +179,25 @@ export default () => {
                         iconRender={(visible) =>
                           visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                         }
-                        onPressEnter={() => routeChange('api/users/authen')}
+                        onPressEnter={() =>
+                          //routeChange('api/users/authen')
+                          {
+                            routeChange(
+                              process.env.REACT_APP_API_USERS_AUTHEN
+                                ? process.env.REACT_APP_API_USERS_AUTHEN
+                                : '',
+                            )
+                          }
+                        }
                       />
                     </Form.Item>
                     {loading === false ? (
                       <Button
                         type="primary"
                         block
-                        onClick={() => routeChange('api/users/authen')}
+                        onClick={() =>
+                          routeChange(process.env.REACT_APP_API_USERS_AUTHEN!)
+                        }
                       >
                         Đăng nhập
                       </Button>

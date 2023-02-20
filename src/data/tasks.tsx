@@ -11,6 +11,7 @@ const GetAllTasks = async (serviceUrl: string) => {
 }
 
 const GetTasksById = async (serviceUrl: string, taskId: string) => {
+  serviceUrl = process.env.REACT_APP_API_TASK_GETONETASK!
   let output: Tasks[] = []
   await axios
     .post(
@@ -34,6 +35,7 @@ const GetNotDoneTasksAssignee = async (
   userId: string,
   populateLevel: number = 1,
 ) => {
+  serviceUrl = process.env.REACT_APP_API_TASK_GETNOTDONETASK!
   let output: Tasks[] = []
   await axios
     .post(
@@ -64,6 +66,7 @@ const GetNotDoneTasksReporter = async (
   userId: string,
   populateLevel: number = 1,
 ) => {
+  serviceUrl = process.env.REACT_APP_API_TASK_GETNOTDONETASK!
   let output: Tasks[] = []
   await axios
     .post(
@@ -88,7 +91,11 @@ const GetNotDoneTasksReporter = async (
   return output
 }
 
-const InsertTask = async (serviceUrl: string, task: any) => {
+const InsertTask = async (
+  serviceUrl: string = process.env.REACT_APP_API_TASK_ADDTASKWITHSUBTASK!,
+  task: any,
+) => {
+  serviceUrl = process.env.REACT_APP_API_TASK_ADDTASKWITHSUBTASK!
   let user: Users = {}
   let output: Tasks = {
     TaskName: '',
@@ -123,7 +130,12 @@ const InsertTask = async (serviceUrl: string, task: any) => {
   return output
 }
 
-const UpdateTask = async (serviceUrl: string, task: InputTasks) => {
+const UpdateTask = async (
+  serviceUrl: string,
+  taskId: string,
+  task: InputTasks,
+) => {
+  serviceUrl = process.env.REACT_APP_API_TASK! + '/' + taskId
   let user: Users = {}
   let output: Tasks = {
     TaskName: '',

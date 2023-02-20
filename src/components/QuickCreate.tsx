@@ -430,7 +430,7 @@ const CustomFloatButton: React.FC = () => {
 
     _subTaskFilter.unshift(myInputTask)
 
-    console.log('Task all ' + JSON.stringify(_subTaskFilter))
+    //console.log('Task all ' + JSON.stringify(_subTaskFilter))
     await InsertTask(
       'api/task/addTaskWithSubtask',
       JSON.stringify(_subTaskFilter),

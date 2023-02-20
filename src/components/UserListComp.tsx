@@ -60,13 +60,13 @@ const UserListComp: React.FC<UserData> = ({
             const inputTasks: InputTasks = {
               Assignee: users,
             }
-            await UpdateTask('/api/task/' + taskId, inputTasks)
+            await UpdateTask('/api/task/', taskId!, inputTasks)
           } else {
             //update reporter
             const inputTasks: InputTasks = {
               Reporter: obj,
             }
-            await UpdateTask('/api/task/' + taskId, inputTasks)
+            await UpdateTask('/api/task/', taskId!, inputTasks)
           }
         }
 

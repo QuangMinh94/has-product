@@ -70,6 +70,11 @@ const columns: ColumnsType<DataType> = [
     dataIndex: 'dueDate',
     width: '10vw',
   },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    width: '10vw',
+  },
 ]
 
 let countIndex = 0
@@ -86,6 +91,7 @@ const TaskListOverDue: React.FC<InputData> = ({
   const [open, setOpen] = useState(false)
   const [modalData, setModalData] = useState<Tasks>()
   const [isShowMore, setShowMore] = useState(true)
+
   let data: DataType[] = []
   let noButton = false
   //do some math

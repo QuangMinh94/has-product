@@ -102,7 +102,7 @@ const SubTask: React.FC<SubTaskInput> = ({
         DueDate: new Date(dateStr ? dateStr : ''),
       }
 
-      await UpdateTask('/api/task/' + taskId, inputTask)
+      await UpdateTask('/api/task/', taskId!, inputTask)
     }
   }
 
@@ -144,7 +144,7 @@ const SubTask: React.FC<SubTaskInput> = ({
       TaskName: subTask.TaskName,
     }
 
-    await UpdateTask('/api/task/' + taskId, inputTasks)
+    await UpdateTask('/api/task/', taskId!, inputTasks)
   }
 
   const buttonOnClick = () => {

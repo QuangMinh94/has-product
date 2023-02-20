@@ -46,7 +46,7 @@ const DropdownProps: React.FC<Type> = ({
   function updateService(inputTask: InputTasks, taskId?: string) {
     if (taskId !== undefined) {
       setLoading(true)
-      UpdateTask('/api/task/' + taskId, inputTask)
+      UpdateTask('/api/task/', taskId, inputTask)
         .then((r) => {
           /*  notification.open({
             message: 'Notification',
