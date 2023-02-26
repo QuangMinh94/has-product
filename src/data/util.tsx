@@ -10,13 +10,15 @@ interface Tasks {
 }
 
 const FindIcon: React.FC<Tasks> = ({ type, text }) => {
-  const [typeIcon, setTypeIcon] = useState('')
-  const [typeColor, setTypeColor] = useState('')
+  let isFound = false
   let color = ''
   if (type === 'Priority') {
     priority.filter((obj) => {
       if (obj.name.toUpperCase() === text.toUpperCase()) {
         color = obj.color
+        isFound = true
+      } else {
+        isFound = false
       }
     })
     return (
@@ -28,8 +30,12 @@ const FindIcon: React.FC<Tasks> = ({ type, text }) => {
     statusData.filter((obj) => {
       if (obj.name.toUpperCase() === text.toUpperCase()) {
         color = obj.color
+        isFound = true
+      } else {
+        isFound = false
       }
     })
+
     return (
       <>
         <FontAwesomeIcon icon={faSquare} color={color} />

@@ -1,5 +1,17 @@
-import React, { useState } from 'react'
-import { Table, Layout, Button } from 'antd'
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+  Table,
+  Layout,
+  Button,
+  Input,
+  Checkbox,
+  Spin,
+  Modal,
+  MenuProps,
+  Row,
+  Col,
+  Space,
+} from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import DropdownProps from '../Dropdown'
 import '../../assets/css/index.css'
@@ -8,9 +20,16 @@ import ParagraphExample from '../ParagraphExample'
 import DateFormatter from '../../util/DateFormatter'
 import { useNavigate } from 'react-router-dom'
 import { CustomRoutes } from '../../customRoutes'
-import { Role } from '../../data/database/Role'
-import { Status } from '../../data/entity/Status'
+import { Status } from '../../data/interface/Status'
 import { getCookie } from 'typescript-cookie'
+import { useAppDispatch, useAppSelector } from '../../redux/app/hook'
+import { Params } from '../../data/interface/task'
+import { fetchTasksAssignee } from '../../redux/features/tasks/assigneeTaskSlice'
+import { myTaskChange } from '../../redux/features/myTask/myTaskSlice'
+import GetStatusIgnoreList from '../../util/StatusList'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSearch } from '@fortawesome/free-solid-svg-icons'
+import { ToLowerCaseNonAccentVietnamese } from '../../util/FormatText'
 
 interface DataType {
   key: string
@@ -20,53 +39,19 @@ interface DataType {
   priority: React.ReactNode
   startDate?: React.ReactNode
   dueDate: React.ReactNode
+  score?: React.ReactNode
 }
 
 interface InputData {
-  inputData: Tasks[]
+  inputData?: Tasks[]
   showMore: boolean
   increment: number
   collapseShowMore: boolean
+  onChangeValue?: (e: any) => void
 }
-
-const columns: ColumnsType<DataType> = [
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    align: 'center',
-    width: '5vw',
-  },
-  {
-    title: 'Task',
-    dataIndex: 'task',
-    width: '35vw',
-  },
-  /* {
-    title: 'Path',
-    dataIndex: 'path',
-    width: '14vw',
-  }, */
-  {
-    title: 'Priority',
-    dataIndex: 'priority',
-    align: 'center',
-    width: '13vw',
-  },
-  /* {
-    title: 'Start date',
-    dataIndex: 'startDate',
-    width: '10vw',
-  }, */
-  {
-    title: 'Due date',
-    dataIndex: 'dueDate',
-    width: '10vw',
-  },
-]
 
 let countIndex = 0
 let inputLength = 0
-let inputObj: Tasks[] = []
 
 const TaskList: React.FC<InputData> = ({
   inputData,
@@ -75,48 +60,73 @@ const TaskList: React.FC<InputData> = ({
   collapseShowMore,
 }) => {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [input, setInput] = useState<Tasks[]>([])
+  const [taskData, setTaskData] = useState<Tasks[]>([])
+
   const [isShowMore, setShowMore] = useState(collapseShowMore)
-  let data: DataType[] = []
-  let noButton = false
-  //do some math
-  const ShowMore = (startPositon: number, endPosition: number) => {
-    /* if (startPositon < endPosition) {
-      console.log("Starting " + startPositon + endPosition);
-      for (let index = startPositon; index < endPosition; index++) {
-        data.push({
-          key: inputObj[index].id,
-          status: <DropdownProps type="Status" text={inputObj[index].status} />,
-          task: inputObj[index].task_name,
-          path: inputObj[index].folder_path,
-          priority: (
-            <DropdownProps type="Priority" text={inputObj[index].priority} />
-          ),
-          startDate: new Date(inputObj[index].start_date).toLocaleDateString(
-            "en-GB"
-          ),
-          dueDate: new Date(inputObj[index].due_date).toLocaleDateString(
-            "en-GB"
-          ),
-        });
-        countIndex++;
-      }
-      //setData(data)
-    } */
-    setShowMore(false)
+  const [searchValue, setSearchValue] = useState('')
+  const [showCompleted, setShowCompleted] = useState(
+    sessionStorage.getItem('showClosedTaskList') === 'true',
+  )
+  const [dataInput, setDataInput] = useState<DataType[]>([])
+  const [dataSplice, setDataSplice] = useState<DataType[]>([])
+  const task = useAppSelector((state) => state.assigneeTasks)
+  const dispatch = useAppDispatch()
+  const params: Params = {
+    serviceUrl: '',
+    type: getCookie('user_id')?.toString()!,
+    //userId: getCookie('user_id')?.toString(),
   }
 
-  const OnNavigate = (taskData: Tasks) => {
-    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
-      state: {
-        search: '/' + taskData._id, // query string
-        // location state
-      },
-    })
-  }
+  const columns: ColumnsType<DataType> = [
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      align: 'center',
+      width: '5vw',
+    },
+    {
+      title: 'Task',
+      dataIndex: 'task',
+      width: '35vw',
+    },
+    /* {
+    title: 'Path',
+    dataIndex: 'path',
+    width: '14vw',
+  }, */
+    {
+      title: 'Priority',
+      dataIndex: 'priority',
+      align: 'center',
+      width: '13vw',
+    },
+    /* {
+    title: 'Start date',
+    dataIndex: 'startDate',
+    width: '10vw',
+  }, */
+    {
+      title: 'Due date',
+      dataIndex: 'dueDate',
+      width: '10vw',
+    },
+    {
+      ...(showCompleted === true
+        ? {
+            title: 'Score',
+            dataIndex: 'score',
+            width: '10vw',
+          }
+        : {
+            width: '0vw',
+          }),
+    },
+  ]
 
-  if (inputData.length !== 0) {
-    //data = [];
-    inputObj = inputData
+  const ReorderTask = (inputTaskList: Tasks[]) => {
+    let inputObj: Tasks[] = JSON.parse(JSON.stringify(inputTaskList))
     inputLength = inputObj.length
 
     inputObj.forEach((element) => {
@@ -243,106 +253,477 @@ const TaskList: React.FC<InputData> = ({
           (data) => data.PriorityNum === 5 && data.DueDate === null,
         ),
       )
+
     inputObj = urgentTask.concat(
       highTask.concat(mediumTask.concat(lowTask.concat(undefinedTask))),
     )
 
-    const role: Role = JSON.parse(getCookie('userInfo') as string).Role
-    let ignoreStt: Status[] = [
-      {
-        id: 1,
-      },
-      {
-        id: 4,
-      },
-    ]
-    if (role.Level >= 5) {
-      ignoreStt.push({
-        id: 6,
-      })
-    }
+    setInput(inputObj)
 
-    //console.log('All task ' + JSON.stringify(inputObj))
+    const _data: DataType[] = []
+    const _dataSplice: DataType[] = []
+    if (inputLength > 0) {
+      for (let index = 0; index < inputLength; index++) {
+        const _ignoreList: Status[] = GetStatusIgnoreList(
+          getCookie('user_id')?.toString()!,
+          inputObj[index].Assignee[0]._id!,
+          inputObj[index].Reporter._id!,
+          inputObj[index].Status,
+        )
 
-    //inputLength = inputObj.length
-
-    console.log('Length ' + inputLength)
-
-    for (let index = 0; index < inputLength; index++) {
-      data.push({
-        key: inputObj[index]._id ? index.toString() : index.toString(),
-        status: (
-          <DropdownProps
-            type="Status"
-            text={inputObj[index].Status}
-            button={false}
-            taskId={inputObj[index]._id}
-            ignoreStt={ignoreStt}
-          />
-        ),
-        task: (
-          <div onClick={() => OnNavigate(inputObj[index])}>
-            <ParagraphExample name={inputObj[index].TaskName} />
-          </div>
-        ),
-        //path: inputObj[index].GroupPath,
-        priority: (
-          <>
-            {/* <>{inputObj[index].CreateDate}</> */}
+        _data.push({
+          key: inputObj[index]._id ? index.toString() : index.toString(),
+          status: (
             <DropdownProps
-              type="Priority"
-              text={inputObj[index].Priority}
+              type="Status"
+              text={inputObj[index].Status}
               button={false}
               taskId={inputObj[index]._id}
+              ignoreStt={_ignoreList}
+              task={inputObj[index]}
+              onClickMenu={handleMenuClickStatus}
             />
-          </>
-        ),
-        //startDate: <DateFormatter dateString={inputObj[index].StartDate} />,
-        dueDate: (
-          <>
-            {inputObj[index].DueDate === null ? (
-              ''
-            ) : new Date(inputObj[index].DueDate!) < new Date() ? (
-              <div className="overdue">
-                <DateFormatter dateString={inputObj[index].DueDate!} />
+          ),
+          task: (
+            <div onClick={() => OnNavigate(inputObj[index])}>
+              <ParagraphExample name={inputObj[index].TaskName} />
+            </div>
+          ),
+          priority: (
+            <>
+              <DropdownProps
+                type="Priority"
+                text={inputObj[index].Priority}
+                button={false}
+                taskId={inputObj[index]._id}
+                task={inputObj[index]}
+              />
+            </>
+          ),
+          dueDate: (
+            <>
+              {inputObj[index].DueDate === null ? (
+                ''
+              ) : new Date(inputObj[index].DueDate!) < new Date() ? (
+                <div className="overdue">
+                  <DateFormatter dateString={inputObj[index].DueDate!} />
+                </div>
+              ) : (
+                <div>
+                  <DateFormatter dateString={inputObj[index].DueDate!} />
+                </div>
+              )}
+            </>
+          ),
+          score: <p>{inputObj[index].Score ? inputObj[index].Score : '_'}</p>,
+        })
+
+        if (index < 3) {
+          _dataSplice.push({
+            key: inputObj[index]._id ? index.toString() : index.toString(),
+            status: (
+              <DropdownProps
+                type="Status"
+                text={inputObj[index].Status}
+                button={false}
+                taskId={inputObj[index]._id}
+                ignoreStt={_ignoreList}
+                task={inputObj[index]}
+                onClickMenu={handleMenuClickStatus}
+              />
+            ),
+            task: (
+              <div onClick={() => OnNavigate(inputObj[index])}>
+                <ParagraphExample name={inputObj[index].TaskName} />
               </div>
-            ) : (
-              <div>
-                <DateFormatter dateString={inputObj[index].DueDate!} />
-              </div>
-            )}
-          </>
-        ),
-      })
-      countIndex++
+            ),
+            priority: (
+              <>
+                <DropdownProps
+                  type="Priority"
+                  text={inputObj[index].Priority}
+                  button={false}
+                  taskId={inputObj[index]._id}
+                  task={inputObj[index]}
+                />
+              </>
+            ),
+            dueDate: (
+              <>
+                {inputObj[index].DueDate === null ? (
+                  ''
+                ) : new Date(inputObj[index].DueDate!) < new Date() ? (
+                  <div className="overdue">
+                    <DateFormatter dateString={inputObj[index].DueDate!} />
+                  </div>
+                ) : (
+                  <div>
+                    <DateFormatter dateString={inputObj[index].DueDate!} />
+                  </div>
+                )}
+              </>
+            ),
+            score: <p>{inputObj[index].Score ? inputObj[index].Score : '_'}</p>,
+          })
+        }
+        countIndex++
+      }
+
+      setDataSplice(_dataSplice)
+      setDataInput(_data)
     }
+  }
+
+  const ReorderClosedTasks = (inputTaskList: Tasks[]) => {
+    let inputObj: Tasks[] = JSON.parse(JSON.stringify(inputTaskList))
+    inputLength = inputObj.length
+
+    inputObj.forEach((element) => {
+      if (element.Priority === 'Urgent') {
+        element.PriorityNum = 1
+      } else if (element.Priority === 'High') {
+        element.PriorityNum = 2
+      } else if (element.Priority === 'Medium') {
+        element.PriorityNum = 3
+      } else if (element.Priority === 'Low') {
+        element.PriorityNum = 4
+      } else {
+        element.PriorityNum = 5
+      }
+    })
+
+    inputObj = inputObj.sort(
+      (a, b) =>
+        (a.PriorityNum as number) - (b.PriorityNum as number) ||
+        new Date(b.CloseDate ? b.CloseDate : new Date()).getTime() -
+          new Date(a.CloseDate ? a.CloseDate : new Date()).getTime(),
+    )
+
+    setInput(inputObj)
+
+    const _data: DataType[] = []
+    const _dataSplice: DataType[] = []
+    if (inputLength > 0) {
+      for (let index = 0; index < inputLength; index++) {
+        const _ignoreList: Status[] = GetStatusIgnoreList(
+          getCookie('user_id')?.toString()!,
+          inputObj[index].Assignee[0]._id!,
+          inputObj[index].Reporter._id!,
+          inputObj[index].Status,
+        )
+
+        _data.push({
+          key: inputObj[index]._id ? index.toString() : index.toString(),
+          status: (
+            <DropdownProps
+              type="Status"
+              text={inputObj[index].Status}
+              button={false}
+              taskId={inputObj[index]._id}
+              ignoreStt={_ignoreList}
+              task={inputObj[index]}
+              onClickMenu={handleMenuClickStatus}
+            />
+          ),
+          task: (
+            <div onClick={() => OnNavigate(inputObj[index])}>
+              <ParagraphExample name={inputObj[index].TaskName} />
+            </div>
+          ),
+          priority: (
+            <>
+              <DropdownProps
+                type="Priority"
+                text={inputObj[index].Priority}
+                button={false}
+                taskId={inputObj[index]._id}
+                task={inputObj[index]}
+              />
+            </>
+          ),
+          dueDate: (
+            <>
+              {inputObj[index].DueDate === null ? (
+                ''
+              ) : new Date(inputObj[index].DueDate!) < new Date() ? (
+                <div className="overdue">
+                  <DateFormatter dateString={inputObj[index].DueDate!} />
+                </div>
+              ) : (
+                <div>
+                  <DateFormatter dateString={inputObj[index].DueDate!} />
+                </div>
+              )}
+            </>
+          ),
+          score: <p>{inputObj[index].Score ? inputObj[index].Score : '_'}</p>,
+        })
+
+        if (index < 3) {
+          _dataSplice.push({
+            key: inputObj[index]._id ? index.toString() : index.toString(),
+            status: (
+              <DropdownProps
+                type="Status"
+                text={inputObj[index].Status}
+                button={false}
+                taskId={inputObj[index]._id}
+                ignoreStt={_ignoreList}
+                task={inputObj[index]}
+                onClickMenu={handleMenuClickStatus}
+              />
+            ),
+            task: (
+              <div onClick={() => OnNavigate(inputObj[index])}>
+                <ParagraphExample name={inputObj[index].TaskName} />
+              </div>
+            ),
+            priority: (
+              <>
+                <DropdownProps
+                  type="Priority"
+                  text={inputObj[index].Priority}
+                  button={false}
+                  taskId={inputObj[index]._id}
+                  task={inputObj[index]}
+                />
+              </>
+            ),
+            dueDate: (
+              <>
+                {inputObj[index].DueDate === null ? (
+                  ''
+                ) : new Date(inputObj[index].DueDate!) < new Date() ? (
+                  <div className="overdue">
+                    <DateFormatter dateString={inputObj[index].DueDate!} />
+                  </div>
+                ) : (
+                  <div>
+                    <DateFormatter dateString={inputObj[index].DueDate!} />
+                  </div>
+                )}
+              </>
+            ),
+            score: <p>{inputObj[index].Score ? inputObj[index].Score : '_'}</p>,
+          })
+        }
+        countIndex++
+      }
+
+      setDataSplice(_dataSplice)
+      setDataInput(_data)
+    }
+  }
+
+  const handleMenuClickStatus: MenuProps['onClick'] = (e) => {
+    setLoading(true)
+  }
+
+  useEffect(() => {
+    dispatch(fetchTasksAssignee(params))
+  }, [loading])
+
+  useEffect(() => {
+    dispatch(myTaskChange(input.length))
+  }, [dataInput.length])
+
+  useEffect(() => {
+    if (!task.loading && task.tasks.length) {
+      if (showCompleted === false) {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
+        )
+        ReorderTask(inputObjFilter)
+      } else {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
+            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
+        )
+        ReorderClosedTasks(inputObjFilter)
+      }
+    }
+    setLoading(false)
+  }, [task.loading, task.tasks.length])
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (showCompleted === false) {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
+        )
+        ReorderTask(inputObjFilter)
+      } else {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
+            dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
+        )
+        ReorderClosedTasks(inputObjFilter)
+      }
+      setLoading(false)
+    }, 100)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [showCompleted])
+
+  useEffect(() => {
+    let value = searchValue
+    const delayDebounceFn = setTimeout(() => {
+      if (value !== '') {
+        if (showCompleted === false) {
+          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+          const inputObjFilter = sortedTask.filter(
+            (dataOtherEle) =>
+              dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+              dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
+          )
+          const sortResult: Tasks[] = inputObjFilter.filter((x) =>
+            ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
+              ToLowerCaseNonAccentVietnamese(value),
+            ),
+          )
+          ReorderTask(sortResult)
+        } else {
+          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+          const inputObjFilter = sortedTask.filter(
+            (dataOtherEle) =>
+              dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
+              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+              dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
+          )
+
+          const sortResult: Tasks[] = inputObjFilter.filter((x) =>
+            ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
+              ToLowerCaseNonAccentVietnamese(value),
+            ),
+          )
+          ReorderClosedTasks(sortResult)
+          //dispatch(myTaskChange(inputObjFilter.length))
+        }
+      } else {
+        if (showCompleted === false) {
+          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+          const inputObjFilter = sortedTask.filter(
+            (dataOtherEle) =>
+              dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+              dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
+          )
+          ReorderTask(inputObjFilter)
+        } else {
+          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+          const inputObjFilter = sortedTask.filter(
+            (dataOtherEle) =>
+              dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
+              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+              dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
+          )
+          ReorderClosedTasks(inputObjFilter)
+          //dispatch(myTaskChange(inputObjFilter.length))
+        }
+      }
+    }, 200)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchValue])
+
+  let noButton = false
+  const ShowMore = () => {
+    setShowMore(false)
+  }
+
+  const OnNavigate = (taskData: Tasks) => {
+    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
+      state: {
+        search: '/' + taskData._id, // query string
+        // location state
+      },
+    })
   }
 
   if (showMore === true) {
     if (isShowMore === false) {
       noButton = false
-    } else if (data.length < 3) {
+    } else if (dataInput.length < 3) {
       noButton = false
     } else {
       noButton = true
     }
   }
+
   return (
     <>
       <Layout>
-        <Table
-          pagination={false}
-          columns={columns}
-          dataSource={isShowMore === true ? data.splice(0, 3) : data}
-          scroll={{ y: 500 }}
-          size="middle"
-        />
+        <Row>
+          <Col span={16}>
+            <Input
+              prefix={<FontAwesomeIcon icon={faSearch} />}
+              placeholder="Tìm task"
+              //onPressEnter={(e) => onSearch(e)}
+              style={{
+                width: '50%',
+                border: 'none',
+                float: 'left',
+                marginBottom: '15px',
+              }}
+              value={searchValue}
+              //defaultValue={inputValue}
+              //onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setSearchValue(e.target.value)
+              }}
+              //onBlur={(e) => InputChange(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col span={8}>
+            <Checkbox
+              onChange={(e) => {
+                const saveBoolean: boolean = e.target.checked
+                sessionStorage.setItem(
+                  'showClosedTaskList',
+                  new Boolean(saveBoolean).toString(),
+                )
+
+                setShowCompleted(!showCompleted)
+              }}
+              style={{ float: 'right' }}
+              defaultChecked={
+                sessionStorage.getItem('showClosedTaskList') === 'true'
+              }
+            >
+              Show closed tasks
+            </Checkbox>
+          </Col>
+        </Row>
+
+        {loading === false ? (
+          <Table
+            pagination={false}
+            columns={columns}
+            dataSource={isShowMore === true ? dataSplice : dataInput}
+            scroll={{ y: 500 }}
+            size="middle"
+          />
+        ) : (
+          <Spin />
+        )}
         {noButton === true && (
           <center className="show-more-btn">
             <br />
-            <Button onClick={() => ShowMore(countIndex, inputLength)}>
-              Show more
-            </Button>
+            <Button onClick={() => ShowMore()}>Show more</Button>
           </center>
         )}
       </Layout>

@@ -61,6 +61,27 @@ const GetNotDoneTasksAssignee = async (
   return output
 }
 
+const GetNotDoneTasksAssigneeAxios = async (
+  serviceUrl: string,
+  userId: string,
+  populateLevel: number = 1,
+) => {
+  serviceUrl = process.env.REACT_APP_API_TASK_GETNOTDONETASK!
+  const repsonse = await axios.post(
+    serviceUrl,
+    {
+      assigneeid: userId,
+      populateLevel: populateLevel,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+  return repsonse
+}
+
 const GetNotDoneTasksReporter = async (
   serviceUrl: string,
   userId: string,
@@ -89,6 +110,74 @@ const GetNotDoneTasksReporter = async (
       console.log('Reporter ' + error)
     })
   return output
+}
+
+const GetNotDoneTasksReporterAxios = async (
+  serviceUrl: string,
+  userId: string,
+  populateLevel: number = 1,
+) => {
+  serviceUrl = process.env.REACT_APP_API_TASK_GETNOTDONETASK!
+  const repsonse = await axios.post(
+    serviceUrl,
+    {
+      reporterid: userId,
+      populateLevel: populateLevel,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  return repsonse
+}
+
+export const GetAllTaskBaseOnUserAssigneeAxios = async (
+  serviceUrl: string,
+  userId: string,
+  populateLevel: number = 1,
+) => {
+  serviceUrl = process.env.REACT_APP_API_TASK__GETALLTASKBASEONUSER!
+
+  const repsonse = await axios.post(
+    serviceUrl,
+    {
+      assigneeid: userId,
+      populateLevel: populateLevel,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  return repsonse
+}
+
+export const GetAllTaskBaseOnUserReporterAxios = async (
+  serviceUrl: string,
+  userId: string,
+  populateLevel: number = 1,
+) => {
+  serviceUrl = process.env.REACT_APP_API_TASK__GETALLTASKBASEONUSER!
+
+  const repsonse = await axios.post(
+    serviceUrl,
+    {
+      reporterid: userId,
+      populateLevel: populateLevel,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  return repsonse
 }
 
 const InsertTask = async (
@@ -165,7 +254,7 @@ const UpdateTask = async (
       return output
     })
     .catch(function (error) {
-      console.log(error)
+      output.errorMessage = error.message
     })
   return output
 }
@@ -177,4 +266,6 @@ export {
   InsertTask,
   UpdateTask,
   GetTasksById,
+  GetNotDoneTasksAssigneeAxios,
+  GetNotDoneTasksReporterAxios,
 }

@@ -1,54 +1,52 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { GetUserByTypeAxios } from '../../../data/allUsers'
-import { Users } from '../../../data/database/Users'
 import { Params } from '../../../data/interface/task'
-import type { MenuProps } from 'antd'
+import { GetAllTaskBaseOnUserAssigneeAxios } from '../../../data/tasks'
+import { Tasks } from '../../../data/database/Tasks'
 
 type InitialState = {
   loading: boolean
-  users: Users[]
+  tasks: Tasks[]
   error: string
 }
 
 const initialState: InitialState = {
   loading: false,
-  users: [],
+  tasks: [],
   error: '',
 }
 
 //Generated pending, fulfilled and rejected action type automatically
-export const fetchUsers = createAsyncThunk(
-  'users/fetchUsers',
+export const fetchTasksAssignee = createAsyncThunk(
+  'users/fetchTasksAssignee',
   async (params: Params) => {
-    const response = await GetUserByTypeAxios(
+    const response = await GetAllTaskBaseOnUserAssigneeAxios(
       params.serviceUrl,
       params.type,
-      params.userId,
     )
     return response.data
   },
 )
 
-const userSlice = createSlice({
+const assigneeTaskSlice = createSlice({
   initialState: initialState,
-  name: 'user',
+  name: 'assigneeTask',
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchUsers.pending, (state) => {
+    builder.addCase(fetchTasksAssignee.pending, (state) => {
       state.loading = true
     })
     builder.addCase(
-      fetchUsers.fulfilled,
-      (state, action: PayloadAction<Users[]>) => {
+      fetchTasksAssignee.fulfilled,
+      (state, action: PayloadAction<Tasks[]>) => {
         state.loading = false
-        state.users = action.payload
+        state.tasks = action.payload
         state.error = ''
       },
     )
-    builder.addCase(fetchUsers.rejected, (state, action) => {
+    builder.addCase(fetchTasksAssignee.rejected, (state, action) => {
       state.loading = false
-      state.users = []
+      state.tasks = []
       state.error = action.error.message
         ? action.error.message
         : 'Something went wrong'
@@ -56,4 +54,4 @@ const userSlice = createSlice({
   },
 })
 
-export default userSlice.reducer
+export default assigneeTaskSlice.reducer

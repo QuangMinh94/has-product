@@ -9,6 +9,8 @@ export interface Tasks {
   CreateDate: Date
   StartDate?: Date
   DueDate?: Date
+  DoneDate?: Date
+  CloseDate?: Date
   Assignee: Users[]
   Watcher: Users[]
   Tag: string[]
@@ -21,4 +23,8 @@ export interface Tasks {
   GroupPath: string
   __v?: number
   created?: boolean
+  Score?: number
+  ScoreComment?: string
+  ScoreModifiedDate?: Date
+  errorMessage?: string
 }

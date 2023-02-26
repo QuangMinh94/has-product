@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { getCookie } from 'typescript-cookie'
-import { Params } from '../../../data/entity/task'
+import { Params } from '../../../data/interface/task'
 import { useAppSelector, useAppDispatch } from '../../app/hook'
 import { fetchUsers } from '../users/usersSlice'
 

@@ -9,6 +9,8 @@ export interface InputTasks {
   CreateDate?: Date
   StartDate?: Date
   DueDate?: Date
+  DoneDate?: Date
+  CloseDate?: Date
   Assignee?: Users[]
   Watcher?: Users[]
   Tag?: string[]
@@ -19,4 +21,7 @@ export interface InputTasks {
   Reporter?: Users
   GroupPath?: string
   __v?: number
+  Score?: number
+  ScoreComment?: string
+  ScoreModifiedDate?: Date
 }

@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import UserIcon from './UserIcon'
 import { Users } from '../data/database/Users'
 import { CustomRoutes } from '../customRoutes'
+import { removeCookie } from 'typescript-cookie'
 
 const { Header, Content, Footer, Sider } = Layout
 
@@ -59,7 +60,12 @@ const CustomHeader: React.FC<IHeader> = ({ pageName, userData }) => {
       label: (
         <center
           style={{ width: '100%' }}
-          onClick={() => navigate(CustomRoutes.Signin.path)}
+          onClick={() => {
+            sessionStorage.clear()
+            removeCookie('user_id')
+            removeCookie('userInfo')
+            navigate(CustomRoutes.Signin.path)
+          }}
         >
           <Link to={CustomRoutes.Signin.path}>Log out</Link>
         </center>

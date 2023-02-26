@@ -11,13 +11,14 @@ import {
   notification,
   Spin,
   Button,
+  MenuProps,
 } from 'antd'
 import Breadcrumbs from '../components/Breadcrumbs'
 import '../assets/css/layout.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import DropdownProps from '../components/Dropdown'
 import UserListComp from '../components/UserListComp'
-import { TabsProps, UploadProps, Modal } from 'antd'
+import { UploadProps, Modal } from 'antd'
 import { Tasks } from '../data/database/Tasks'
 import { Users } from '../data/database/Users'
 import type { Dayjs } from 'dayjs'
@@ -36,8 +37,10 @@ import { InputTasks } from '../data/database/InputTasks'
 import _ from 'lodash'
 import {
   DEFAULT_STT,
+  HIDE,
   IGNORE_STT_DEFAULT,
-  INSERT_MODE,
+  READONLY,
+  SHOW,
   UPDATE_FAIL,
   UPDATE_MODE,
 } from '../util/ConfigText'
@@ -45,9 +48,15 @@ import CustomFloatButton from '../components/QuickCreate'
 import { GetUserByType } from '../data/allUsers'
 import { getCookie } from 'typescript-cookie'
 import CustomDatePicker from '../components/CustomDatePicker'
-import { SubTaskCompProp, SubTaskProp } from '../data/entity/SubTaskProp'
+import { SubTaskCompProp, SubTaskProp } from '../data/interface/SubTaskProp'
 import ObjectID from 'bson-objectid'
 import SubTask from '../components/SubTasks'
+import ScoreComp from '../components/ScoreComponent'
+import { ScoreCompProp } from '../data/interface/ScoreCompProps'
+import GetReviewAndScoreDisplay from '../util/ReviewAndScore'
+import GetScoreReviewDisplay from '../util/ScoreReview'
+import { Status } from '../data/interface/Status'
+import GetStatusIgnoreList from '../util/StatusList'
 
 interface TaskData {
   taskData?: Tasks
@@ -151,10 +160,21 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     Subtask: [],
     Attachment: [],
     Comment: [],
-    Status: '',
+    Status: 'In progress',
     Reporter: {},
     GroupPath: '',
   })
+
+  const [miniModal, setMiniModal] = useState(false)
+  const [readOnly, setReadOnly] = useState(true)
+  const [showScore, setShowScore] = useState(false)
+  const [statusIgnoreList, setStatusIgnoreList] = useState<Status[]>([])
+
+  const OnCloseFunc = () => {
+    setMiniModal(false)
+    fetchData()
+    setGetUsers(false)
+  }
 
   const BackToMainTask = (taskId: string) => {
     navigate(CustomRoutes.TaskDetails.path + '/' + taskId, {
@@ -167,6 +187,11 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     navigate(0)
   }
 
+  const onChangeStatus: MenuProps['onClick'] = (e) => {
+    fetchData()
+    setGetUsers(false)
+  }
+
   const fetchData = useCallback(async () => {
     if (parentTask) setHaveParentTask(true)
     setGetUsers(true)
@@ -176,6 +201,12 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       taskId.id as string,
     )
     setTaskData(data[0])
+    if (
+      data[0].Status.toLowerCase() === 'Completed'.toLowerCase() ||
+      data[0].Status.toLowerCase() === 'Incompleted'.toLowerCase()
+    ) {
+      setReadOnly(false)
+    }
     let desc = ''
     try {
       desc = JSON.parse(data[0].Description)
@@ -199,6 +230,32 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     setReporterData(dataRp)
 
     //console.log('All data ' + JSON.stringify(data[0].Subtask!))
+    const scoreProp: ScoreCompProp = GetScoreReviewDisplay(
+      getCookie('user_id')?.toString()!,
+      data[0].Assignee[0]._id!,
+      data[0].Reporter._id!,
+      data[0].Status,
+    )
+
+    if (scoreProp.showSCore === HIDE) {
+      setShowScore(false)
+    } else if (scoreProp.showSCore === READONLY) {
+      setShowScore(true)
+      setReadOnly(true)
+    } else if (scoreProp.showSCore === SHOW) {
+      setShowScore(true)
+      setReadOnly(false)
+    }
+
+    const ignoreList: Status[] = GetStatusIgnoreList(
+      getCookie('user_id')?.toString()!,
+      data[0].Assignee[0]._id!,
+      data[0].Reporter._id!,
+      data[0].Status,
+    )
+
+    setStatusIgnoreList(ignoreList)
+
     setLoading(false)
   }, [])
 
@@ -296,35 +353,29 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
 
   const OnBlurTaskName = async (e: any) => {
     setEditTaskName(false)
-    const inputTask: InputTasks = {
-      TaskName: e.target.value,
-    }
+    if (e.target.value !== '') {
+      const inputTask: InputTasks = {
+        TaskName: e.target.value,
+      }
 
-    setTaskData({ ...taskData, TaskName: e.target.value })
-    //update task
-    await UpdateTask('/api/task/', taskData._id!, inputTask)
-      .then((r) => {
-        /*  notification.open({
-            message: 'Notification',
-            description: UPDATE_SUCCESS,
-            duration: 2,
-            onClick: () => {
-              //console.log('Notification Clicked!')
-            },
-          }) */
-        setLoading(false)
-      })
-      .catch((error) => {
-        setLoading(false)
-        notification.open({
-          message: 'Notification',
-          description: UPDATE_FAIL,
-          duration: 2,
-          onClick: () => {
-            //console.log('Notification Clicked!')
-          },
+      setTaskData({ ...taskData, TaskName: e.target.value })
+      //update task
+      await UpdateTask('/api/task/', taskData._id!, inputTask)
+        .then((r) => {
+          setLoading(false)
         })
-      })
+        .catch((error) => {
+          setLoading(false)
+          notification.open({
+            message: 'Notification',
+            description: UPDATE_FAIL,
+            duration: 2,
+            onClick: () => {},
+          })
+        })
+    } else {
+      setTaskData({ ...taskData, TaskName: taskData.TaskName })
+    }
   }
 
   const showModal = () => {
@@ -378,21 +429,13 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       const subTaskFilter = subTask.filter((e) => e._id === _task._id)
       if (subTaskFilter.length === 0) {
         //insert
-        console.log('Insert the id')
 
         subTask.push(_task)
-
-        //setSubTask([...subTask, _task])
       } else {
         //update
         console.log('Update the id')
         for (let indexS = 0; indexS < subTask.length; indexS++) {
           if (subTask[indexS]._id === _task._id) {
-            /* setSubTask(
-              update(subTask, {
-                $splice: [[indexS, 1, _task]],
-              }),
-            ) */
             subTask[indexS] = _task
             break
           }
@@ -414,7 +457,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       inputTasks.push(_task)
       inputTasks.unshift(mainTask)
 
-      await InsertTask(
+      const insertTask: Tasks = await InsertTask(
         'api/task/addTaskWithSubtask',
         JSON.stringify(inputTasks),
       )
@@ -443,7 +486,6 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   }
 
   const AddTask = () => {
-    console.log('Hello ' + subTasksComp.length)
     const subId = ObjectID().toHexString()
     setSubTaskIdList([...subTaskIdList, subId])
     setSubTaskComp(
@@ -460,6 +502,10 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       }),
     )
     setOpenSubTaskBtn(false)
+  }
+
+  const OnCloseModal = (e: any) => {
+    setMiniModal(false)
   }
 
   return (
@@ -494,7 +540,9 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                         button={true}
                         taskId={taskData?._id}
                         id={'details'}
-                        ignoreStt={IGNORE_STT_DEFAULT()}
+                        ignoreStt={statusIgnoreList}
+                        onClickMenu={onChangeStatus}
+                        task={taskData}
                       />
                       {editTaskName === false ? (
                         <p
@@ -512,13 +560,31 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       )}
                     </Space>
                   </Col>
-                  <Col
-                    className="gutter-row"
-                    span={1}
-                    style={{ flex: 'revert' }}
-                  >
-                    <FontAwesomeIcon icon={faStar} color="#FACC15" />
-                  </Col>
+                  {showScore && (
+                    <>
+                      <Col
+                        className="gutter-row"
+                        span={1}
+                        style={{ flex: 'revert' }}
+                      >
+                        <FontAwesomeIcon
+                          icon={faStar}
+                          color="#FACC15"
+                          onClick={() => {
+                            setMiniModal(true)
+                          }}
+                        />
+                      </Col>
+
+                      <Col
+                        className="gutter-row"
+                        span={1}
+                        style={{ flex: 'revert' }}
+                      >
+                        <p>{taskData.Score!}</p>
+                      </Col>
+                    </>
+                  )}
                   <Col
                     className="gutter-row"
                     span={4}
@@ -541,6 +607,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       text={taskData?.Priority ? taskData?.Priority : ''}
                       taskId={taskData?._id}
                       id={'details'}
+                      task={taskData}
                     />
                   </Col>
                   {getUsers === false ? (
@@ -702,6 +769,18 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
         )}
         <CustomFloatButton />
       </Modal>
+      {loading === false ? (
+        <ScoreComp
+          task={taskData}
+          readOnly={readOnly}
+          openModal={miniModal}
+          closeFunc={OnCloseFunc}
+          updateFunc={OnCloseFunc}
+          defaultScore={taskData.Score!}
+        />
+      ) : (
+        <Spin />
+      )}
     </>
   )
 }

@@ -14,6 +14,7 @@ const App: React.FC = () => {
               colorPrimary: '#0E7490',
             },
             Layout: {
+              colorBgBody: '#FFFFFF',
               colorPrimary: '#0E7490',
             },
           },

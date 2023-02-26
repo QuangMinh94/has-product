@@ -37,3 +37,12 @@
   font-weight: bold;
   font-size: 24px;
 }
+
+.container {
+  margin-bottom: 30px;
+}
+
+.ant-input-number-lg input.ant-input-number-input {
+  height: 100px;
+  font-size: 40px;
+}
