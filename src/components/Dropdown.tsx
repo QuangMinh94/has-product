@@ -1,15 +1,24 @@
 import React, { MouseEventHandler, useEffect, useState } from 'react'
-import { Button, MenuProps, Spin, notification } from 'antd'
+import { Button, MenuProps, Spin, notification, Modal } from 'antd'
 import { Dropdown, Space } from 'antd'
 import FindIcon from '../data/util'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFlag, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { statusData } from '../data/statusData'
 import { UpdateTask } from '../data/tasks'
-import { UPDATE_FAIL, UPDATE_MODE, UPDATE_SUCCESS } from '../util/ConfigText'
-import { Status } from '../data/entity/Status'
+import {
+  HIDE,
+  UPDATE_FAIL,
+  UPDATE_MODE,
+  UPDATE_SUCCESS,
+} from '../util/ConfigText'
+import { Status } from '../data/interface/Status'
 import { Tasks } from '../data/database/Tasks'
 import { InputTasks } from '../data/database/InputTasks'
+import ScoreComp from './ScoreComponent'
+import GetReviewAndScoreDisplay from '../util/ReviewAndScore'
+import { getCookie } from 'typescript-cookie'
+import { ScoreCompProp } from '../data/interface/ScoreCompProps'
 
 interface Type {
   type: string
@@ -20,6 +29,7 @@ interface Type {
   ignoreStt?: Status[]
   onClickMenu?: (e: any) => void
   mode?: string
+  task?: Tasks
 }
 
 const DropdownProps: React.FC<Type> = ({
@@ -31,9 +41,19 @@ const DropdownProps: React.FC<Type> = ({
   ignoreStt,
   onClickMenu,
   mode,
+  task,
 }) => {
   let items: MenuProps['items'] = []
   const [loading, setLoading] = useState(false)
+
+  const [newStatus, setNewStatus] = useState('')
+  const [miniModal, setMiniModal] = useState(false)
+  const [readOnly, setReadOnly] = useState(false)
+  const [defaultScore, setDefaultScore] = useState(0)
+
+  const OnCloseFunc = () => {
+    setMiniModal(false)
+  }
 
   if (button === undefined) {
     button = true
@@ -48,14 +68,6 @@ const DropdownProps: React.FC<Type> = ({
       setLoading(true)
       UpdateTask('/api/task/', taskId, inputTask)
         .then((r) => {
-          /*  notification.open({
-            message: 'Notification',
-            description: UPDATE_SUCCESS,
-            duration: 2,
-            onClick: () => {
-              //console.log('Notification Clicked!')
-            },
-          }) */
           setLoading(false)
         })
         .catch((error) => {
@@ -84,21 +96,57 @@ const DropdownProps: React.FC<Type> = ({
       updateService(inputTask, taskId)
     }
 
+    //if (onClickMenu) onClickMenu(value)
+
     //console.log('Priority :' + sessionStorage.getItem('priority'))
   }
 
   function getStatusValue(value: string) {
+    console.log('Status here')
     setTxt(value)
     sessionStorage.setItem('status' + id, value)
     //call update service
+
     const inputTask: InputTasks = {
       Status: value,
     }
 
-    if (mode === undefined || mode === UPDATE_MODE) {
-      updateService(inputTask, taskId)
+    if (value.toLowerCase() === 'Done'.toLowerCase()) {
+      inputTask.DoneDate = new Date()
+    } else if (
+      value.toLowerCase() === 'Completed'.toLowerCase() ||
+      value.toLowerCase() === 'Incompleted'.toLowerCase()
+    ) {
+      inputTask.CloseDate = new Date()
     }
-    //console.log('Status :' + sessionStorage.getItem('status'))
+
+    const showHide: ScoreCompProp = GetReviewAndScoreDisplay(
+      getCookie('user_id')?.toString()!,
+      task?.Assignee[0]._id!,
+      task?.Reporter._id!,
+      task?.Status!,
+      value,
+      0,
+    )
+
+    setDefaultScore(showHide.score)
+
+    if (showHide.showSCore !== HIDE) {
+      console.log('Alright hans,time to go')
+      setNewStatus(value)
+      setReadOnly(false)
+      setMiniModal(true)
+    } else {
+      console.log('But he ate my last meal')
+      setReadOnly(true)
+      setMiniModal(false)
+      if (mode === undefined || mode === UPDATE_MODE) {
+        updateService(inputTask, taskId)
+      }
+      if (onClickMenu) {
+        onClickMenu(value)
+      }
+    }
   }
 
   const priority: MenuProps['items'] = [
@@ -286,29 +334,77 @@ const DropdownProps: React.FC<Type> = ({
   }
 
   return (
-    <Dropdown
-      menu={{ items, onClick: onClickMenu }}
-      trigger={['click']}
-      onOpenChange={(e) => console.log}
-    >
-      <a onClick={(e) => e.preventDefault()}>
-        {loading === false ? (
-          <Space>
-            {button === true ? (
-              <Button shape="circle">
-                <FindIcon type={type} text={txt} />
-              </Button>
+    <>
+      {items.length > 0 ? (
+        <Dropdown
+          menu={{
+            items,
+          }}
+          trigger={['click']}
+          onOpenChange={(e) => console.log}
+        >
+          <a onClick={(e) => e.preventDefault()}>
+            {loading === false ? (
+              <Space>
+                {button === true ? (
+                  <Button shape="circle">
+                    <FindIcon type={type} text={txt} />
+                  </Button>
+                ) : (
+                  <FindIcon type={type} text={txt} />
+                )}
+              </Space>
             ) : (
-              <FindIcon type={type} text={txt} />
+              <Space>
+                <Spin size="small" />
+              </Space>
             )}
-          </Space>
-        ) : (
-          <Space>
-            <Spin size="small" />
-          </Space>
-        )}
-      </a>
-    </Dropdown>
+          </a>
+        </Dropdown>
+      ) : (
+        <Dropdown
+          menu={{
+            items: [],
+          }}
+          onOpenChange={(e) => console.log}
+          disabled={true}
+        >
+          <a
+            onClick={(e) => e.preventDefault()}
+            style={{
+              cursor: 'not-allowed',
+            }}
+          >
+            {loading === false ? (
+              <Space>
+                {button === true ? (
+                  <Button shape="circle">
+                    <FindIcon type={type} text={txt} />
+                  </Button>
+                ) : (
+                  <FindIcon type={type} text={txt} />
+                )}
+              </Space>
+            ) : (
+              <Space>
+                <Spin size="small" />
+              </Space>
+            )}
+          </a>
+        </Dropdown>
+      )}
+      {task && (
+        <ScoreComp
+          task={task}
+          readOnly={readOnly}
+          openModal={miniModal}
+          closeFunc={OnCloseFunc}
+          updateFunc={onClickMenu}
+          newStatus={newStatus}
+          defaultScore={defaultScore}
+        />
+      )}
+    </>
   )
 }
 

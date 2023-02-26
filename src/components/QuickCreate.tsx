@@ -28,13 +28,13 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { getCookie } from 'typescript-cookie'
 import { useNavigate } from 'react-router-dom'
-import { Status } from '../data/entity/Status'
+import { Status } from '../data/interface/Status'
 import { Tasks } from '../data/database/Tasks'
 import SubTask from './SubTasks'
 import { DEFAULT_STT, INSERT_MODE } from '../util/ConfigText'
 import update from 'immutability-helper'
 import ObjectID from 'bson-objectid'
-import { SubTaskCompProp, SubTaskProp } from '../data/entity/SubTaskProp'
+import { SubTaskCompProp, SubTaskProp } from '../data/interface/SubTaskProp'
 
 interface ItemProps {
   label: string
@@ -155,6 +155,24 @@ const CustomFloatButton: React.FC = () => {
     GroupPath: '',
     created: false,
   })
+
+  const subTaskInput: Tasks = {
+    TaskName: '',
+    Description: '',
+    Priority: '',
+    CreateDate: new Date(),
+    StartDate: new Date(),
+    Assignee: _assignUser,
+    Watcher: [],
+    Tag: [],
+    Subtask: [],
+    Attachment: [],
+    Comment: [],
+    Status: '',
+    Reporter: {},
+    GroupPath: '',
+    created: false,
+  }
 
   //const [subTask, setSubTask] = useState<Tasks[]>([])
   const [subTaskIdList, setSubTaskIdList] = useState<string[]>([])
@@ -325,7 +343,7 @@ const CustomFloatButton: React.FC = () => {
     return assigneeData.length !== 0 ? (
       <Space direction="horizontal">
         <SubTask
-          tasks={myTask}
+          tasks={subTaskInput}
           //onChange={(e) => console.log('All data ' + e.target.value)}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}

@@ -14,8 +14,7 @@ import { IGNORE_STT_DEFAULT, UPDATE_MODE } from '../util/ConfigText'
 import { InputTasks } from '../data/database/InputTasks'
 import { UpdateTask } from '../data/tasks'
 import '../assets/css/index.css'
-import { useAppDispatch, useAppSelector } from '../redux/app/hook'
-import { otherError } from '../redux/features/errors/errorSlice'
+import { Status } from '../data/interface/Status'
 
 const UserListComp = React.lazy(() => import('./UserListComp'))
 type SubTaskInput = {
@@ -53,28 +52,26 @@ const SubTask: React.FC<SubTaskInput> = ({
   const [showEditDetail, setShowEditDetail] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState(false)
-  const errorMessage = useAppSelector((state) => state.errorMessage)
-  const dispatch = useAppDispatch()
 
   useEffect(() => {
     if (tasks.TaskName !== '') {
       setHideSubmitBtn(true)
       setEditTaskName(false)
       setShowEditDetail(true)
-      form.setFieldsValue({ TaskName: tasks.TaskName })
-      //setAutoFocus(false)
+      if (mode !== UPDATE_MODE) {
+        form.setFieldsValue({ TaskName: tasks.TaskName })
+      }
     } else {
       setHideSubmitBtn(false)
       setEditTaskName(true)
       setShowEditDetail(false)
-      //setAutoFocus(true)
     }
   }, [])
 
-  const OnNavigate = (taskData: Tasks) => {
-    navigate(CustomRoutes.TaskDetails.path + '/' + taskData._id, {
+  const OnNavigate = (taskId: string) => {
+    navigate(CustomRoutes.TaskDetails.path + '/' + taskId, {
       state: {
-        search: '/' + taskData._id, // query string
+        search: '/' + taskId, // query string
         // location state
         parentTask: parentTask,
       },
@@ -140,6 +137,7 @@ const SubTask: React.FC<SubTaskInput> = ({
 
   const onBlurTaskName = async () => {
     //save to task
+
     const inputTasks: InputTasks = {
       TaskName: subTask.TaskName,
     }
@@ -150,7 +148,7 @@ const SubTask: React.FC<SubTaskInput> = ({
   const buttonOnClick = () => {
     form.submit()
     setHideSubmitBtn(true)
-    setShowEditDetail(true)
+
     //setSubTaskDetail(true)
   }
 
@@ -178,6 +176,7 @@ const SubTask: React.FC<SubTaskInput> = ({
             initialValues={{ remember: true, Layout: 'vertical' }}
             onFinish={(e) => {
               if (onFinish) onFinish(e)
+              setShowEditDetail(true)
             }}
             onFinishFailed={(e: any) => {
               setHideSubmitBtn(false)
@@ -197,7 +196,7 @@ const SubTask: React.FC<SubTaskInput> = ({
                   marginBottom: '0px',
                 }}
               >
-                {isEditDetail === true && (
+                {showEditDetail === true && (
                   <DropdownProps
                     type="Status"
                     text={tasks.Status ? tasks.Status : ''}
@@ -228,11 +227,19 @@ const SubTask: React.FC<SubTaskInput> = ({
                     defaultValue={subTask.TaskName}
                     value={subTask.TaskName}
                     onChange={(e) => {
-                      setHideSubmitBtn(false)
-                      setSubTask({
-                        ...subTask,
-                        TaskName: e.target.value,
-                      })
+                      if (e.target.value !== '') {
+                        setHideSubmitBtn(false)
+                        setSubTask({
+                          ...subTask,
+                          TaskName: e.target.value,
+                        })
+                      } else {
+                        setHideSubmitBtn(false)
+                        setSubTask({
+                          ...subTask,
+                          TaskName: subTask.TaskName,
+                        })
+                      }
                     }}
                     onBlur={() => {
                       if (subTask.TaskName !== '') {
@@ -254,16 +261,14 @@ const SubTask: React.FC<SubTaskInput> = ({
                   </p>
                 )}
               </Form.Item>
-              {tasks.created !== false &&
-                isEditDetail === true &&
-                showEditDetail === true && (
-                  <FontAwesomeIcon
-                    className="edit-icon"
-                    icon={faEdit}
-                    onClick={() => OnNavigate(tasks)}
-                    style={{}}
-                  />
-                )}
+              {tasks.created !== false && showEditDetail === true && (
+                <FontAwesomeIcon
+                  className="edit-icon"
+                  icon={faEdit}
+                  onClick={() => OnNavigate(taskId!)}
+                  style={{}}
+                />
+              )}
               <Form.Item
                 //label="Username"
                 name="Assignee"
@@ -344,10 +349,12 @@ const SubTask: React.FC<SubTaskInput> = ({
               >
                 {hideSubmitBtn === false && (
                   <Button
-                    icon={<FontAwesomeIcon icon={faSave} />}
+                    type="primary"
                     //htmlType="submit"
                     onClick={buttonOnClick}
-                  />
+                  >
+                    Save
+                  </Button>
                 )}
               </Form.Item>
             </Space>

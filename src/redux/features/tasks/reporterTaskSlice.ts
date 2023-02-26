@@ -1,54 +1,55 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { GetUserByTypeAxios } from '../../../data/allUsers'
-import { Users } from '../../../data/database/Users'
 import { Params } from '../../../data/interface/task'
-import type { MenuProps } from 'antd'
+import { Tasks } from '../../../data/database/Tasks'
+import {
+  GetAllTaskBaseOnUserReporterAxios,
+  GetNotDoneTasksReporterAxios,
+} from '../../../data/tasks'
 
 type InitialState = {
   loading: boolean
-  users: Users[]
+  tasks: Tasks[]
   error: string
 }
 
 const initialState: InitialState = {
   loading: false,
-  users: [],
+  tasks: [],
   error: '',
 }
 
 //Generated pending, fulfilled and rejected action type automatically
-export const fetchUsers = createAsyncThunk(
-  'users/fetchUsers',
+export const fetchTasksReporter = createAsyncThunk(
+  'users/fetchTasksReporter',
   async (params: Params) => {
-    const response = await GetUserByTypeAxios(
+    const response = await GetAllTaskBaseOnUserReporterAxios(
       params.serviceUrl,
       params.type,
-      params.userId,
     )
     return response.data
   },
 )
 
-const userSlice = createSlice({
+const reporterTaskSlice = createSlice({
   initialState: initialState,
-  name: 'user',
+  name: 'reporterTask',
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchUsers.pending, (state) => {
+    builder.addCase(fetchTasksReporter.pending, (state) => {
       state.loading = true
     })
     builder.addCase(
-      fetchUsers.fulfilled,
-      (state, action: PayloadAction<Users[]>) => {
+      fetchTasksReporter.fulfilled,
+      (state, action: PayloadAction<Tasks[]>) => {
         state.loading = false
-        state.users = action.payload
+        state.tasks = action.payload
         state.error = ''
       },
     )
-    builder.addCase(fetchUsers.rejected, (state, action) => {
+    builder.addCase(fetchTasksReporter.rejected, (state, action) => {
       state.loading = false
-      state.users = []
+      state.tasks = []
       state.error = action.error.message
         ? action.error.message
         : 'Something went wrong'
@@ -56,4 +57,4 @@ const userSlice = createSlice({
   },
 })
 
-export default userSlice.reducer
+export default reporterTaskSlice.reducer

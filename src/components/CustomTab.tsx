@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Input, Space, Tabs } from 'antd'
 import TaskList from './table/TaskList'
-import { Task } from '../data/entity/task'
+import { Task } from '../data/interface/task'
 import TaskListOverDue from './table/TaskListOverdue'
 import { Tasks } from '../data/database/Tasks'
 import Search from 'antd/es/input/Search'
@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { ToLowerCaseNonAccentVietnamese } from '../util/FormatText'
 import _ from 'lodash'
+import { useAppSelector } from '../redux/app/hook'
 
 interface TaskInput {
   assigneeTask: Tasks[]
@@ -31,6 +32,12 @@ const App: React.FC<TaskInput> = ({
   const [assigneeTaskNumSrc, setAssigneeTaskNum] = useState(assigneeTaskNum)
   const [otherTaskNumSrc, setOtherTaskNum] = useState(otherTaskNum)
   const [loading, setLoading] = useState(false)
+  const numOfAssigneeTasks = useAppSelector(
+    (state) => state.myTaskList.numOfTask,
+  )
+  const numOfReporterTasks = useAppSelector(
+    (state) => state.reportToMeTaskList.numOfTask,
+  )
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -59,41 +66,6 @@ const App: React.FC<TaskInput> = ({
     return () => clearTimeout(delayDebounceFn)
   }, [loading])
 
-  const OnSearchDebounce = _.debounce((e: string) => InputChange(e), 1)
-
-  const onSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    let value = inputValue
-    let filteredTask: Tasks[] = []
-    if (value !== '') {
-      if (tabKey === '1') {
-        filteredTask = assigneeTask.filter((x) =>
-          ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
-            ToLowerCaseNonAccentVietnamese(value),
-          ),
-        )
-        //setSrcAssigneeTask([])
-        setSrcAssigneeTask(filteredTask)
-        setAssigneeTaskNum(filteredTask.length)
-      } else {
-        filteredTask = srcOtherTask.filter((x) =>
-          ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
-            ToLowerCaseNonAccentVietnamese(value),
-          ),
-        )
-        setSrcOtherTask(filteredTask)
-        setOtherTaskNum(filteredTask.length)
-      }
-    } else {
-      if (tabKey === '1') {
-        setSrcAssigneeTask(assigneeTask)
-        setAssigneeTaskNum(assigneeTaskNum)
-      } else {
-        setSrcOtherTask(otherTask)
-        setOtherTaskNum(otherTaskNum)
-      }
-    }
-  }
-
   const resetTabData = (key: string) => {
     if (key === '1') {
       setSrcAssigneeTask(assigneeTask)
@@ -106,10 +78,7 @@ const App: React.FC<TaskInput> = ({
   }
 
   const OnChange = (key: string) => {
-    setTabKey(key)
-    resetTabData(key)
-    setInputValue('')
-    InputChange('')
+    sessionStorage.setItem('tab', key)
   }
 
   const InputChange = (key: string) => {
@@ -128,24 +97,12 @@ const App: React.FC<TaskInput> = ({
 
   return (
     <>
-      <Input
-        prefix={<FontAwesomeIcon icon={faSearch} />}
-        placeholder="Tim task"
-        onPressEnter={(e) => onSearch(e)}
-        style={{ width: '12%', margin: '-2% 0 0 88%', borderRadius: '0' }}
-        value={inputValue}
-        //defaultValue={inputValue}
-        //onChange={(e) => setInputValue(e.target.value)}
-        onChange={(e) => {
-          setLoading(true)
-          OnSearchDebounce(e.target.value)
-        }}
-        //onBlur={(e) => InputChange(e.target.value)}
-        allowClear
-      />
-
       <Tabs
-        defaultActiveKey="1"
+        defaultActiveKey={
+          sessionStorage.getItem('tab')?.toString()
+            ? sessionStorage.getItem('tab')?.toString()
+            : '1'
+        }
         onChange={OnChange}
         items={[
           {
@@ -160,14 +117,14 @@ const App: React.FC<TaskInput> = ({
                     fontSize: '11px',
                   }}
                 >
-                  {assigneeTaskNumSrc}
+                  {numOfAssigneeTasks}
                 </p>
               </Space>
             ),
             key: '1',
             children: (
               <TaskList
-                inputData={srcAssigneeTask}
+                //inputData={srcAssigneeTask}
                 showMore={true}
                 increment={3}
                 collapseShowMore={collapseShowMore}
@@ -186,14 +143,14 @@ const App: React.FC<TaskInput> = ({
                     fontSize: '11px',
                   }}
                 >
-                  {otherTaskNumSrc}
+                  {numOfReporterTasks}
                 </p>
               </Space>
             ),
             key: '2',
             children: (
               <TaskListOverDue
-                inputData={srcOtherTask}
+                //inputData={srcOtherTask}
                 showMore={false}
                 increment={3}
               />
