@@ -13,7 +13,7 @@ import {
   Spin,
 } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
-import { ModifierKey, useState } from 'react'
+import { ModifierKey, useEffect, useState } from 'react'
 import { Tasks } from '../data/database/Tasks'
 import UserIcon from './UserIcon'
 import '../assets/css/layout.css'
@@ -29,7 +29,6 @@ import {
   ZERO_SCORE_TEXT,
 } from '../util/ConfigText'
 import DateFormatter from '../util/DateFormatter'
-
 interface ScoreCompParam {
   task: Tasks
   readOnly: boolean
@@ -37,7 +36,7 @@ interface ScoreCompParam {
   closeFunc: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
   updateFunc?: (e: any) => void
   newStatus?: string
-  defaultScore: number
+  defaultScore?: number
 }
 
 const ScoreComp: React.FC<ScoreCompParam> = ({
@@ -49,9 +48,8 @@ const ScoreComp: React.FC<ScoreCompParam> = ({
   newStatus,
   defaultScore,
 }) => {
-  const taskScore = defaultScore ? defaultScore : 0
-
-  const [inputValue, setInputValue] = useState(taskScore)
+  const score = defaultScore ? defaultScore : 0
+  const [inputValue, setInputValue] = useState(score)
   const [commentValue, setCommentValue] = useState(
     task.ScoreComment ? task.ScoreComment : 'Good job',
   )
@@ -108,15 +106,10 @@ const ScoreComp: React.FC<ScoreCompParam> = ({
       <Modal
         title="Review and Mark"
         open={openModal}
-        //onOk={this.handleOk}
         onCancel={closeFunc}
-        /* () => {
-          setMiniModal(false)
-          fetchData()
-          setGetUsers(false)
-        }} */
         width="30%"
         footer={[]}
+        keyboard={false}
       >
         <Divider />
         <Space direction="vertical" style={{ width: '100%' }}>

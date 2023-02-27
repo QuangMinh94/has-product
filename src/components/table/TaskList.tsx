@@ -18,7 +18,7 @@ import '../../assets/css/index.css'
 import { Tasks } from '../../data/database/Tasks'
 import ParagraphExample from '../ParagraphExample'
 import DateFormatter from '../../util/DateFormatter'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { CustomRoutes } from '../../customRoutes'
 import { Status } from '../../data/interface/Status'
 import { getCookie } from 'typescript-cookie'
@@ -60,9 +60,10 @@ const TaskList: React.FC<InputData> = ({
   collapseShowMore,
 }) => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const refresh = location.state
   const [loading, setLoading] = useState(false)
   const [input, setInput] = useState<Tasks[]>([])
-  const [taskData, setTaskData] = useState<Tasks[]>([])
 
   const [isShowMore, setShowMore] = useState(collapseShowMore)
   const [searchValue, setSearchValue] = useState('')
@@ -126,6 +127,8 @@ const TaskList: React.FC<InputData> = ({
   ]
 
   const ReorderTask = (inputTaskList: Tasks[]) => {
+    const _data: DataType[] = []
+    const _dataSplice: DataType[] = []
     let inputObj: Tasks[] = JSON.parse(JSON.stringify(inputTaskList))
     inputLength = inputObj.length
 
@@ -260,8 +263,6 @@ const TaskList: React.FC<InputData> = ({
 
     setInput(inputObj)
 
-    const _data: DataType[] = []
-    const _dataSplice: DataType[] = []
     if (inputLength > 0) {
       for (let index = 0; index < inputLength; index++) {
         const _ignoreList: Status[] = GetStatusIgnoreList(
@@ -371,10 +372,19 @@ const TaskList: React.FC<InputData> = ({
 
       setDataSplice(_dataSplice)
       setDataInput(_data)
+    } else {
+      if (!task.loading && task.tasks.length) {
+        setDataInput([])
+        setInput([])
+        setDataSplice([])
+      }
     }
   }
 
   const ReorderClosedTasks = (inputTaskList: Tasks[]) => {
+    const _data: DataType[] = []
+    const _dataSplice: DataType[] = []
+
     let inputObj: Tasks[] = JSON.parse(JSON.stringify(inputTaskList))
     inputLength = inputObj.length
 
@@ -401,8 +411,6 @@ const TaskList: React.FC<InputData> = ({
 
     setInput(inputObj)
 
-    const _data: DataType[] = []
-    const _dataSplice: DataType[] = []
     if (inputLength > 0) {
       for (let index = 0; index < inputLength; index++) {
         const _ignoreList: Status[] = GetStatusIgnoreList(
@@ -512,12 +520,27 @@ const TaskList: React.FC<InputData> = ({
 
       setDataSplice(_dataSplice)
       setDataInput(_data)
+    } else {
+      if (!task.loading && task.tasks.length) {
+        setDataInput([])
+        setInput([])
+        setDataSplice([])
+      }
     }
   }
 
   const handleMenuClickStatus: MenuProps['onClick'] = (e) => {
     setLoading(true)
   }
+
+  useEffect(() => {
+    try {
+      const s = refresh.refresh
+      if (refresh.refresh === true) {
+        setLoading(true)
+      }
+    } catch (error) {}
+  }, [])
 
   useEffect(() => {
     dispatch(fetchTasksAssignee(params))
@@ -594,7 +617,11 @@ const TaskList: React.FC<InputData> = ({
               ToLowerCaseNonAccentVietnamese(value),
             ),
           )
-          ReorderTask(sortResult)
+          if (sortResult.length === 0) {
+            ReorderTask([])
+          } else {
+            ReorderTask(sortResult)
+          }
         } else {
           const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
           const inputObjFilter = sortedTask.filter(
@@ -609,7 +636,12 @@ const TaskList: React.FC<InputData> = ({
               ToLowerCaseNonAccentVietnamese(value),
             ),
           )
-          ReorderClosedTasks(sortResult)
+          if (sortResult.length === 0) {
+            ReorderClosedTasks([])
+          } else {
+            ReorderClosedTasks(sortResult)
+          }
+
           //dispatch(myTaskChange(inputObjFilter.length))
         }
       } else {
@@ -714,7 +746,7 @@ const TaskList: React.FC<InputData> = ({
             pagination={false}
             columns={columns}
             dataSource={isShowMore === true ? dataSplice : dataInput}
-            scroll={{ y: 500 }}
+            scroll={{ y: 500, scrollToFirstRowOnChange: false }}
             size="middle"
           />
         ) : (

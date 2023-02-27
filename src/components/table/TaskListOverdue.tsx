@@ -19,7 +19,7 @@ import DateFormatter from '../../util/DateFormatter'
 import IconGroup from '../IconGroup'
 import TaskDetails from '../../pages/TaskDetails'
 import { CustomRoutes } from '../../customRoutes'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { getCookie } from 'typescript-cookie'
 import { Role } from '../../data/database/Role'
@@ -63,6 +63,8 @@ const TaskListOverDue: React.FC<InputData> = ({
   increment,
 }) => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const refresh = location.state
   const [input, setInput] = useState<Tasks[]>([])
   const [searchValue, setSearchValue] = useState('')
   const [dataInput, setDataInput] = useState<DataType[]>([])
@@ -78,6 +80,8 @@ const TaskListOverDue: React.FC<InputData> = ({
     type: getCookie('user_id')?.toString()!,
     //userId: getCookie('user_id')?.toString(),
   }
+
+  const [reload, setReload] = useState(false)
 
   const columns: ColumnsType<DataType> = [
     {
@@ -221,6 +225,11 @@ const TaskListOverDue: React.FC<InputData> = ({
         countIndex++
       }
       setDataInput(_data)
+    } else {
+      if (!task.loading && task.tasks.length) {
+        setDataInput([])
+        setInput([])
+      }
     }
   }
 
@@ -315,8 +324,22 @@ const TaskListOverDue: React.FC<InputData> = ({
         countIndex++
       }
       setDataInput(_data)
+    } else {
+      if (!task.loading && task.tasks.length) {
+        setDataInput([])
+        setInput([])
+      }
     }
   }
+
+  useEffect(() => {
+    try {
+      const s = refresh.refresh
+      if (refresh.refresh === true) {
+        setLoading(true)
+      }
+    } catch (error) {}
+  }, [])
 
   useEffect(() => {
     dispatch(fetchTasksReporter(params))
@@ -519,7 +542,7 @@ const TaskListOverDue: React.FC<InputData> = ({
             pagination={false}
             columns={columns}
             dataSource={dataInput}
-            scroll={{ y: 500 }}
+            scroll={{ y: 500, scrollToFirstRowOnChange: false }}
             size="middle"
           />
         )}

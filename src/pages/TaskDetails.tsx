@@ -119,6 +119,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   let assignee: Users[] = []
   const [loading, setLoading] = useState(true)
   const [editorValue, setEditorValue] = useState('')
+  const [editorLength, setEditorLength] = useState(0)
   const [taskData, setTaskData] = useState<Tasks>({
     TaskName: '',
     Description: '',
@@ -384,8 +385,12 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
 
   const hideModal = () => {
     setOpen(false)
-    navigate(CustomRoutes.MyWork.path)
-    navigate(0)
+    navigate(CustomRoutes.MyWork.path, {
+      state: {
+        refresh: true,
+      },
+    })
+    //navigate(0)
   }
 
   let reporter: Users[] = []
@@ -433,7 +438,6 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
         subTask.push(_task)
       } else {
         //update
-        console.log('Update the id')
         for (let indexS = 0; indexS < subTask.length; indexS++) {
           if (subTask[indexS]._id === _task._id) {
             subTask[indexS] = _task
@@ -457,22 +461,17 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       inputTasks.push(_task)
       inputTasks.unshift(mainTask)
 
-      const insertTask: Tasks = await InsertTask(
-        'api/task/addTaskWithSubtask',
-        JSON.stringify(inputTasks),
-      )
+      await InsertTask('', inputTasks)
     }
 
     const onFinishFailed = (values: any) => {
       console.log('Failed ' + JSON.stringify(values))
     }
 
-    //console.log('Subtask ' + taskData.Subtask?.length)
     return (
       <SubTask
         key={subTaskId}
         tasks={task!}
-        //onChange={(e) => console.log('All data ' + e.target.value)}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         assigneeData={assigneeData}
@@ -497,6 +496,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
             index={subTasksComp.length}
             subTaskId={subId}
             task={myTask}
+            parentTask={taskData._id}
           />
         ),
       }),
@@ -516,6 +516,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
         //onOk={this.handleOk}
         onCancel={hideModal}
         width="92%"
+        keyboard={false}
         footer={[]}
       >
         {loading === false ? (
@@ -531,7 +532,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                     Back to main tasks
                   </Button>
                 )}
-                <Row gutter={5}>
+                <Row gutter={12}>
                   <Col className="gutter-row" span={16}>
                     <Space direction="horizontal">
                       <DropdownProps
@@ -564,24 +565,31 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                     <>
                       <Col
                         className="gutter-row"
-                        span={1}
+                        span={2}
                         style={{ flex: 'revert' }}
                       >
-                        <FontAwesomeIcon
-                          icon={faStar}
-                          color="#FACC15"
-                          onClick={() => {
-                            setMiniModal(true)
-                          }}
-                        />
-                      </Col>
-
-                      <Col
-                        className="gutter-row"
-                        span={1}
-                        style={{ flex: 'revert' }}
-                      >
-                        <p>{taskData.Score!}</p>
+                        <Space direction="horizontal" size={5}>
+                          <Avatar
+                            onClick={() => {
+                              setMiniModal(true)
+                            }}
+                            style={{
+                              borderColor: '#FACC15',
+                              backgroundColor: 'white',
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faStar} color="#FACC15" />
+                          </Avatar>
+                          <p
+                            style={{
+                              fontSize: '18px',
+                              color: '#0e7490',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {taskData.Score!}
+                          </p>
+                        </Space>
                       </Col>
                     </>
                   )}
@@ -729,6 +737,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       onFocus={() => setSaveBtn(true)}
                       onBlur={() => SaveEditor()}
                     ></ReactQuill>
+
                     {saveBtn === true && (
                       <Button type="primary" onClick={SaveEditor}>
                         Save
