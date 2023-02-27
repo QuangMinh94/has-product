@@ -180,10 +180,7 @@ export const GetAllTaskBaseOnUserReporterAxios = async (
   return repsonse
 }
 
-const InsertTask = async (
-  serviceUrl: string = process.env.REACT_APP_API_TASK_ADDTASKWITHSUBTASK!,
-  task: any,
-) => {
+const InsertTask = async (serviceUrl: string, task: any) => {
   serviceUrl = process.env.REACT_APP_API_TASK_ADDTASKWITHSUBTASK!
   let user: Users = {}
   let output: Tasks = {
@@ -203,6 +200,7 @@ const InsertTask = async (
     Reporter: user,
     GroupPath: '',
   }
+
   await axios
     .post<Tasks>(serviceUrl, task, {
       headers: {
@@ -243,6 +241,7 @@ const UpdateTask = async (
     Reporter: user,
     GroupPath: '',
   }
+
   await axios
     .put<Tasks>(serviceUrl, JSON.stringify(task), {
       headers: {

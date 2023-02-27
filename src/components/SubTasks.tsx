@@ -1,9 +1,14 @@
 import React, { Suspense, useEffect, useState } from 'react'
-import { Button, Form, Input, MenuProps, Space, Spin } from 'antd'
+import { Avatar, Button, Form, Input, MenuProps, Space, Spin } from 'antd'
 import DropdownProps from './Dropdown'
 import { Tasks } from '../data/database/Tasks'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEdit, faSave, faUserPlus } from '@fortawesome/free-solid-svg-icons'
+import {
+  faEdit,
+  faSave,
+  faUserCheck,
+  faUserPlus,
+} from '@fortawesome/free-solid-svg-icons'
 import CustomDatePicker from './CustomDatePicker'
 import { Users } from '../data/database/Users'
 
@@ -58,9 +63,9 @@ const SubTask: React.FC<SubTaskInput> = ({
       setHideSubmitBtn(true)
       setEditTaskName(false)
       setShowEditDetail(true)
-      if (mode !== UPDATE_MODE) {
-        form.setFieldsValue({ TaskName: tasks.TaskName })
-      }
+      //if (mode !== UPDATE_MODE) {
+      form.setFieldsValue({ TaskName: tasks.TaskName })
+      //}
     } else {
       setHideSubmitBtn(false)
       setEditTaskName(true)
@@ -164,6 +169,7 @@ const SubTask: React.FC<SubTaskInput> = ({
             border: 'solid',
             borderWidth: '1px',
             borderColor: '#d9d9d9',
+            paddingRight: '10px',
             //padding: '10px 10px -10px 10px',
           }}
           //align="baseline"
@@ -179,6 +185,7 @@ const SubTask: React.FC<SubTaskInput> = ({
               setShowEditDetail(true)
             }}
             onFinishFailed={(e: any) => {
+              //setEditTaskName(true)
               setHideSubmitBtn(false)
               onFinishFailed(e)
             }}
@@ -196,7 +203,7 @@ const SubTask: React.FC<SubTaskInput> = ({
                   marginBottom: '0px',
                 }}
               >
-                {showEditDetail === true && (
+                {(tasks.created !== false && showEditDetail) === true && (
                   <DropdownProps
                     type="Status"
                     text={tasks.Status ? tasks.Status : ''}
@@ -210,9 +217,7 @@ const SubTask: React.FC<SubTaskInput> = ({
               <Form.Item
                 //label="Username"
                 name="TaskName"
-                rules={[
-                  { required: true, message: 'Please input your task name!' },
-                ]}
+                rules={[{ required: true, message: '' }]}
                 shouldUpdate={(prevValues, curValues) =>
                   prevValues.additional !== curValues.additional
                 }
@@ -223,6 +228,7 @@ const SubTask: React.FC<SubTaskInput> = ({
               >
                 {editTaskName === true ? (
                   <Input
+                    style={{ borderColor: 'transparent' }}
                     autoFocus={autoFocus}
                     defaultValue={subTask.TaskName}
                     value={subTask.TaskName}
@@ -280,7 +286,16 @@ const SubTask: React.FC<SubTaskInput> = ({
                   <UserListComp
                     userData={assigneeData}
                     maxCount={2}
-                    icon={<FontAwesomeIcon icon={faUserPlus} />}
+                    icon={
+                      <Avatar
+                        style={{
+                          borderColor: '#9CA3AF',
+                          backgroundColor: 'white',
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faUserPlus} color="#000000" />
+                      </Avatar>
+                    }
                     onClickMenu={handleMenuClickAssignee}
                     mode={mode}
                     inputUserData={subTask.Assignee}
@@ -300,7 +315,16 @@ const SubTask: React.FC<SubTaskInput> = ({
                   <UserListComp
                     userData={reporterData}
                     maxCount={3}
-                    icon={<FontAwesomeIcon icon={faUserPlus} />}
+                    icon={
+                      <Avatar
+                        style={{
+                          borderColor: '#9CA3AF',
+                          backgroundColor: 'white',
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faUserCheck} color="#000000" />
+                      </Avatar>
+                    }
                     onClickMenu={handleMenuClickReporter}
                     mode={mode}
                     inputUserData={reporters}

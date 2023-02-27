@@ -502,9 +502,7 @@ const CustomFloatButton: React.FC = () => {
           <Form.Item
             //label="Username"
             name="task name"
-            rules={[
-              { required: true, message: 'Please input your task name!' },
-            ]}
+            rules={[{ required: true, message: '' }]}
           >
             <Input
               placeholder="Task Name"

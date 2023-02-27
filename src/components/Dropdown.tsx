@@ -50,6 +50,7 @@ const DropdownProps: React.FC<Type> = ({
   const [miniModal, setMiniModal] = useState(false)
   const [readOnly, setReadOnly] = useState(false)
   const [defaultScore, setDefaultScore] = useState(0)
+  const [score, setScore] = useState(false)
 
   const OnCloseFunc = () => {
     setMiniModal(false)
@@ -102,7 +103,6 @@ const DropdownProps: React.FC<Type> = ({
   }
 
   function getStatusValue(value: string) {
-    console.log('Status here')
     setTxt(value)
     sessionStorage.setItem('status' + id, value)
     //call update service
@@ -126,10 +126,11 @@ const DropdownProps: React.FC<Type> = ({
       task?.Reporter._id!,
       task?.Status!,
       value,
-      0,
+      task?.Score,
     )
 
     setDefaultScore(showHide.score)
+    setScore(true)
 
     if (showHide.showSCore !== HIDE) {
       console.log('Alright hans,time to go')
@@ -306,7 +307,6 @@ const DropdownProps: React.FC<Type> = ({
       const r = statusData.filter(
         (elem) => !ignoreStt.find(({ id }) => elem.id === id),
       )
-      //statusFilter = statusData.filter((value) => ignoreStt.find({id} => values.id !== id))
 
       r.map((element) => {
         items?.push(
@@ -393,7 +393,7 @@ const DropdownProps: React.FC<Type> = ({
           </a>
         </Dropdown>
       )}
-      {task && (
+      {task && score && (
         <ScoreComp
           task={task}
           readOnly={readOnly}

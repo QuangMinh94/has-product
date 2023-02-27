@@ -76,11 +76,13 @@ const GetReviewAndScoreDisplay = (
           currentStatus.toLowerCase() === 'Completed'.toLowerCase() &&
           postStatus.toLowerCase() === 'Incompleted'.toLowerCase()
         ) {
+          scoreProps.score = score!
           scoreProps.showSCore = SHOW
         } else if (
           postStatus.toLowerCase() === 'Completed'.toLowerCase() &&
           currentStatus.toLowerCase() === 'Incompleted'.toLowerCase()
         ) {
+          scoreProps.score = score!
           scoreProps.showSCore = SHOW
         }
       } else {
