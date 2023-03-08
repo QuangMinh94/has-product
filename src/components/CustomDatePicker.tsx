@@ -61,6 +61,7 @@ const CustomDatePicker: React.FC<DueDateInput> = ({
             borderTopLeftRadius: '100px',
             borderBottomRightRadius: '100px',
             WebkitBorderRadius: '100px',
+            cursor: 'pointer',
           }}
           //bordered={false}
         />

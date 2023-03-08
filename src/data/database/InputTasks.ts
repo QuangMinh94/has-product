@@ -24,4 +24,7 @@ export interface InputTasks {
   Score?: number
   ScoreComment?: string
   ScoreModifiedDate?: Date
+  userId?: string
+  userName?: string
+  tasks?: any[]
 }

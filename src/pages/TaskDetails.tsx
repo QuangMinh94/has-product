@@ -12,6 +12,9 @@ import {
   Spin,
   Button,
   MenuProps,
+  Tabs,
+  TabsProps,
+  UploadFile,
 } from 'antd'
 import Breadcrumbs from '../components/Breadcrumbs'
 import '../assets/css/layout.css'
@@ -32,20 +35,19 @@ import {
 import { CustomRoutes } from '../customRoutes'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
-import { GetTasksById, InsertTask, UpdateTask } from '../data/tasks'
+import { GetTasksById, InsertTask, UpdateTask } from '../data/tasksService'
 import { InputTasks } from '../data/database/InputTasks'
 import _ from 'lodash'
 import {
   DEFAULT_STT,
   HIDE,
-  IGNORE_STT_DEFAULT,
   READONLY,
   SHOW,
   UPDATE_FAIL,
   UPDATE_MODE,
 } from '../util/ConfigText'
 import CustomFloatButton from '../components/QuickCreate'
-import { GetUserByType } from '../data/allUsers'
+import { GetUserByType } from '../data/allUsersService'
 import { getCookie } from 'typescript-cookie'
 import CustomDatePicker from '../components/CustomDatePicker'
 import { SubTaskCompProp, SubTaskProp } from '../data/interface/SubTaskProp'
@@ -53,10 +55,18 @@ import ObjectID from 'bson-objectid'
 import SubTask from '../components/SubTasks'
 import ScoreComp from '../components/ScoreComponent'
 import { ScoreCompProp } from '../data/interface/ScoreCompProps'
-import GetReviewAndScoreDisplay from '../util/ReviewAndScore'
 import GetScoreReviewDisplay from '../util/ScoreReview'
 import { Status } from '../data/interface/Status'
 import GetStatusIgnoreList from '../util/StatusList'
+import HistoryComponent from '../components/History'
+import Comments from '../components/Comments'
+import { useAppDispatch } from '../redux/app/hook'
+import { fetchHistory } from '../redux/features/history/historySlice'
+import { AttachmentResponse } from '../data/database/Attachment'
+import axios from 'axios'
+import { RemoveAttachment } from '../data/attachmentService'
+import { JobStatusEnum } from '@novu/shared'
+import { CheckExtension } from '../util/Extension'
 
 interface TaskData {
   taskData?: Tasks
@@ -66,26 +76,6 @@ interface TaskData {
 const { Header, Content } = Layout
 
 const { Dragger } = Upload
-
-const props: UploadProps = {
-  name: 'file',
-  multiple: true,
-  //action: '',
-  onChange(info) {
-    const { status } = info.file
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList)
-    }
-    if (status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully.`)
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`)
-    }
-  },
-  onDrop(e) {
-    console.log('Dropped files', e.dataTransfer.files)
-  },
-}
 
 const ModalBreadCrumb = () => {
   return <Breadcrumbs main={'Home'} sub={CustomRoutes.TaskDetails.name} />
@@ -119,7 +109,6 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   let assignee: Users[] = []
   const [loading, setLoading] = useState(true)
   const [editorValue, setEditorValue] = useState('')
-  const [editorLength, setEditorLength] = useState(0)
   const [taskData, setTaskData] = useState<Tasks>({
     TaskName: '',
     Description: '',
@@ -170,6 +159,156 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   const [readOnly, setReadOnly] = useState(true)
   const [showScore, setShowScore] = useState(false)
   const [statusIgnoreList, setStatusIgnoreList] = useState<Status[]>([])
+  const [fileList, setFileList] = useState<UploadFile[]>([])
+  const [attachmentIdList, setAttachmentIdList] = useState<string[]>([])
+  const dispatch = useAppDispatch()
+
+  const customRequest = (options: any) => {
+    const data = new FormData()
+    const fileType = options.file.name.substring(
+      options.file.name.lastIndexOf('.') + 1,
+      options.file.name.length,
+    )
+
+    const fileName = options.file.name.substring(
+      0,
+      options.file.name.lastIndexOf('.'),
+    )
+    data.append('taskId', taskId.id!.toString())
+    data.append('fileName', fileName)
+    data.append('fileType', fileType)
+    data.append('description', options.file.name)
+    data.append('file', options.file)
+    const config = {
+      headers: {
+        'content-type':
+          'multipart/form-data; boundary=----WebKitFormBoundaryqTqJIxvkWFYqvP5s',
+      },
+    }
+    axios
+      .post(options.action, data, config)
+      .then((res: any) => {
+        return res.data
+      })
+      .then((res: AttachmentResponse[]) => {
+        if (res[0]._id && res[0]._id !== null) {
+          setFileList([
+            ...fileList,
+            {
+              uid: res[0]._id,
+              name: options.file.name,
+              url:
+                process.env.REACT_APP_API_ATTACHMENTS_GETATTACHMENT +
+                res[0]._id,
+            },
+          ])
+
+          setAttachmentIdList([...attachmentIdList, res[0]._id])
+
+          //update task inside here
+          const attach: string[] = JSON.parse(JSON.stringify(attachmentIdList))
+          attach.push(res[0]._id)
+          const inputTask: InputTasks = {
+            Attachment: attach,
+          }
+          UpdateTask('', taskData._id!, inputTask).then((res) => {
+            if (res.errorMessage) {
+              message.error('Update failed with error ' + res.errorMessage)
+              return Upload.LIST_IGNORE
+            }
+          })
+          message.success(`${options.file.name} file uploaded successfully.`)
+          //options.onSuccess(res, options.file)
+        } else {
+          message.error(`${options.file.name} file upload failed.`)
+          return Upload.LIST_IGNORE
+        }
+      })
+      .catch((err: Error) => {
+        message.error(`${options.file.name} file upload failed.`)
+        return Upload.LIST_IGNORE
+        //
+      })
+  }
+
+  const props: UploadProps = {
+    fileList: fileList,
+    multiple: false,
+    action: process.env.REACT_APP_API_ATTACHMENTS_ADDATTACHMENT!,
+    customRequest: customRequest,
+    beforeUpload(e) {
+      const fileType = e.name.substring(
+        e.name.lastIndexOf('.') + 1,
+        e.name.length,
+      )
+
+      if (!CheckExtension(fileType)) {
+        message.error('File type not allowed')
+        return Upload.LIST_IGNORE
+      }
+
+      if (e.size > 5242880) {
+        message.error('File size cannot exceed 5MB')
+        return Upload.LIST_IGNORE
+      }
+    },
+    onChange(info) {
+      const { status } = info.file
+      if (status !== 'uploading') {
+        console.log(info.file, info.fileList)
+      }
+      if (status === 'done') {
+        message.success(`${info.file.name} file uploaded successfully.`)
+      } else if (status === 'error') {
+        message.error(`${info.file.name} file upload failed.`)
+      }
+    },
+    async onRemove(e) {
+      const response = await RemoveAttachment(e.uid)
+      if (response.ErrorMessage) {
+        message.error('Remove failed with error ' + response.ErrorMessage)
+        return false
+      } else {
+        setFileList(fileList.filter((element) => element.uid !== e.uid))
+        setAttachmentIdList(
+          attachmentIdList.filter((element) => element !== e.uid),
+        )
+      }
+    },
+    onDrop(e) {
+      console.log('Dropped files', e.dataTransfer.files)
+    },
+  }
+
+  const items: TabsProps['items'] = [
+    {
+      key: 'comments',
+      label: `Comments`,
+      children: <Comments userComments={[]} />,
+    },
+    {
+      key: 'history',
+      label: `History`,
+      children: (
+        <HistoryComponent
+          collection={'Tasks'}
+          //documentId={'63b65aa9f1e6797000d19497'}
+          documentId={taskData._id!}
+        />
+      ),
+    },
+  ]
+
+  const OnChange = (key: string) => {
+    if (key === 'history') {
+      const params = {
+        collection: 'Tasks',
+        //documentId: taskData._id!,
+        documentId: taskData._id,
+      }
+      dispatch(fetchHistory(params))
+    }
+  }
 
   const OnCloseFunc = () => {
     setMiniModal(false)
@@ -208,12 +347,24 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     ) {
       setReadOnly(false)
     }
+
+    //attachment
+    let attachments: UploadFile[] = []
+    data[0].Attachment.map((element: AttachmentResponse) => {
+      attachments.push({
+        uid: element._id,
+        name: element.FileName + '.' + element.FileType,
+        url: process.env.REACT_APP_API_ATTACHMENTS_GETATTACHMENT + element._id,
+      })
+    })
+    setFileList(attachments)
+    setAttachmentIdList(data[0].Attachment)
+
     let desc = ''
     try {
       desc = JSON.parse(data[0].Description)
     } catch (e) {}
     setEditorValue(desc)
-    //console.log('My data ' + JSON.stringify(data[0].Subtask))
 
     const dataAssignee = await GetUserByType(
       '/api/users/getReporterOrAssignee',
@@ -295,25 +446,16 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      //console.log(editorValue)
-      // Send Axios request here
       const inputTask: InputTasks = {
         Description: JSON.stringify(editorValue),
       }
-      UpdateTask('/api/task/', taskData._id!, inputTask).then((r) => {
-        /* notification.open({
-          message: 'Notification',
-          description: 'Update successfully',
-          duration: 2,
-          onClick: () => {
-            //console.log('Notification Clicked!')
-          },
-        }) */
-      })
+      if (taskData._id) {
+        UpdateTask('/api/task/', taskData._id!, inputTask).then((r) => {})
+      }
     }, 1000)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [editorValue, taskData._id])
+  }, [editorValue])
 
   const SaveEditor = async () => {
     setSaveBtn(false)
@@ -688,10 +830,12 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
             </Header>
             <Content>
               <Row>
-                <Col span={24} style={{ marginRight: '0.5%' }}>
+                <Col span={16} style={{ marginRight: '0.5%' }}>
                   <Space direction="vertical" style={{ width: '100%' }}>
                     <ReactQuill
                       //ref={reactQuillRef}
+                      //id="bodyInput"
+
                       preserveWhitespace={true}
                       modules={{
                         toolbar: [
@@ -735,7 +879,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                         overflow: 'inline',
                       }}
                       onFocus={() => setSaveBtn(true)}
-                      onBlur={() => SaveEditor()}
+                      //onBlur={() => SaveEditor()}
                     ></ReactQuill>
 
                     {saveBtn === true && (
@@ -763,12 +907,29 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                     ) : (
                       <Spin />
                     )}
-                    {/*  <Dragger {...props}>
-                    <p className="ant-upload-text">
-                      Drag & drop or <a href="#">browse</a>
-                    </p>
-                  </Dragger> */}
+                    <Dragger {...props}>
+                      <p className="ant-upload-text">Drag & drop here</p>
+                    </Dragger>
                   </Space>
+                </Col>
+                <Col flex={8}>
+                  <Tabs
+                    defaultActiveKey="2"
+                    items={items}
+                    onChange={OnChange}
+                    style={{
+                      borderStyle: 'solid',
+                      borderWidth: 'thin',
+                      borderRadius: '4px',
+                      border: '1px solid #9CA3AF',
+                      minHeight: '230px',
+                      padding: '1%',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      maxHeight: '450px',
+                      //height: '20%',
+                    }}
+                  />
                 </Col>
               </Row>
             </Content>

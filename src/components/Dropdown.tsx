@@ -1,17 +1,12 @@
-import React, { MouseEventHandler, useEffect, useState } from 'react'
-import { Button, MenuProps, Spin, notification, Modal } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Button, MenuProps, Spin, notification } from 'antd'
 import { Dropdown, Space } from 'antd'
 import FindIcon from '../data/util'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFlag, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { statusData } from '../data/statusData'
-import { UpdateTask } from '../data/tasks'
-import {
-  HIDE,
-  UPDATE_FAIL,
-  UPDATE_MODE,
-  UPDATE_SUCCESS,
-} from '../util/ConfigText'
+import { UpdateTask } from '../data/tasksService'
+import { HIDE, UPDATE_FAIL, UPDATE_MODE } from '../util/ConfigText'
 import { Status } from '../data/interface/Status'
 import { Tasks } from '../data/database/Tasks'
 import { InputTasks } from '../data/database/InputTasks'
@@ -88,7 +83,7 @@ const DropdownProps: React.FC<Type> = ({
   function getPriorityValue(value: string) {
     setTxt(value)
     sessionStorage.setItem('priority' + id, value)
-    console.log('To priority')
+    console.log('To priority ' + value)
     //call update service
     const inputTask: InputTasks = {
       Priority: value,
@@ -97,7 +92,7 @@ const DropdownProps: React.FC<Type> = ({
       updateService(inputTask, taskId)
     }
 
-    //if (onClickMenu) onClickMenu(value)
+    if (onClickMenu) onClickMenu(value)
 
     //console.log('Priority :' + sessionStorage.getItem('priority'))
   }

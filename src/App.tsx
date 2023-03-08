@@ -17,6 +17,9 @@ const App: React.FC = () => {
               colorBgBody: '#FFFFFF',
               colorPrimary: '#0E7490',
             },
+            Tooltip: {
+              colorBgTextHover: '#0E7490',
+            },
           },
           token: {
             colorPrimary: '#0E7490',

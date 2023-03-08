@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import { CustomRoutes } from '../customRoutes'
 import { IGNORE_STT_DEFAULT, UPDATE_MODE } from '../util/ConfigText'
 import { InputTasks } from '../data/database/InputTasks'
-import { UpdateTask } from '../data/tasks'
+import { UpdateTask } from '../data/tasksService'
 import '../assets/css/index.css'
 import { Status } from '../data/interface/Status'
 
@@ -84,13 +84,6 @@ const SubTask: React.FC<SubTaskInput> = ({
     navigate(0)
   }
 
-  /* const OnChangeDateTime = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubTask({ ...subTask, DueDate: new Date(e.target.value) })
-    setHideSubmitBtn(false)
-    form.setFieldsValue({ DueDate: new Date(e.target.value) })
-    console.log('DateTime ' + e.target.value)
-  } */
-
   const onOkEvent = async (date: null | (Dayjs | null)) => {
     setHideSubmitBtn(false)
     if (date !== null) {
@@ -108,12 +101,12 @@ const SubTask: React.FC<SubTaskInput> = ({
     }
   }
 
-  const handleMenuClick: MenuProps['onClick'] = (e) => {
-    setSubTask({ ...subTask, Priority: e.key })
+  const handleMenuClick = (e: any) => {
+    setSubTask({ ...subTask, Priority: e })
     setHideSubmitBtn(false)
 
-    form.setFieldsValue({ Priority: e.key })
-    console.log('Key ' + e.key)
+    form.setFieldsValue({ Priority: e })
+    console.log('Key ' + e)
     //save priority
   }
 
@@ -170,7 +163,6 @@ const SubTask: React.FC<SubTaskInput> = ({
             borderWidth: '1px',
             borderColor: '#d9d9d9',
             paddingRight: '10px',
-            //padding: '10px 10px -10px 10px',
           }}
           //align="baseline"
         >
@@ -255,8 +247,9 @@ const SubTask: React.FC<SubTaskInput> = ({
                           _id: taskId,
                         })
                         form.setFieldsValue({ _id: taskId })
+                        //console.log('Subtask ' + subTask.created)
 
-                        if (subTask.created === undefined) onBlurTaskName()
+                        if (subTask.created !== false) onBlurTaskName()
                       }
                     }}
                     placeholder="Task name"

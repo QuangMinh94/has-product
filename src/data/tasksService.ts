@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getCookie } from 'typescript-cookie'
 import { InputTasks } from './database/InputTasks'
 import { Tasks } from './database/Tasks'
 import { Users } from './database/Users'
@@ -139,7 +140,7 @@ export const GetAllTaskBaseOnUserAssigneeAxios = async (
   userId: string,
   populateLevel: number = 1,
 ) => {
-  serviceUrl = process.env.REACT_APP_API_TASK__GETALLTASKBASEONUSER!
+  serviceUrl = process.env.REACT_APP_API_TASK_GETALLTASKBASEONUSER!
 
   const repsonse = await axios.post(
     serviceUrl,
@@ -162,7 +163,7 @@ export const GetAllTaskBaseOnUserReporterAxios = async (
   userId: string,
   populateLevel: number = 1,
 ) => {
-  serviceUrl = process.env.REACT_APP_API_TASK__GETALLTASKBASEONUSER!
+  serviceUrl = process.env.REACT_APP_API_TASK_GETALLTASKBASEONUSER!
 
   const repsonse = await axios.post(
     serviceUrl,
@@ -222,7 +223,7 @@ const UpdateTask = async (
   taskId: string,
   task: InputTasks,
 ) => {
-  serviceUrl = process.env.REACT_APP_API_TASK! + '/' + taskId
+  serviceUrl = process.env.REACT_APP_API_TASK_UPDATETASK! + '/' + taskId
   let user: Users = {}
   let output: Tasks = {
     TaskName: '',
@@ -242,8 +243,12 @@ const UpdateTask = async (
     GroupPath: '',
   }
 
+  let inputTask: InputTasks = JSON.parse(JSON.stringify(task))
+  inputTask.userId = getCookie('user_id')
+  inputTask.userName = getCookie('user_name')
+
   await axios
-    .put<Tasks>(serviceUrl, JSON.stringify(task), {
+    .post<Tasks>(serviceUrl, JSON.stringify(inputTask), {
       headers: {
         'Content-Type': 'application/json',
       },

@@ -5,7 +5,7 @@ import { Tasks } from '../../../data/database/Tasks'
 import {
   GetAllTaskBaseOnUserReporterAxios,
   GetNotDoneTasksReporterAxios,
-} from '../../../data/tasks'
+} from '../../../data/tasksService'
 
 type InitialState = {
   loading: boolean

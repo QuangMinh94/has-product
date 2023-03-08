@@ -1,20 +1,82 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Button, Space, theme } from 'antd'
-import { storeIndex } from '../redux'
-import { CakeView } from '../redux/features/cake/cakeView'
-import { IceCreamView } from '../redux/features/icecream/iceCreamView'
-import { UserView } from '../redux/features/user/userView'
+import {
+  NovuProvider,
+  PopoverNotificationCenter,
+  NotificationBell,
+} from '@novu/notification-center'
+import useWebSocket, { ReadyState } from 'react-use-websocket'
 
-const SettingPage: React.FC = () => {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken()
+const Header = () => {
+  return (
+    <NovuProvider
+      subscriberId={'63ff168ff591ea2e094b5196'}
+      applicationIdentifier={'rHRc5O4-wFgb'}
+    >
+      <PopoverNotificationCenter colorScheme={'light'}>
+        {({ unseenCount }) => <NotificationBell unseenCount={unseenCount} />}
+      </PopoverNotificationCenter>
+    </NovuProvider>
+  )
+}
+
+const WebSocketDemo = () => {
+  //Public API that will echo messages sent to it back to the client
+  const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org')
+  const [messageHistory, setMessageHistory] = useState([])
+
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl)
+
+  useEffect(() => {
+    if (lastMessage !== null) {
+      setMessageHistory((prev: any) => prev.concat(lastMessage))
+    }
+  }, [lastMessage, setMessageHistory])
+
+  const handleClickChangeSocketUrl = useCallback(
+    () => setSocketUrl('wss://demos.kaazing.com/echo'),
+    [],
+  )
+
+  const handleClickSendMessage = useCallback(() => sendMessage('Hello'), [])
+
+  const connectionStatus = {
+    [ReadyState.CONNECTING]: 'Connecting',
+    [ReadyState.OPEN]: 'Open',
+    [ReadyState.CLOSING]: 'Closing',
+    [ReadyState.CLOSED]: 'Closed',
+    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+  }[readyState]
 
   return (
-    <Space direction="vertical">
+    <div>
+      <button onClick={handleClickChangeSocketUrl}>
+        Click Me to change Socket Url
+      </button>
+      <button
+        onClick={handleClickSendMessage}
+        disabled={readyState !== ReadyState.OPEN}
+      >
+        Click Me to send 'Hello'
+      </button>
+      <span>The WebSocket is currently {connectionStatus}</span>
+      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+      <ul>
+        {messageHistory.map((message: any, idx) => (
+          <span key={idx}>{message ? message.data : null}</span>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+const SettingPage: React.FC = () => {
+  return (
+    /* <Space direction="vertical">
       <CakeView />
       <IceCreamView />
-    </Space>
+    </Space> 
+    <Comments userComments={[]} /> */
+    <WebSocketDemo />
   )
 }
 
