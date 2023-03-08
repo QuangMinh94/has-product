@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { Params } from '../../../data/interface/task'
-import { GetAllTaskBaseOnUserAssigneeAxios } from '../../../data/tasks'
+import { GetAllTaskBaseOnUserAssigneeAxios } from '../../../data/tasksService'
 import { Tasks } from '../../../data/database/Tasks'
 
 type InitialState = {

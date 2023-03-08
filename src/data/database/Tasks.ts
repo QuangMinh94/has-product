@@ -27,4 +27,7 @@ export interface Tasks {
   ScoreComment?: string
   ScoreModifiedDate?: Date
   errorMessage?: string
+  userId?: string
+  userName?: string
+  tasks?: any[]
 }

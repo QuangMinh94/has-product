@@ -18,7 +18,7 @@ import { Tasks } from '../data/database/Tasks'
 import UserIcon from './UserIcon'
 import '../assets/css/layout.css'
 import { InputTasks } from '../data/database/InputTasks'
-import { UpdateTask } from '../data/tasks'
+import { UpdateTask } from '../data/tasksService'
 import {
   BAD_SCORE_TEXT,
   BIG_SCORE_TEXT,

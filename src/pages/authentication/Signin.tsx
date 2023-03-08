@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom'
 import HPTIcon from '../../assets/img/hptIconKnowingIT.png'
 import SignInImage from '../../assets/img/signin-side-image.png'
 import { CustomRoutes } from '../../customRoutes'
-import { GetUserId } from '../../data/UsersId'
+import { GetUserId } from '../../data/userIdService'
 import { removeCookie, setCookie } from 'typescript-cookie'
 import '../../assets/css/layout.css'
 import { LOGIN_ERROR, LOGIN_SERVICE_ERROR } from '../../util/ConfigText'
+import { useAppDispatch, useAppSelector } from '../../redux/app/hook'
+import { setUserInfo } from '../../redux/features/userInfo/userInfoSlice'
 
 type MessageResponse = {
   message: string
@@ -29,6 +31,8 @@ export default () => {
   const username = Form.useWatch('username', form)
   const password = Form.useWatch('password', form)
 
+  const dispatch = useAppDispatch()
+
   const routeChange = (serviceUrl: string) => {
     setLoading(true)
     //e.preventDefault()
@@ -44,11 +48,6 @@ export default () => {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'text/plain',
-        /*  'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,POST,PUT',
-        'Access-Control-Allow-Headers':
-          'Origin, X-Requested-With, Content-Type, Accept, Authorization', */
       },
       body: JSON.stringify(formInput),
     }
@@ -81,6 +80,12 @@ export default () => {
                 //alert('Service failed with code ' + r.code)
               } else {
                 setCookie('user_id', r._id as string, { expires: 1 })
+                setCookie(
+                  'user_name',
+                  (r.LastName + ' ' + r.FirstName) as string,
+                  { expires: 1 },
+                )
+                dispatch(setUserInfo(r))
                 setCookie('userInfo', JSON.stringify(r) as string, {
                   expires: 1,
                 })

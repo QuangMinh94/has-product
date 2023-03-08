@@ -10,6 +10,7 @@ import {
   Space,
   Tooltip,
   Upload,
+  UploadFile,
 } from 'antd'
 import type { UploadProps, MenuProps, DatePickerProps } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -17,12 +18,12 @@ import { faPlus, faTags } from '@fortawesome/free-solid-svg-icons'
 import '../assets/css/index.css'
 import DropdownProps from './Dropdown'
 import { Users } from '../data/database/Users'
-import { GetUserByType } from '../data/allUsers'
+import { GetUserByType } from '../data/allUsersService'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import { faCalendar } from '@fortawesome/free-regular-svg-icons'
-import { InsertTask } from '../data/tasks'
+import { InsertTask } from '../data/tasksService'
 import OverDueDate from '../util/OverDueDate'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
@@ -32,13 +33,27 @@ import { Status } from '../data/interface/Status'
 import { Tasks } from '../data/database/Tasks'
 import SubTask from './SubTasks'
 import { DEFAULT_STT, INSERT_MODE } from '../util/ConfigText'
-import update from 'immutability-helper'
 import ObjectID from 'bson-objectid'
 import { SubTaskCompProp, SubTaskProp } from '../data/interface/SubTaskProp'
+import { CustomRoutes } from '../customRoutes'
+import axios from 'axios'
+import { RcFile } from 'antd/es/upload'
+import { AttachmentResponse } from '../data/database/Attachment'
+import { fetchTasksAssignee } from '../redux/features/tasks/assigneeTaskSlice'
+import { Params } from '../data/interface/task'
+import { useAppDispatch } from '../redux/app/hook'
+import { fetchTasksReporter } from '../redux/features/tasks/reporterTaskSlice'
+import { CheckExtension } from '../util/Extension'
+import { InputTasks } from '../data/database/InputTasks'
 
 interface ItemProps {
   label: string
   value: string
+}
+
+interface AttachmentProps {
+  uid: string
+  id: string
 }
 
 let taskKey = 'Item'
@@ -54,26 +69,6 @@ let taskKey = 'Item'
 
 const { Dragger } = Upload
 
-const props: UploadProps = {
-  name: 'file',
-  multiple: true,
-  //action: '',
-  onChange(info) {
-    const { status } = info.file
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList)
-    }
-    if (status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully.`)
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`)
-    }
-  },
-  onDrop(e) {
-    console.log('Dropped files', e.dataTransfer.files)
-  },
-}
-
 const customFormat: DatePickerProps['format'] = (value) => {
   if (value.hour() === 23 && value.minute() === 59 && value.second() === 59) {
     return `${value.format('DD/MM')}`
@@ -82,49 +77,21 @@ const customFormat: DatePickerProps['format'] = (value) => {
   }
 }
 
-const range = (start: number, end: number) => {
-  const result = []
-  for (let i = start; i < end; i++) {
-    result.push(i)
-  }
-  return result
-}
-
 let assigneeOptions: ItemProps[] = []
 
 let reporterOptions: ItemProps[] = []
 
 const subTask: Tasks[] = []
 
-function GetData(
-  url: string,
-  type: string,
-  items: ItemProps[],
-  userId?: string,
-) {
-  GetUserByType(url, type, userId).then((r) => {
-    if (r.length > 0) {
-      r.forEach((value) => {
-        const su = items.filter((obj) => obj.value === value._id)
-        if (su.length === 0) {
-          items.push({
-            label: value.Name as string,
-            value: value._id as string,
-          })
-        }
-      })
-    }
-  })
-}
-
 const CustomFloatButton: React.FC = () => {
+  const id = ObjectID().toHexString()
   const navigate = useNavigate()
   //let reporterOptions: ItemProps[] = []
+  const [disableBtn, setDisableBtn] = useState(false)
   const [editorValue, setEditorValue] = useState('')
 
   const [taskName, setTaskName] = useState('')
 
-  const _id = sessionStorage.getItem('user_id')
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -174,16 +141,105 @@ const CustomFloatButton: React.FC = () => {
     created: false,
   }
 
-  //const [subTask, setSubTask] = useState<Tasks[]>([])
   const [subTaskIdList, setSubTaskIdList] = useState<string[]>([])
+
+  const [attachment, setAttachment] = useState<AttachmentProps[]>([])
+  const dispatch = useAppDispatch()
+
+  const customRequest = (options: any) => {
+    const data = new FormData()
+    const fileType = options.file.name.substring(
+      options.file.name.lastIndexOf('.') + 1,
+      options.file.name.length,
+    )
+
+    const fileName = options.file.name.substring(
+      0,
+      options.file.name.lastIndexOf('.'),
+    )
+    data.append('taskId', id)
+    data.append('fileName', fileName)
+    data.append('fileType', fileType)
+    data.append('description', options.file.name)
+    data.append('file', options.file)
+    const config = {
+      headers: {
+        'content-type':
+          'multipart/form-data; boundary=----WebKitFormBoundaryqTqJIxvkWFYqvP5s',
+      },
+    }
+    axios
+      .post(options.action, data, config)
+      .then((res: any) => {
+        return res.data
+      })
+      .then((res: AttachmentResponse[]) => {
+        if (res[0]._id && res[0]._id !== null) {
+          setAttachment([
+            ...attachment,
+            { id: res[0]._id, uid: options.file.uid },
+          ])
+          options.onSuccess(res, options.file)
+        } else {
+          message.error(`${options.file.name} file upload failed.`)
+          return Upload.LIST_IGNORE
+        }
+      })
+      .catch((err: Error) => {
+        message.error(`${options.file.name} file upload failed.`)
+        return Upload.LIST_IGNORE
+        //
+      })
+  }
+
+  const props: UploadProps = {
+    //fileList: fileList,
+    //name: 'file',
+    multiple: false,
+    action: process.env.REACT_APP_API_ATTACHMENTS_ADDATTACHMENT!,
+    beforeUpload(e) {
+      const fileType = e.name.substring(
+        e.name.lastIndexOf('.') + 1,
+        e.name.length,
+      )
+
+      if (!CheckExtension(fileType)) {
+        message.error('File type not allowed')
+        return Upload.LIST_IGNORE
+      }
+
+      if (e.size > 5242880) {
+        message.error('File size cannot exceed 5MB')
+        return Upload.LIST_IGNORE
+      }
+    },
+    customRequest: customRequest,
+    onPreview(file) {
+      console.log('File ' + file)
+    },
+    onChange(info) {
+      const { status } = info.file
+      if (status !== 'uploading') {
+        console.log('Not uploading ' + info.file, info.fileList)
+      }
+      if (status === 'done') {
+        message.success(`${info.file.name} file uploaded successfully.`)
+      } else if (status === 'error') {
+        message.error(`${info.file.name} file upload failed.`)
+      }
+    },
+    onRemove(file) {
+      setAttachment(attachment.filter((element) => element.uid !== file.uid))
+      //setFileList(fileList.filter((element) => element !== file))
+    },
+    onDrop(e) {
+      console.log('Dropped files', e.dataTransfer.files)
+    },
+  }
 
   const onChangeDate = (date: null | (Dayjs | null), dateStrings: string) => {
     if (date) {
-      //console.log('Date: ', date.toString())
       setDueDate(date.toString())
-      /* {
-      dueDate !== '' && <OverDueDate inputDate={new Date(dueDate)} />
-    } */
     } else {
       setDueDate('')
     }
@@ -238,6 +294,7 @@ const CustomFloatButton: React.FC = () => {
 
   const [form] = Form.useForm()
   const group = Form.useWatch('group', form)
+  //const attachments = Form.useWatch('attachment', form)
 
   const onChangeReporter = (value: string) => {
     setRep(value)
@@ -270,8 +327,6 @@ const CustomFloatButton: React.FC = () => {
   const handleCancel = () => {
     setSubTaskIdList([])
     setOpen(false)
-
-    //console.log('My subtask id list ' + JSON.stringify(subTaskIdList))
   }
 
   const clearData = () => {
@@ -321,18 +376,11 @@ const CustomFloatButton: React.FC = () => {
         console.log('Update the id')
         for (let indexS = 0; indexS < subTask.length; indexS++) {
           if (subTask[indexS]._id === _task._id) {
-            /* setSubTask(
-              update(subTask, {
-                $splice: [[indexS, 1, _task]],
-              }),
-            ) */
             subTask[indexS] = _task
             break
           }
         }
       }
-
-      //setMyTask({ ...myTask, Subtask: subTask })
       setOpenSubTaskBtn(true)
     }
 
@@ -344,7 +392,6 @@ const CustomFloatButton: React.FC = () => {
       <Space direction="horizontal">
         <SubTask
           tasks={subTaskInput}
-          //onChange={(e) => console.log('All data ' + e.target.value)}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           assigneeData={assigneeData}
@@ -378,15 +425,6 @@ const CustomFloatButton: React.FC = () => {
   }
 
   const onFinish = async (values: any) => {
-    // get only the task that has Id
-    /* setSubTask((subTask) => {
-      return subTask.filter(
-        (element) =>
-          element._id !== undefined &&
-          element._id !== null &&
-          element._id !== '',
-      )
-    }) */
     const subTaskFilter = subTask.filter(
       (element) =>
         element._id !== undefined && element._id !== null && element._id !== '',
@@ -425,8 +463,16 @@ const CustomFloatButton: React.FC = () => {
       })
     }
 
+    let attachmentList: string[] = []
+    const attachmentItems: AttachmentProps[] = JSON.parse(
+      JSON.stringify(attachment),
+    )
+    attachmentItems.map((element) => {
+      attachmentList.push(element.id)
+    })
+
     const myInputTask: Tasks = {
-      _id: ObjectID().toHexString(),
+      _id: id,
       TaskName: taskName,
       Description: JSON.stringify(editorValue),
       Priority: sessionStorage.getItem('priority' + taskKey)?.toString()!
@@ -442,23 +488,52 @@ const CustomFloatButton: React.FC = () => {
       GroupPath: group,
       Watcher: [],
       Tag: [],
-      Attachment: [],
+      Attachment: attachmentList,
       Comment: [],
     }
 
     _subTaskFilter.unshift(myInputTask)
 
-    //console.log('Task all ' + JSON.stringify(_subTaskFilter))
+    const myRealInputTask: InputTasks = {
+      userId: getCookie('user_id')!.toString(),
+      userName: getCookie('user_name')!.toString(),
+      tasks: _subTaskFilter,
+    }
+
+    //console.log('Attachment ' + JSON.stringify(attachmentList))
     await InsertTask(
       'api/task/addTaskWithSubtask',
-      JSON.stringify(_subTaskFilter),
+      JSON.stringify(myRealInputTask),
     )
     form.resetFields()
     clearData()
     setOpen(false)
     sessionStorage.setItem('priority' + taskKey, 'Medium')
     sessionStorage.setItem('status' + taskKey, 'To do')
-    navigate(0)
+    /* navigate(CustomRoutes.MyWork.path, {
+      state: {
+        refresh: true,
+      },
+    }) */
+
+    const params: Params = {
+      serviceUrl: '',
+      type: getCookie('user_id')?.toString()!,
+      //userId: getCookie('user_id')?.toString(),
+    }
+    if (sessionStorage.getItem('tab')?.toString()) {
+      if (sessionStorage.getItem('tab')?.toString() === '1') {
+        //my work
+        dispatch(fetchTasksAssignee(params))
+      } else {
+        //report
+        dispatch(fetchTasksReporter(params))
+      }
+    } else {
+      dispatch(fetchTasksAssignee(params))
+    }
+
+    //navigate(0)
   }
 
   const submitForm = () => {
@@ -609,6 +684,12 @@ const CustomFloatButton: React.FC = () => {
           </Form.Item>
           <br />
           <br />
+          <Form.Item name="attachment">
+            <Dragger {...props}>
+              <p className="ant-upload-text">Drag & drop here</p>
+            </Dragger>
+          </Form.Item>
+
           <Space direction="vertical">
             <Space direction="vertical">
               <>
@@ -677,7 +758,7 @@ const CustomFloatButton: React.FC = () => {
           </Space>
           <Form.Item>
             <center>
-              <Button type="primary" onClick={submitForm}>
+              <Button type="primary" onClick={submitForm} disabled={disableBtn}>
                 Create Task
               </Button>
             </center>

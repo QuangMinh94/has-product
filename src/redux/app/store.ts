@@ -8,6 +8,8 @@ import assigneeTaskSliceReducer from '../features/tasks/assigneeTaskSlice'
 import myTaskReducer from '../features/myTask/myTaskSlice'
 import reportToMeTaskReducer from '../features/reportToMeTask/reportToMeTaskSlice'
 import reporterTaskSliceReducer from '../features/tasks/reporterTaskSlice'
+import historyReducer from '../features/history/historySlice'
+import userInfoReducer from '../features/userInfo/userInfoSlice'
 
 const store = configureStore({
   reducer: {
@@ -20,6 +22,8 @@ const store = configureStore({
     reporterTasks: reporterTaskSliceReducer,
     myTaskList: myTaskReducer,
     reportToMeTaskList: reportToMeTaskReducer,
+    history: historyReducer,
+    userInfo: userInfoReducer,
   },
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 })

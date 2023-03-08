@@ -7,12 +7,14 @@ import SettingPage from './pages/Settings'
 import { CustomRoutes } from './customRoutes'
 import Signin from './pages/authentication/Signin'
 import TaskDetails from './pages/TaskDetails'
+import Dashboard from './pages/Dashboard'
 
 const MainRoutes = () => {
   return (
     <>
       <Routes>
         <Route path={CustomRoutes.HomePage.path} element={<HomePage />}>
+          <Route path={CustomRoutes.Dashboard.path} element={<Dashboard />} />
           <Route path={CustomRoutes.MyWork.path} element={<MyWork />}></Route>
           <Route
             path={CustomRoutes.TaskDetails.path + '/:id'}

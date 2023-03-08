@@ -55,3 +55,7 @@ p {
   color: #0e7490;
   cursor: pointer;
 }
+
+.table-row {
+  background-color: #ffffff;
+}

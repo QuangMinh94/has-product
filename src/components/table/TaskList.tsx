@@ -28,7 +28,7 @@ import { fetchTasksAssignee } from '../../redux/features/tasks/assigneeTaskSlice
 import { myTaskChange } from '../../redux/features/myTask/myTaskSlice'
 import GetStatusIgnoreList from '../../util/StatusList'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch } from '@fortawesome/free-solid-svg-icons'
+import { faLink, faSearch } from '@fortawesome/free-solid-svg-icons'
 import { ToLowerCaseNonAccentVietnamese } from '../../util/FormatText'
 
 interface DataType {
@@ -66,7 +66,11 @@ const TaskList: React.FC<InputData> = ({
   const [input, setInput] = useState<Tasks[]>([])
 
   const [isShowMore, setShowMore] = useState(collapseShowMore)
-  const [searchValue, setSearchValue] = useState('')
+  const [searchValue, setSearchValue] = useState(
+    sessionStorage.getItem('searchValueTaskList')
+      ? sessionStorage.getItem('searchValueTaskList')
+      : '',
+  )
   const [showCompleted, setShowCompleted] = useState(
     sessionStorage.getItem('showClosedTaskList') === 'true',
   )
@@ -286,9 +290,13 @@ const TaskList: React.FC<InputData> = ({
             />
           ),
           task: (
-            <div onClick={() => OnNavigate(inputObj[index])}>
-              <ParagraphExample name={inputObj[index].TaskName} />
-            </div>
+            <Space direction="horizontal">
+              <>
+                <div onClick={() => OnNavigate(inputObj[index])}>
+                  <ParagraphExample name={inputObj[index].TaskName} />
+                </div>
+              </>
+            </Space>
           ),
           priority: (
             <>
@@ -334,9 +342,15 @@ const TaskList: React.FC<InputData> = ({
               />
             ),
             task: (
-              <div onClick={() => OnNavigate(inputObj[index])}>
-                <ParagraphExample name={inputObj[index].TaskName} />
-              </div>
+              <>
+                <div onClick={() => OnNavigate(inputObj[index])}>
+                  <ParagraphExample name={inputObj[index].TaskName} />
+                </div>
+                {inputObj[index].Subtask &&
+                  inputObj[index].Subtask?.length! > 0 && (
+                    <FontAwesomeIcon icon={faLink} />
+                  )}
+              </>
             ),
             priority: (
               <>
@@ -533,10 +547,78 @@ const TaskList: React.FC<InputData> = ({
     setLoading(true)
   }
 
+  const Sorting = () => {
+    let value = searchValue!
+    if (value !== '') {
+      if (showCompleted === false) {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
+        )
+        const sortResult: Tasks[] = inputObjFilter.filter((x) =>
+          ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
+            ToLowerCaseNonAccentVietnamese(value),
+          ),
+        )
+        if (sortResult.length === 0) {
+          ReorderTask([])
+        } else {
+          ReorderTask(sortResult)
+        }
+      } else {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
+            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
+        )
+
+        const sortResult: Tasks[] = inputObjFilter.filter((x) =>
+          ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
+            ToLowerCaseNonAccentVietnamese(value),
+          ),
+        )
+        if (sortResult.length === 0) {
+          ReorderClosedTasks([])
+        } else {
+          ReorderClosedTasks(sortResult)
+        }
+
+        //dispatch(myTaskChange(inputObjFilter.length))
+      }
+    } else {
+      if (showCompleted === false) {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
+            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
+        )
+        ReorderTask(inputObjFilter)
+      } else {
+        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
+        const inputObjFilter = sortedTask.filter(
+          (dataOtherEle) =>
+            dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
+            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
+            dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
+        )
+        ReorderClosedTasks(inputObjFilter)
+        //dispatch(myTaskChange(inputObjFilter.length))
+      }
+    }
+  }
+
   useEffect(() => {
     try {
       const s = refresh.refresh
       if (refresh.refresh === true) {
+        console.log('Borger')
         setLoading(true)
       }
     } catch (error) {}
@@ -552,120 +634,25 @@ const TaskList: React.FC<InputData> = ({
 
   useEffect(() => {
     if (!task.loading && task.tasks.length) {
-      if (showCompleted === false) {
-        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-        const inputObjFilter = sortedTask.filter(
-          (dataOtherEle) =>
-            dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
-            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
-            dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
-        )
-        ReorderTask(inputObjFilter)
-      } else {
-        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-        const inputObjFilter = sortedTask.filter(
-          (dataOtherEle) =>
-            dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
-            //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
-            dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
-        )
-        ReorderClosedTasks(inputObjFilter)
-      }
+      Sorting()
     }
     setLoading(false)
   }, [task.loading, task.tasks.length])
 
   useEffect(() => {
+    //let value = searchValue!
     const delayDebounceFn = setTimeout(() => {
-      if (showCompleted === false) {
-        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-        const inputObjFilter = sortedTask.filter(
-          (dataOtherEle) =>
-            dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
-            dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
-        )
-        ReorderTask(inputObjFilter)
-      } else {
-        const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-        const inputObjFilter = sortedTask.filter(
-          (dataOtherEle) =>
-            dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
-            dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
-        )
-        ReorderClosedTasks(inputObjFilter)
-      }
-      setLoading(false)
-    }, 100)
+      Sorting()
+    }, 200)
 
     return () => clearTimeout(delayDebounceFn)
   }, [showCompleted])
 
   useEffect(() => {
-    let value = searchValue
+    sessionStorage.setItem('searchValueTaskList', searchValue!)
+    //let value = searchValue!
     const delayDebounceFn = setTimeout(() => {
-      if (value !== '') {
-        if (showCompleted === false) {
-          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-          const inputObjFilter = sortedTask.filter(
-            (dataOtherEle) =>
-              dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
-              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
-              dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
-          )
-          const sortResult: Tasks[] = inputObjFilter.filter((x) =>
-            ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
-              ToLowerCaseNonAccentVietnamese(value),
-            ),
-          )
-          if (sortResult.length === 0) {
-            ReorderTask([])
-          } else {
-            ReorderTask(sortResult)
-          }
-        } else {
-          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-          const inputObjFilter = sortedTask.filter(
-            (dataOtherEle) =>
-              dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
-              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
-              dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
-          )
-
-          const sortResult: Tasks[] = inputObjFilter.filter((x) =>
-            ToLowerCaseNonAccentVietnamese(x.TaskName).includes(
-              ToLowerCaseNonAccentVietnamese(value),
-            ),
-          )
-          if (sortResult.length === 0) {
-            ReorderClosedTasks([])
-          } else {
-            ReorderClosedTasks(sortResult)
-          }
-
-          //dispatch(myTaskChange(inputObjFilter.length))
-        }
-      } else {
-        if (showCompleted === false) {
-          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-          const inputObjFilter = sortedTask.filter(
-            (dataOtherEle) =>
-              dataOtherEle.Status.toLowerCase() !== 'Completed'.toLowerCase() &&
-              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
-              dataOtherEle.Status.toLowerCase() !== 'Incompleted'.toLowerCase(),
-          )
-          ReorderTask(inputObjFilter)
-        } else {
-          const sortedTask: Tasks[] = JSON.parse(JSON.stringify(task.tasks))
-          const inputObjFilter = sortedTask.filter(
-            (dataOtherEle) =>
-              dataOtherEle.Status.toLowerCase() === 'Completed'.toLowerCase() ||
-              //dataOtherEle.Status.toLowerCase() !== 'Done'.toLowerCase() &&
-              dataOtherEle.Status.toLowerCase() === 'Incompleted'.toLowerCase(),
-          )
-          ReorderClosedTasks(inputObjFilter)
-          //dispatch(myTaskChange(inputObjFilter.length))
-        }
-      }
+      Sorting()
     }, 200)
 
     return () => clearTimeout(delayDebounceFn)
@@ -710,7 +697,7 @@ const TaskList: React.FC<InputData> = ({
                 float: 'left',
                 marginBottom: '15px',
               }}
-              value={searchValue}
+              value={searchValue!}
               //defaultValue={inputValue}
               //onChange={(e) => setInputValue(e.target.value)}
               onChange={(e) => {
@@ -726,7 +713,7 @@ const TaskList: React.FC<InputData> = ({
                 const saveBoolean: boolean = e.target.checked
                 sessionStorage.setItem(
                   'showClosedTaskList',
-                  new Boolean(saveBoolean).toString(),
+                  Boolean(saveBoolean).toString(),
                 )
 
                 setShowCompleted(!showCompleted)
