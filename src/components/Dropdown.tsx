@@ -59,10 +59,10 @@ const DropdownProps: React.FC<Type> = ({
     setTxt(text)
   }, [text])
 
-  function updateService(inputTask: InputTasks, taskId?: string) {
+  async function updateService(inputTask: InputTasks, taskId?: string) {
     if (taskId !== undefined) {
       setLoading(true)
-      UpdateTask('/api/task/', taskId, inputTask)
+      await UpdateTask('/api/task/', taskId, inputTask)
         .then((r) => {
           setLoading(false)
         })

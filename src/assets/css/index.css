@@ -47,15 +47,23 @@ p {
   background-color: #ffffff;
 }
 
-.ant-picker .ant-picker-input > input {
-  color: white;
-}
-
 .edit-icon:hover {
   color: #0e7490;
   cursor: pointer;
 }
 
-.table-row {
-  background-color: #ffffff;
+.custom-table-row {
+  background-color: white;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: transparent;
 }

@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendar } from '@fortawesome/free-solid-svg-icons'
 import { useState } from 'react'
 import OverDueDate from '../util/OverDueDate'
-import '../assets/css/index.css'
 import { UPDATE_MODE } from '../util/ConfigText'
 
 type DueDateInput = {

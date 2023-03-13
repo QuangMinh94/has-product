@@ -63,6 +63,7 @@ const ScoreComp: React.FC<ScoreCompParam> = ({
       Score: inputValue,
       ScoreComment: commentValue,
       ScoreModifiedDate: new Date(),
+      CloseDate: new Date(),
     }
 
     const updatedValue = await UpdateTask('', task._id!, inputTask)

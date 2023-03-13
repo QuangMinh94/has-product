@@ -1,3 +1,5 @@
+import { Users } from './Users'
+
 export interface CommentRequest {
   taskId: string
   userId: string
@@ -7,7 +9,7 @@ export interface CommentRequest {
 
 export interface CommentResponse {
   Comment: string
-  UserId?: string
+  User?: Users
   CreatedDate: Date
   Attachment: []
   _id: string

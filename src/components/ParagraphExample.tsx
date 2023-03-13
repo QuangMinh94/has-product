@@ -1,13 +1,17 @@
-import React, { useState } from 'react'
-import { Switch, Tooltip, Typography } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Space, Switch, Tooltip, Typography } from 'antd'
 import '../assets/css/paragraph.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLayerGroup, faLink } from '@fortawesome/free-solid-svg-icons'
+import { Tasks } from '../data/database/Tasks'
 interface Name {
   name: string
+  task: Tasks
 }
 
 const { Paragraph, Text } = Typography
 
-const ParagraphExample: React.FC<Name> = ({ name }) => {
+const ParagraphExample: React.FC<Name> = ({ name, task }) => {
   const [ellipsis, setEllipsis] = useState(true)
   const [expand, setExpand] = useState(false)
   const [counter, setCounter] = useState(0)
@@ -26,23 +30,29 @@ const ParagraphExample: React.FC<Name> = ({ name }) => {
   return (
     <>
       <div key={counter}>
-        <Tooltip title={name} placement="right">
-          <Paragraph
-            ellipsis={
-              ellipsis
-                ? {
-                    rows: 1,
-                    expandable: false,
-                    symbol: '...',
-                    onExpand: () => TypoExpand(),
-                  }
-                : false
-            }
-            style={{ margin: '0' }}
-          >
-            {name}
-          </Paragraph>
-        </Tooltip>
+        <Space direction="horizontal">
+          <Tooltip title={name} placement="right">
+            <Paragraph
+              ellipsis={
+                ellipsis
+                  ? {
+                      rows: 1,
+                      expandable: false,
+                      symbol: '...',
+                      onExpand: () => TypoExpand(),
+                    }
+                  : false
+              }
+              style={{ margin: '0' }}
+            >
+              {name}
+            </Paragraph>
+          </Tooltip>
+
+          {task && task.Subtask && task.Subtask?.length && (
+            <FontAwesomeIcon icon={faLink} />
+          )}
+        </Space>
       </div>
       {expand === true && <a onClick={TypoClose}>Close</a>}
     </>

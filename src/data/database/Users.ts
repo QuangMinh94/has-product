@@ -13,4 +13,5 @@ export interface Users {
   Group?: Group[]
   message?: string
   code?: number
+  __v?: number
 }
