@@ -1,11 +1,15 @@
-import { Col, Input, Row, Space } from 'antd'
+import { Button, Col, Input, Row, Space } from 'antd'
 import ObjectID from 'bson-objectid'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { getCookie } from 'typescript-cookie'
 import { CommentRequest, CommentResponse } from '../data/database/Comment'
 import { Users } from '../data/database/Users'
 import { useAppSelector } from '../redux/app/hook'
 import DateFormatter from '../util/DateFormatter'
 import UserIcon from './UserIcon'
+
+import { SocketContext } from '../context'
+import { SendOutlined } from '@ant-design/icons'
 
 interface CompInput {
   user: Users
@@ -15,12 +19,13 @@ interface CompInput {
 
 interface CommnentsInput {
   userComments: CommentResponse[]
+  taskId: string
 }
 
 const Comp: React.FC<CompInput> = ({ user, comment, createdDate }) => {
   return (
-    <Row gutter={10}>
-      <Col span={3}>
+    <Row gutter={2}>
+      <Col span={2}>
         <UserIcon
           username={user.UserName}
           userColor={user.Color}
@@ -28,47 +33,90 @@ const Comp: React.FC<CompInput> = ({ user, comment, createdDate }) => {
           userInfo={user}
         />
       </Col>
-      <Col span={21}>
+      <Col
+        span={22}
+        style={{
+          width: '100%',
+          borderColor: '#FACC15',
+          backgroundColor: '#F3F4F6',
+        }}
+      >
         <Space
-          direction="vertical"
+          direction="horizontal"
           style={{
             width: '100%',
-            borderColor: '#FACC15',
-            backgroundColor: '#F3F4F6',
+            display: 'flex',
+            justifyContent: 'space-between',
           }}
         >
-          <div>
-            <p style={{ float: 'left', width: 'auto' }}>{user.UserName}</p>
-            <p style={{ float: 'right', width: 'auto' }}>
-              <DateFormatter dateString={createdDate} />
-            </p>
+          <p style={{ float: 'left', margin: '7px 0 7px 7px' }}>
+            {user.FirstName + ' ' + user.LastName}
+          </p>
+          <div
+            style={{
+              float: 'right',
+              margin: '7px 7px 7px 0',
+            }}
+          >
+            <DateFormatter dateString={createdDate} />
           </div>
-          <p style={{ float: 'left', width: 'auto' }}>{comment}</p>
         </Space>
+        <Row>
+          <p
+            style={{
+              float: 'left',
+              wordBreak: 'normal',
+              maxWidth: '500px',
+              margin: '7px 0px 0px 7px',
+            }}
+          >
+            {comment}
+          </p>
+        </Row>
       </Col>
     </Row>
   )
 }
 
-const Comments: React.FC<CommnentsInput> = ({ userComments }) => {
-  const [dummyInput, setDummyInput] = useState<CommentResponse[]>(
+const Comments: React.FC<CommnentsInput> = ({ userComments, taskId }) => {
+  /* const [dummyInput, setDummyInput] = useState<CommentResponse[]>(
     JSON.parse(
-      '[\r\n\t{\r\n\t\t"_id": "63f34a635eb52eb76bcf0431",\r\n\t\t"Comment": "Comment 203xxxxxxxxxxxxxxxxx",\r\n\t\t"UserId": "63f2e8d13a22b6c677fd32d5",\r\n\t\t"CreatedDate": "2004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f472e3058151cd4d802e23",\r\n\t\t"Comment": "999-000-111",\r\n\t\t"UserId": "63f32f80dadfa1087cc1fe8a",\r\n\t\t"CreatedDate": "2004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f47bc8686cdc71fcaa3ab7",\r\n\t\t"Comment": "999-000-111",\r\n\t\t"UserId": "63f32f80dadfa1087cc1fe8a",\r\n\t\t"CreatedDate": "2004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f47c8f686cdc71fcaa3ab9",\r\n\t\t"Comment": "9xin ch\u00E0o 1",\r\n\t\t"UserId": "63f32f80dadfa1087cc1fe8a",\r\n\t\t"CreatedDate": "2004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f48d28686cdc71fcaa3abc",\r\n\t\t"Comment": "DatPT \u0111\u1EA9y d\u1EEF li\u1EC7u comment",\r\n\t\t"UserId": "63e36b9b4d00c6533caf13fc",\r\n\t\t"CreatedDate": "1004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f48e91686cdc71fcaa3abe",\r\n\t\t"Comment": "1",\r\n\t\t"UserId": "63e36b9b4d00c6533caf13fc",\r\n\t\t"CreatedDate": "1004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f48e91686cdc71fcaa3abe",\r\n\t\t"Comment": "2",\r\n\t\t"UserId": "63e36b9b4d00c6533caf13fc",\r\n\t\t"CreatedDate": "1004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t},\r\n\t{\r\n\t\t"_id": "63f48e91686cdc71fcaa3abe",\r\n\t\t"Comment": "3",\r\n\t\t"UserId": "63e36b9b4d00c6533caf13fc",\r\n\t\t"CreatedDate": "1004-12-21T03:23:54.000Z",\r\n\t\t"Attachment": [],\r\n\t\t"__v": 0\r\n\t}\r\n]',
+      '[{\r\n"_id":"64095a2b073b9afdbb4a6665",\r\n"Comment":"Testcomment64095a2a1f43125f74f01cf4",\r\n"User":{\r\n"_id":"63bbf13e2facab213077dc03",\r\n"UserName":"minhdq@bpm.lab",\r\n"Name":"minhdq",\r\n"Role":"63bf862a1784ec2c458d1657",\r\n"Department":"R&D",\r\n"__v":0,\r\n"Color":"#49768F",\r\n"FirstName":"Minh",\r\n"Group":[\r\n"63c5050b2b3d7578b6388560"\r\n],\r\n"LastName":"Dinh"\r\n},\r\n"CreatedDate":"2023-03-09T04:01:46.216Z",\r\n"Attachment":[],\r\n"__v":0\r\n},\r\n{\r\n"_id":"64095a70073b9afdbb4a6668",\r\n"Comment":"Testcomment64095a6f1f43125f74f01cff",\r\n"User":{\r\n"_id":"63bbf13e2facab213077dc03",\r\n"UserName":"minhdq@bpm.lab",\r\n"Name":"minhdq",\r\n"Role":"63bf862a1784ec2c458d1657",\r\n"Department":"R&D",\r\n"__v":0,\r\n"Color":"#49768F",\r\n"FirstName":"Minh",\r\n"Group":[\r\n"63c5050b2b3d7578b6388560"\r\n],\r\n"LastName":"Dinh"\r\n},\r\n"CreatedDate":"2023-03-09T04:02:55.422Z",\r\n"Attachment":[],\r\n"__v":0\r\n},\r\n{\r\n"_id":"64095add073b9afdbb4a666a",\r\n"Comment":"Testcomment64095add1f43125f74f01d0a",\r\n"User":{\r\n"_id":"63bbf13e2facab213077dc03",\r\n"UserName":"minhdq@bpm.lab",\r\n"Name":"minhdq",\r\n"Role":"63bf862a1784ec2c458d1657",\r\n"Department":"R&D",\r\n"__v":0,\r\n"Color":"#49768F",\r\n"FirstName":"Minh",\r\n"Group":[\r\n"63c5050b2b3d7578b6388560"\r\n],\r\n"LastName":"Dinh"\r\n},\r\n"CreatedDate":"2023-03-09T04:04:45.068Z",\r\n"Attachment":[],\r\n"__v":0\r\n}]',
     ),
-  )
-
+  ) */
+  const [dummyInput, setDummyInput] = useState<CommentResponse[]>(userComments)
+  const socket = useContext(SocketContext)
   const user = useAppSelector((state) => state.userInfo.user)
   const [commentInput, setCommentInput] = useState('')
+  const refForScroll = useRef<null | HTMLDivElement>(null)
+
+  useEffect(() => {
+    setDummyInput(userComments)
+    refForScroll.current!.scrollIntoView({ behavior: 'smooth' })
+  }, [userComments])
+
+  useEffect(() => {
+    refForScroll.current!.scrollIntoView({ behavior: 'smooth' })
+  })
 
   const AddComp = () => {
     if (commentInput !== '') {
-      const newId = ObjectID().toHexString()
+      const comment: CommentRequest = {
+        taskId: taskId,
+        userId: getCookie('user_id')!,
+        comment: commentInput,
+        createdDate: new Date(),
+      }
+      socket.emit('addComment', comment)
+
+      const userInfo: Users = JSON.parse(getCookie('userInfo')!)
+      const newId = ObjectID(new Date().getTime()).toHexString()
       setDummyInput([
         ...dummyInput,
         {
           _id: newId,
           Comment: commentInput,
-          UserId: '63e36b9b4d00c6533caf13fc',
+          User: userInfo,
           CreatedDate: new Date(),
           Attachment: [],
           __v: 0,
@@ -84,7 +132,7 @@ const Comments: React.FC<CommnentsInput> = ({ userComments }) => {
         direction="vertical"
         style={{
           width: '100%',
-          height: '300px',
+          height: '390px',
           overflowY: 'scroll',
           overflowX: 'hidden',
         }}
@@ -92,21 +140,35 @@ const Comments: React.FC<CommnentsInput> = ({ userComments }) => {
         {user &&
           dummyInput.map((element) => (
             <Comp
-              user={user}
+              user={element.User!}
               comment={element.Comment}
-              createdDate={new Date()}
+              createdDate={element.CreatedDate}
               key={element._id}
             />
           ))}
+        <div ref={refForScroll} />
       </Space>
-
-      <Input
-        value={commentInput}
-        onChange={(e) => setCommentInput(e.target.value)}
-        onPressEnter={() => {
-          AddComp()
+      <div
+        style={{
+          height: '30px',
         }}
-      ></Input>
+      >
+        <Input
+          style={{ float: 'left', width: '91%' }}
+          placeholder="Comment"
+          value={commentInput}
+          onChange={(e) => setCommentInput(e.target.value)}
+          onPressEnter={() => {
+            AddComp()
+          }}
+        />
+        <Button
+          type="primary"
+          icon={<SendOutlined />}
+          style={{ float: 'right', width: '8%', marginLeft: '1%' }}
+          onClick={() => AddComp()}
+        />
+      </div>
     </div>
   )
 }

@@ -45,6 +45,7 @@ import { useAppDispatch } from '../redux/app/hook'
 import { fetchTasksReporter } from '../redux/features/tasks/reporterTaskSlice'
 import { CheckExtension } from '../util/Extension'
 import { InputTasks } from '../data/database/InputTasks'
+import { RemoveAttachment } from '../data/attachmentService'
 
 interface ItemProps {
   label: string
@@ -84,7 +85,7 @@ let reporterOptions: ItemProps[] = []
 const subTask: Tasks[] = []
 
 const CustomFloatButton: React.FC = () => {
-  const id = ObjectID().toHexString()
+  const id = ObjectID(new Date().getTime()).toHexString()
   const navigate = useNavigate()
   //let reporterOptions: ItemProps[] = []
   const [disableBtn, setDisableBtn] = useState(false)
@@ -157,6 +158,8 @@ const CustomFloatButton: React.FC = () => {
       0,
       options.file.name.lastIndexOf('.'),
     )
+    data.append('userId', getCookie('user_id')!)
+    data.append('userName', getCookie('user_name')!)
     data.append('taskId', id)
     data.append('fileName', fileName)
     data.append('fileType', fileType)
@@ -228,8 +231,18 @@ const CustomFloatButton: React.FC = () => {
         message.error(`${info.file.name} file upload failed.`)
       }
     },
-    onRemove(file) {
-      setAttachment(attachment.filter((element) => element.uid !== file.uid))
+    async onRemove(file) {
+      const _filtedFile = attachment.filter(
+        (element) => element.uid === file.uid,
+      )
+
+      const response = await RemoveAttachment(_filtedFile[0].id)
+      if (response.ErrorMessage) {
+        message.error('Remove failed with error ' + response.ErrorMessage)
+        return false
+      } else {
+        setAttachment(attachment.filter((element) => element.uid !== file.uid))
+      }
       //setFileList(fileList.filter((element) => element !== file))
     },
     onDrop(e) {
@@ -407,7 +420,7 @@ const CustomFloatButton: React.FC = () => {
 
   const AddTask = () => {
     //console.log('Hello ' + subTasks.length)
-    const subId = ObjectID().toHexString()
+    const subId = ObjectID(new Date().getTime()).toHexString()
     setSubTaskIdList([...subTaskIdList, subId])
     setSubTaskComp(
       subTasksComp.concat({
@@ -577,14 +590,23 @@ const CustomFloatButton: React.FC = () => {
           <Form.Item
             //label="Username"
             name="task name"
-            rules={[{ required: true, message: '' }]}
+            rules={[
+              { required: true, message: '' },
+              {
+                validator: (_, value) =>
+                  value.trim() !== ''
+                    ? Promise.resolve()
+                    : Promise.reject(new Error('')),
+              },
+            ]}
           >
             <Input
               placeholder="Task Name"
               defaultValue={taskName}
               onBlur={(e) => {
-                setTaskName(e.target.value)
-                setMyTask({ ...myTask, TaskName: e.target.value })
+                const _taskName = e.target.value.replace(/^\n|\n$/g, '')
+                setTaskName(_taskName)
+                setMyTask({ ...myTask, TaskName: _taskName })
               }}
             />
           </Form.Item>
@@ -700,9 +722,9 @@ const CustomFloatButton: React.FC = () => {
                   block
                   icon={<FontAwesomeIcon icon={faPlus} />}
                   disabled={!openSubTaskBtn}
-                  style={{ width: '100px' }}
+                  style={{ width: '150px' }}
                 >
-                  Add tasks
+                  Add subtask
                 </Button>
               </>
             </Space>

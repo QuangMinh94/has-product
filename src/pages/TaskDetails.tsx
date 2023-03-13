@@ -1,4 +1,10 @@
-import React, { Suspense, useCallback, useEffect, useState } from 'react'
+import React, {
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 import {
   Col,
   Layout,
@@ -65,13 +71,24 @@ import { fetchHistory } from '../redux/features/history/historySlice'
 import { AttachmentResponse } from '../data/database/Attachment'
 import axios from 'axios'
 import { RemoveAttachment } from '../data/attachmentService'
-import { JobStatusEnum } from '@novu/shared'
 import { CheckExtension } from '../util/Extension'
+import io from 'socket.io-client'
+import { SocketContext } from '../context'
 
 interface TaskData {
   taskData?: Tasks
   openModal: boolean
 }
+
+const socket = io(process.env.REACT_APP_SOCKET!, {
+  reconnectionDelayMax: 10000,
+  /* auth: {
+    token: '123',
+  },
+  query: {
+    'my-key': 'my-value',
+  }, */
+})
 
 const { Header, Content } = Layout
 
@@ -161,6 +178,8 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   const [statusIgnoreList, setStatusIgnoreList] = useState<Status[]>([])
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const [attachmentIdList, setAttachmentIdList] = useState<string[]>([])
+  const socket = useContext(SocketContext)
+  const [isConnected, setIsConnected] = useState(socket.connected)
   const dispatch = useAppDispatch()
 
   const customRequest = (options: any) => {
@@ -174,6 +193,8 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       0,
       options.file.name.lastIndexOf('.'),
     )
+    data.append('userId', getCookie('user_id')!)
+    data.append('userName', getCookie('user_name')!)
     data.append('taskId', taskId.id!.toString())
     data.append('fileName', fileName)
     data.append('fileType', fileType)
@@ -205,18 +226,6 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
 
           setAttachmentIdList([...attachmentIdList, res[0]._id])
 
-          //update task inside here
-          const attach: string[] = JSON.parse(JSON.stringify(attachmentIdList))
-          attach.push(res[0]._id)
-          const inputTask: InputTasks = {
-            Attachment: attach,
-          }
-          UpdateTask('', taskData._id!, inputTask).then((res) => {
-            if (res.errorMessage) {
-              message.error('Update failed with error ' + res.errorMessage)
-              return Upload.LIST_IGNORE
-            }
-          })
           message.success(`${options.file.name} file uploaded successfully.`)
           //options.onSuccess(res, options.file)
         } else {
@@ -264,7 +273,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       }
     },
     async onRemove(e) {
-      const response = await RemoveAttachment(e.uid)
+      const response = await RemoveAttachment(e.uid, taskData._id!)
       if (response.ErrorMessage) {
         message.error('Remove failed with error ' + response.ErrorMessage)
         return false
@@ -284,7 +293,9 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     {
       key: 'comments',
       label: `Comments`,
-      children: <Comments userComments={[]} />,
+      children: (
+        <Comments userComments={taskData.Comment} taskId={taskData._id!} />
+      ),
     },
     {
       key: 'history',
@@ -445,6 +456,29 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   }, [fetchData])
 
   useEffect(() => {
+    socket.on('connection', () => {
+      setIsConnected(true)
+    })
+
+    socket.on('disconnect', () => {
+      setIsConnected(false)
+    })
+
+    socket.on('addCommentData', () => {
+      subTasksComp.length = 0
+      fetchData()
+
+      setGetUsers(false)
+    })
+
+    return () => {
+      socket.off('connection')
+      socket.off('disconnect')
+      socket.off('addCommentData')
+    }
+  }, [])
+
+  /* useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       const inputTask: InputTasks = {
         Description: JSON.stringify(editorValue),
@@ -455,7 +489,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     }, 1000)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [editorValue])
+  }, [editorValue]) */
 
   const SaveEditor = async () => {
     setSaveBtn(false)
@@ -545,7 +579,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     parentTask,
   }) => {
     const onFinish = async (values: any) => {
-      console.log('Sucess ' + JSON.stringify(values))
+      console.log('Success ' + JSON.stringify(values))
       const _task: Tasks = JSON.parse(JSON.stringify(values))
       _task.Status = DEFAULT_STT
       _task.CreateDate = new Date()
@@ -603,7 +637,13 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       inputTasks.push(_task)
       inputTasks.unshift(mainTask)
 
-      await InsertTask('', inputTasks)
+      const realInputTask: InputTasks = {
+        userId: getCookie('user_id'),
+        userName: getCookie('user_name'),
+        tasks: inputTasks,
+      }
+
+      await InsertTask('', realInputTask)
     }
 
     const onFinishFailed = (values: any) => {
@@ -627,7 +667,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   }
 
   const AddTask = () => {
-    const subId = ObjectID().toHexString()
+    const subId = ObjectID(new Date().getTime()).toHexString()
     setSubTaskIdList([...subTaskIdList, subId])
     setSubTaskComp(
       subTasksComp.concat({
@@ -696,6 +736,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                         </p>
                       ) : (
                         <Input
+                          maxLength={80}
                           defaultValue={taskData.TaskName}
                           onBlur={OnBlurTaskName}
                           autoFocus
@@ -830,89 +871,106 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
             </Header>
             <Content>
               <Row>
-                <Col span={16} style={{ marginRight: '0.5%' }}>
+                <Col
+                  span={16}
+                  style={{
+                    marginRight: '0.5%',
+                  }}
+                >
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <ReactQuill
-                      //ref={reactQuillRef}
-                      //id="bodyInput"
+                    <div style={{ height: '500px', overflow: 'auto' }}>
+                      <ReactQuill
+                        //ref={reactQuillRef}
+                        //id="bodyInput"
 
-                      preserveWhitespace={true}
-                      modules={{
-                        toolbar: [
-                          [
-                            { font: [] },
-                            { size: ['small', false, 'large', 'huge'] },
-                          ], // custom dropdown
+                        preserveWhitespace={true}
+                        modules={{
+                          toolbar: [
+                            [
+                              { font: [] },
+                              { size: ['small', false, 'large', 'huge'] },
+                            ], // custom dropdown
 
-                          ['bold', 'italic', 'underline', 'strike'],
+                            ['bold', 'italic', 'underline', 'strike'],
 
-                          [{ color: [] }, { background: [] }],
+                            [{ color: [] }, { background: [] }],
 
-                          /* [{ script: 'sub' }, { script: 'super' }], */
+                            /* [{ script: 'sub' }, { script: 'super' }], */
 
-                          /* [
+                            /* [
                         { header: 1 },
                         { header: 2 }, 
                         'blockquote',
                         'code-block',
                       ], */
 
-                          [
-                            { list: 'ordered' },
-                            { list: 'bullet' },
-                            /* { indent: '-1' },
+                            [
+                              { list: 'ordered' },
+                              { list: 'bullet' },
+                              /* { indent: '-1' },
                         { indent: '+1' }, */
-                          ],
+                            ],
 
-                          /* [{ direction: 'rtl' }, { align: [] }],
+                            /* [{ direction: 'rtl' }, { align: [] }],
 
                       ['link', 'image', 'video', 'formula'],
                         
                       ['clean'] */
-                          ['image'],
-                        ],
-                      }}
-                      value={editorValue}
-                      onChange={onChangeEditor}
-                      style={{
-                        height: '188px',
-                        overflow: 'inline',
-                      }}
-                      onFocus={() => setSaveBtn(true)}
-                      //onBlur={() => SaveEditor()}
-                    ></ReactQuill>
+                            ['image'],
+                          ],
+                        }}
+                        value={editorValue}
+                        onChange={onChangeEditor}
+                        style={{
+                          height: '235px',
+                          overflow: 'inline',
+                        }}
+                        onFocus={() => setSaveBtn(true)}
+                        //onBlur={() => SaveEditor()}
+                      ></ReactQuill>
 
-                    {saveBtn === true && (
-                      <Button type="primary" onClick={SaveEditor}>
-                        Save
-                      </Button>
-                    )}
-                    <br />
-                    <br />
-                    {assigneeData.length !== 0 ? (
-                      <Space direction="vertical">
-                        {subTasksComp.map((element) => element.content)}
+                      {saveBtn === true && (
+                        <Space direction="horizontal" size={5}>
+                          <Button type="primary" onClick={SaveEditor}>
+                            Save
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setEditorValue(JSON.parse(taskData.Description))
+                              setSaveBtn(false)
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </Space>
+                      )}
+                      <br />
+                      <br />
+                      {assigneeData.length !== 0 ? (
+                        <Space direction="vertical">
+                          {subTasksComp.map((element) => element.content)}
 
-                        <Button
-                          type="dashed"
-                          onClick={AddTask}
-                          block
-                          icon={<FontAwesomeIcon icon={faPlus} />}
-                          disabled={!openSubTaskBtn}
-                          style={{ width: '100px' }}
-                        >
-                          Add tasks
-                        </Button>
-                      </Space>
-                    ) : (
-                      <Spin />
-                    )}
+                          <Button
+                            type="dashed"
+                            onClick={AddTask}
+                            block
+                            icon={<FontAwesomeIcon icon={faPlus} />}
+                            disabled={!openSubTaskBtn}
+                            style={{ width: '150px' }}
+                          >
+                            Add subtask
+                          </Button>
+                        </Space>
+                      ) : (
+                        <Spin />
+                      )}
+                    </div>
                     <Dragger {...props}>
                       <p className="ant-upload-text">Drag & drop here</p>
                     </Dragger>
                   </Space>
                 </Col>
-                <Col flex={8}>
+                <Col flex={8} style={{ height: '500px' }}>
                   <Tabs
                     defaultActiveKey="2"
                     items={items}
@@ -926,8 +984,8 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       padding: '1%',
                       overflow: 'hidden',
                       position: 'relative',
-                      maxHeight: '450px',
-                      //height: '20%',
+                      //maxHeight: '450px',
+                      height: '100%',
                     }}
                   />
                 </Col>

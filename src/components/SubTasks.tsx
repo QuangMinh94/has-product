@@ -151,7 +151,9 @@ const SubTask: React.FC<SubTaskInput> = ({
   }
 
   const reporters: Users[] = []
-  reporters.push(tasks.Reporter)
+  if (tasks.Reporter._id !== undefined) {
+    reporters.push(tasks.Reporter)
+  }
 
   return (
     <>
@@ -209,7 +211,15 @@ const SubTask: React.FC<SubTaskInput> = ({
               <Form.Item
                 //label="Username"
                 name="TaskName"
-                rules={[{ required: true, message: '' }]}
+                rules={[
+                  { required: true, message: '' },
+                  {
+                    validator: (_, value) =>
+                      value.trim() !== ''
+                        ? Promise.resolve()
+                        : Promise.reject(new Error('')),
+                  },
+                ]}
                 shouldUpdate={(prevValues, curValues) =>
                   prevValues.additional !== curValues.additional
                 }
@@ -240,7 +250,7 @@ const SubTask: React.FC<SubTaskInput> = ({
                       }
                     }}
                     onBlur={() => {
-                      if (subTask.TaskName !== '') {
+                      if (subTask.TaskName.trim() !== '') {
                         setEditTaskName(false)
                         setSubTask({
                           ...subTask,

@@ -85,8 +85,6 @@ const TaskListOverDue: React.FC<InputData> = ({
     //userId: getCookie('user_id')?.toString(),
   }
 
-  const [reload, setReload] = useState(false)
-
   const columns: ColumnsType<DataType> = [
     {
       title: 'Status',
@@ -178,20 +176,20 @@ const TaskListOverDue: React.FC<InputData> = ({
           status: (
             <DropdownProps
               type="Status"
-              text={
-                inputObj[index].Status ? inputObj[index].Status : 'undefined'
-              }
+              text={inputObj[index].Status}
               button={false}
               taskId={inputObj[index]._id}
               ignoreStt={_ignoreList}
               task={inputObj[index]}
               onClickMenu={handleMenuClickStatus}
-              mode={UPDATE_MODE}
             />
           ),
           task: (
             <div onClick={() => OnNavigate(inputObj[index])}>
-              <ParagraphExample name={inputObj[index].TaskName} />
+              <ParagraphExample
+                name={inputObj[index].TaskName}
+                task={inputObj[index]}
+              />
             </div>
           ),
           assignee: <IconGroup inputList={inputObj[index].Assignee} />,
@@ -277,9 +275,7 @@ const TaskListOverDue: React.FC<InputData> = ({
           status: (
             <DropdownProps
               type="Status"
-              text={
-                inputObj[index].Status ? inputObj[index].Status : 'undefined'
-              }
+              text={inputObj[index].Status}
               button={false}
               taskId={inputObj[index]._id}
               ignoreStt={_ignoreList}
@@ -290,7 +286,10 @@ const TaskListOverDue: React.FC<InputData> = ({
           ),
           task: (
             <div onClick={() => OnNavigate(inputObj[index])}>
-              <ParagraphExample name={inputObj[index].TaskName} />
+              <ParagraphExample
+                name={inputObj[index].TaskName}
+                task={inputObj[index]}
+              />
             </div>
           ),
           assignee: <IconGroup inputList={inputObj[index].Assignee} />,
@@ -423,9 +422,9 @@ const TaskListOverDue: React.FC<InputData> = ({
   useEffect(() => {
     if (!task.loading && task.tasks.length) {
       Sorting()
-      setLoading(false)
     }
-  }, [task.tasks.length])
+    setLoading(false)
+  }, [task.loading, task.tasks.length])
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

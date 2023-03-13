@@ -3,6 +3,7 @@ import React, { useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../redux/app/hook'
 import { fetchHistory } from '../redux/features/history/historySlice'
 import DateFormatter from '../util/DateFormatter'
+import '../assets/css/date.css'
 
 interface HistoryComponentInput {
   collection: string
@@ -19,9 +20,7 @@ const { Text } = Typography
 const Comp: React.FC<CompInput> = ({ action, createdDate }) => {
   return (
     <div>
-      <Text style={{ width: '400px' }} ellipsis={true}>
-        {action}
-      </Text>
+      <p style={{ float: 'left', width: '80%' }}>{action}</p>
       <p style={{ float: 'right', width: 'auto' }}>
         <DateFormatter dateString={createdDate} />
       </p>
@@ -51,7 +50,7 @@ const HistoryComponent: React.FC<HistoryComponentInput> = ({
           direction="vertical"
           style={{
             width: '100%',
-            height: '300px',
+            height: '350px',
             overflowY: 'scroll',
             overflowX: 'hidden',
           }}

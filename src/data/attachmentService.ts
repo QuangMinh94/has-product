@@ -1,7 +1,11 @@
 import axios from 'axios'
+import { getCookie } from 'typescript-cookie'
 import { AttachmentResponse } from './database/Attachment'
 
-export const RemoveAttachment = async (attachmentId: string) => {
+export const RemoveAttachment = async (
+  attachmentId: string,
+  taskId?: string,
+) => {
   let attachmentResponse: AttachmentResponse = {
     FileName: '',
     FileType: '',
@@ -15,6 +19,9 @@ export const RemoveAttachment = async (attachmentId: string) => {
     .post(
       serviceUrl,
       {
+        userId: getCookie('user_id'),
+        userName: getCookie('user_name'),
+        taskId: taskId,
         attachmentId: attachmentId,
       },
       {

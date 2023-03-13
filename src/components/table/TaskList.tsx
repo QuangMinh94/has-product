@@ -53,12 +53,7 @@ interface InputData {
 let countIndex = 0
 let inputLength = 0
 
-const TaskList: React.FC<InputData> = ({
-  inputData,
-  showMore,
-  increment,
-  collapseShowMore,
-}) => {
+const TaskList: React.FC<InputData> = ({ showMore, collapseShowMore }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const refresh = location.state
@@ -290,13 +285,14 @@ const TaskList: React.FC<InputData> = ({
             />
           ),
           task: (
-            <Space direction="horizontal">
-              <>
-                <div onClick={() => OnNavigate(inputObj[index])}>
-                  <ParagraphExample name={inputObj[index].TaskName} />
-                </div>
-              </>
-            </Space>
+            <>
+              <div onClick={() => OnNavigate(inputObj[index])}>
+                <ParagraphExample
+                  name={inputObj[index].TaskName}
+                  task={inputObj[index]}
+                />
+              </div>
+            </>
           ),
           priority: (
             <>
@@ -344,12 +340,11 @@ const TaskList: React.FC<InputData> = ({
             task: (
               <>
                 <div onClick={() => OnNavigate(inputObj[index])}>
-                  <ParagraphExample name={inputObj[index].TaskName} />
+                  <ParagraphExample
+                    name={inputObj[index].TaskName}
+                    task={inputObj[index]}
+                  />
                 </div>
-                {inputObj[index].Subtask &&
-                  inputObj[index].Subtask?.length! > 0 && (
-                    <FontAwesomeIcon icon={faLink} />
-                  )}
               </>
             ),
             priority: (
@@ -449,7 +444,10 @@ const TaskList: React.FC<InputData> = ({
           ),
           task: (
             <div onClick={() => OnNavigate(inputObj[index])}>
-              <ParagraphExample name={inputObj[index].TaskName} />
+              <ParagraphExample
+                name={inputObj[index].TaskName}
+                task={inputObj[index]}
+              />
             </div>
           ),
           priority: (
@@ -497,7 +495,10 @@ const TaskList: React.FC<InputData> = ({
             ),
             task: (
               <div onClick={() => OnNavigate(inputObj[index])}>
-                <ParagraphExample name={inputObj[index].TaskName} />
+                <ParagraphExample
+                  name={inputObj[index].TaskName}
+                  task={inputObj[index]}
+                />
               </div>
             ),
             priority: (
@@ -618,7 +619,6 @@ const TaskList: React.FC<InputData> = ({
     try {
       const s = refresh.refresh
       if (refresh.refresh === true) {
-        console.log('Borger')
         setLoading(true)
       }
     } catch (error) {}

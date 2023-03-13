@@ -3,6 +3,7 @@ import type { MenuProps } from 'antd'
 import { Menu, theme } from 'antd'
 import {
   faArchive,
+  faChartSimple,
   faCogs,
   faDollarSign,
   faHome,
@@ -36,13 +37,13 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  /* getItem(
-    'Home',
-    'Home',
-    <Link to={CustomRoutes.HomePage.path}>
-      <FontAwesomeIcon icon={faHome} />
+  getItem(
+    'Dashboard',
+    'Dashboard',
+    <Link to={CustomRoutes.Dashboard.path}>
+      <FontAwesomeIcon icon={faChartSimple} />
     </Link>,
-  ), */
+  ),
   getItem('Work', 'Work', <FontAwesomeIcon icon={faTasks} />, [
     getItem(
       'Công việc của tôi',

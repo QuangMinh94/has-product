@@ -1,82 +1,41 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import {
-  NovuProvider,
-  PopoverNotificationCenter,
-  NotificationBell,
-} from '@novu/notification-center'
-import useWebSocket, { ReadyState } from 'react-use-websocket'
+import io from 'socket.io-client'
+import { CommentRequest } from '../data/database/Comment'
+import ObjectID from 'bson-objectid'
 
-const Header = () => {
-  return (
-    <NovuProvider
-      subscriberId={'63ff168ff591ea2e094b5196'}
-      applicationIdentifier={'rHRc5O4-wFgb'}
-    >
-      <PopoverNotificationCenter colorScheme={'light'}>
-        {({ unseenCount }) => <NotificationBell unseenCount={unseenCount} />}
-      </PopoverNotificationCenter>
-    </NovuProvider>
-  )
-}
+const socket = io(process.env.REACT_APP_SOCKET!, {
+  reconnectionDelayMax: 10000,
+  /* auth: {
+    token: '123',
+  },
+  query: {
+    'my-key': 'my-value',
+  }, */
+})
+const SettingPage: React.FC = () => {
+  const [isConnected, setIsConnected] = useState(socket.connected)
+  const [lastPong, setLastPong] = useState('')
+  const [count, setCount] = useState(0)
 
-const WebSocketDemo = () => {
-  //Public API that will echo messages sent to it back to the client
-  const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org')
-  const [messageHistory, setMessageHistory] = useState([])
-
-  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl)
-
-  useEffect(() => {
-    if (lastMessage !== null) {
-      setMessageHistory((prev: any) => prev.concat(lastMessage))
+  const sendPing = () => {
+    //socket.emit('ping')
+    //socket.on('messageData', (data) => console.log(data))
+    //socket.emit('message', 'Testing')
+    const comment: CommentRequest = {
+      taskId: '64083c3c7ee88afeff69f122',
+      userId: '63bbf13e2facab213077dc03',
+      comment: 'Test comment ' + ObjectID(new Date().getTime()).toHexString(),
+      createdDate: new Date(),
     }
-  }, [lastMessage, setMessageHistory])
-
-  const handleClickChangeSocketUrl = useCallback(
-    () => setSocketUrl('wss://demos.kaazing.com/echo'),
-    [],
-  )
-
-  const handleClickSendMessage = useCallback(() => sendMessage('Hello'), [])
-
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState]
+    socket.emit('addComment', comment)
+  }
 
   return (
     <div>
-      <button onClick={handleClickChangeSocketUrl}>
-        Click Me to change Socket Url
-      </button>
-      <button
-        onClick={handleClickSendMessage}
-        disabled={readyState !== ReadyState.OPEN}
-      >
-        Click Me to send 'Hello'
-      </button>
-      <span>The WebSocket is currently {connectionStatus}</span>
-      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
-      <ul>
-        {messageHistory.map((message: any, idx) => (
-          <span key={idx}>{message ? message.data : null}</span>
-        ))}
-      </ul>
+      <p>Connected: {'' + isConnected}</p>
+      <p>Last pong: {lastPong || '-'}</p>
+      <button onClick={sendPing}>Send ping</button>
     </div>
-  )
-}
-
-const SettingPage: React.FC = () => {
-  return (
-    /* <Space direction="vertical">
-      <CakeView />
-      <IceCreamView />
-    </Space> 
-    <Comments userComments={[]} /> */
-    <WebSocketDemo />
   )
 }
 

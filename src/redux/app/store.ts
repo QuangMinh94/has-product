@@ -10,6 +10,8 @@ import reportToMeTaskReducer from '../features/reportToMeTask/reportToMeTaskSlic
 import reporterTaskSliceReducer from '../features/tasks/reporterTaskSlice'
 import historyReducer from '../features/history/historySlice'
 import userInfoReducer from '../features/userInfo/userInfoSlice'
+import scoreRankingReducer from '../features/report/scoreRankingSlice'
+import personalScoreReducer from '../features/report/personalScoreSlice'
 
 const store = configureStore({
   reducer: {
@@ -24,6 +26,8 @@ const store = configureStore({
     reportToMeTaskList: reportToMeTaskReducer,
     history: historyReducer,
     userInfo: userInfoReducer,
+    scoreRanking: scoreRankingReducer,
+    personalScore: personalScoreReducer,
   },
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 })
