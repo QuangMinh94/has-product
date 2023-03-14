@@ -760,6 +760,7 @@ const CustomFloatButton: React.FC = () => {
                       borderTopLeftRadius: '100px',
                       borderBottomRightRadius: '100px',
                       WebkitBorderRadius: '100px',
+                      cursor: 'pointer',
                     }}
                     //bordered={false}
                   />

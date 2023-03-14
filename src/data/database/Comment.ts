@@ -8,10 +8,15 @@ export interface CommentRequest {
 }
 
 export interface CommentResponse {
-  Comment: string
+  Comment?: string
   User?: Users
-  CreatedDate: Date
-  Attachment: []
+  CreatedDate?: Date
+  Attachment?: []
+  _id?: string
+  __v?: number
+}
+
+export interface CommentByTaskIdRepsonse {
   _id: string
-  __v: number
+  Comment: CommentResponse[]
 }

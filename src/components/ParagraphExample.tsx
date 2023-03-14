@@ -50,7 +50,9 @@ const ParagraphExample: React.FC<Name> = ({ name, task }) => {
           </Tooltip>
 
           {task && task.Subtask && task.Subtask?.length && (
-            <FontAwesomeIcon icon={faLink} />
+            <Tooltip title={task.Subtask?.length + ' task(s)'}>
+              <FontAwesomeIcon icon={faLink} />
+            </Tooltip>
           )}
         </Space>
       </div>

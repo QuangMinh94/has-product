@@ -181,6 +181,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   const socket = useContext(SocketContext)
   const [isConnected, setIsConnected] = useState(socket.connected)
   const dispatch = useAppDispatch()
+  const [saved, setSaved] = useState(false)
 
   const customRequest = (options: any) => {
     const data = new FormData()
@@ -293,9 +294,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     {
       key: 'comments',
       label: `Comments`,
-      children: (
-        <Comments userComments={taskData.Comment} taskId={taskData._id!} />
-      ),
+      children: <Comments taskId={taskData._id!} />,
     },
     {
       key: 'history',
@@ -464,21 +463,21 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
       setIsConnected(false)
     })
 
-    socket.on('addCommentData', () => {
+    /* socket.on('addCommentData', () => {
       subTasksComp.length = 0
       fetchData()
 
       setGetUsers(false)
-    })
+    }) */
 
     return () => {
       socket.off('connection')
       socket.off('disconnect')
-      socket.off('addCommentData')
+      /* socket.off('addCommentData') */
     }
   }, [])
 
-  /* useEffect(() => {
+  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       const inputTask: InputTasks = {
         Description: JSON.stringify(editorValue),
@@ -489,7 +488,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     }, 1000)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [editorValue]) */
+  }, [saved])
 
   const SaveEditor = async () => {
     setSaveBtn(false)
@@ -507,6 +506,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
   ) => {
     //setEditorValue(parse(editor.getHTML()) as string)
     setEditorValue(editor.getContents())
+    setSaved(!saved)
   }
 
   const onOkEvent = async (date: null | (Dayjs | null)) => {
@@ -579,7 +579,7 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
     parentTask,
   }) => {
     const onFinish = async (values: any) => {
-      console.log('Success ' + JSON.stringify(values))
+      //console.log('Success ' + JSON.stringify(values))
       const _task: Tasks = JSON.parse(JSON.stringify(values))
       _task.Status = DEFAULT_STT
       _task.CreateDate = new Date()
@@ -930,24 +930,18 @@ const TaskDetails: React.FC<TaskData> = ({ openModal }) => {
                       ></ReactQuill>
 
                       {saveBtn === true && (
-                        <Space direction="horizontal" size={5}>
-                          <Button type="primary" onClick={SaveEditor}>
-                            Save
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setEditorValue(JSON.parse(taskData.Description))
-                              setSaveBtn(false)
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </Space>
+                        <Button
+                          type="primary"
+                          onClick={SaveEditor}
+                          style={{ marginLeft: '10px' }}
+                        >
+                          Save
+                        </Button>
                       )}
                       <br />
                       <br />
                       {assigneeData.length !== 0 ? (
-                        <Space direction="vertical">
+                        <Space direction="vertical" style={{ width: '100%' }}>
                           {subTasksComp.map((element) => element.content)}
 
                           <Button

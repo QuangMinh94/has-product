@@ -88,7 +88,7 @@ const ScoreRanking: React.FC<ScoreRankingInput> = ({
 
   useEffect(() => {
     dispatch(fetchScoreRanking(scoreRankingReq))
-  }, [reload])
+  }, [reload, reloadCount])
 
   useEffect(() => {
     if (!score.loading && score.score.length !== undefined) {

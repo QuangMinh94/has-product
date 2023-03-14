@@ -29,6 +29,7 @@ const PersonalScore: React.FC<PersonalScoreInput> = ({
   const [score, setScore] = useState('')
   const [rank, setRank] = useState('')
   const [total, setTotal] = useState('')
+  const [spin, setSpin] = useState(false)
 
   const personalScore = useAppSelector((state) => state.personalScore)
   const dispatch = useAppDispatch()
@@ -39,20 +40,20 @@ const PersonalScore: React.FC<PersonalScoreInput> = ({
 
   useEffect(() => {
     dispatch(fetchPersonalScore(personalScoreReq))
-  }, [reload])
+  }, [reload, reloadCount])
 
   useEffect(() => {
     if (!personalScore.loading && personalScore.score.length !== undefined) {
       if (personalScore.score.length === 0) {
         setHideTooltip(true)
       } else {
-        console.log('User ' + JSON.stringify(personalScore.score[0]))
         setHideTooltip(false)
         setScore(personalScore.score[0].TotalScore!.toString())
         setRank(personalScore.score[0].Rank!.toString())
         setTotal(personalScore.score[0].UserCount!.toString())
       }
     }
+    setSpin(false)
   }, [personalScore.loading, personalScore.score.length])
 
   const OnChangeFilter = (e: string) => {
@@ -91,9 +92,13 @@ const PersonalScore: React.FC<PersonalScoreInput> = ({
         <>
           <FontAwesomeIcon
             icon={faRefresh}
+            spin={spin}
             size="lg"
             style={{ marginRight: '10px', cursor: 'pointer' }}
-            onClick={() => setReload(reload + 1)}
+            onClick={() => {
+              setSpin(true)
+              setReload(reload + 1)
+            }}
           />
           {/* <FontAwesomeIcon icon={faExpand} size="lg" /> */}
         </>

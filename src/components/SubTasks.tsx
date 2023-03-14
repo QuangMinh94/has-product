@@ -20,6 +20,8 @@ import { InputTasks } from '../data/database/InputTasks'
 import { UpdateTask } from '../data/tasksService'
 import '../assets/css/index.css'
 import { Status } from '../data/interface/Status'
+import GetStatusIgnoreList from '../util/StatusList'
+import { getCookie } from 'typescript-cookie'
 
 const UserListComp = React.lazy(() => import('./UserListComp'))
 type SubTaskInput = {
@@ -57,12 +59,21 @@ const SubTask: React.FC<SubTaskInput> = ({
   const [showEditDetail, setShowEditDetail] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState(false)
+  const [statusIgnoreList, setStatusIgnoreList] = useState<Status[]>([])
 
   useEffect(() => {
     if (tasks.TaskName !== '') {
       setHideSubmitBtn(true)
       setEditTaskName(false)
       setShowEditDetail(true)
+      const ignoreList: Status[] = GetStatusIgnoreList(
+        getCookie('user_id')?.toString()!,
+        tasks.Assignee[0]._id!,
+        tasks.Reporter._id!,
+        tasks.Status,
+      )
+
+      setStatusIgnoreList(ignoreList)
       //if (mode !== UPDATE_MODE) {
       form.setFieldsValue({ TaskName: tasks.TaskName })
       //}
@@ -165,6 +176,7 @@ const SubTask: React.FC<SubTaskInput> = ({
             borderWidth: '1px',
             borderColor: '#d9d9d9',
             paddingRight: '10px',
+            width: '100%',
           }}
           //align="baseline"
         >
@@ -185,13 +197,13 @@ const SubTask: React.FC<SubTaskInput> = ({
             }}
             autoComplete="off"
           >
-            <Space direction="horizontal" align="center">
+            <Space
+              direction="horizontal"
+              align="center"
+              style={{ width: '100%' }}
+            >
+              <Form.Item name="_id"></Form.Item>
               <Form.Item
-                //label="Username"
-                name="_id"
-              ></Form.Item>
-              <Form.Item
-                //label="Username"
                 name="Status"
                 style={{
                   marginBottom: '0px',
@@ -204,12 +216,13 @@ const SubTask: React.FC<SubTaskInput> = ({
                     //button={true}
                     taskId={taskId}
                     id={'details'}
-                    ignoreStt={IGNORE_STT_DEFAULT()}
+                    ignoreStt={statusIgnoreList}
+                    mode={mode}
+                    task={tasks}
                   />
                 )}
               </Form.Item>
               <Form.Item
-                //label="Username"
                 name="TaskName"
                 rules={[
                   { required: true, message: '' },
@@ -349,6 +362,7 @@ const SubTask: React.FC<SubTaskInput> = ({
                   onClickMenu={handleMenuClick}
                   mode={mode}
                   taskId={taskId}
+                  task={tasks}
                 />
               </Form.Item>
               <Form.Item

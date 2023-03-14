@@ -12,6 +12,7 @@ import historyReducer from '../features/history/historySlice'
 import userInfoReducer from '../features/userInfo/userInfoSlice'
 import scoreRankingReducer from '../features/report/scoreRankingSlice'
 import personalScoreReducer from '../features/report/personalScoreSlice'
+import commentReducer from '../features/comment/commentSlice'
 
 const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ const store = configureStore({
     userInfo: userInfoReducer,
     scoreRanking: scoreRankingReducer,
     personalScore: personalScoreReducer,
+    comment: commentReducer,
   },
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 })

@@ -38,11 +38,6 @@ const UserListComp: React.FC<UserData> = ({
   const [assignee, setAssignee] = useState<Users[]>(
     inputUserData ? inputUserData : [],
   )
-  //const [items, setItems] = useState<MenuProps['items']>([])
-
-  //const [assignee, setAssignee] = useState<Users>()
-
-  //const [items, setItems] = useState<MenuProps['items']>([])
   const items: MenuProps['items'] = []
 
   const AddAssignee = (id: string) => {

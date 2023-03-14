@@ -1,5 +1,9 @@
 import axios from 'axios'
-import { CommentRequest, CommentResponse } from './database/Comment'
+import {
+  CommentByTaskIdRepsonse,
+  CommentRequest,
+  CommentResponse,
+} from './database/Comment'
 
 export const AddComment = async (cmtRep: CommentRequest) => {
   const serviceUrl = process.env.REACT_APP_API_COMMENT_ADDCOMMENT!
@@ -43,4 +47,20 @@ export const UpdateComment = async (commentId: string, comment: string) => {
     },
   )
   return response.data as CommentResponse
+}
+
+export const GetCommentByTaskId = async (taskId: string) => {
+  const serviceUrl = process.env.REACT_APP_API_COMMENT_GETCOMMENTBYTASKID!
+  const response = await axios.post(
+    serviceUrl,
+    {
+      taskId: taskId,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+  return response
 }
